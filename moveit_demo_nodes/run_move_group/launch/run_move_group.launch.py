@@ -2,7 +2,9 @@ import os
 import yaml
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import ExecuteProcess
 from ament_index_python.packages import get_package_share_directory
+import xacro
 
 def load_file(package_name, file_path):
     package_path = get_package_share_directory(package_name)
@@ -28,8 +30,10 @@ def load_yaml(package_name, file_path):
 def generate_launch_description():
 
     # planning_context
-    robot_description_config = load_file('moveit_resources_panda_description', 'urdf/panda.urdf')
-    robot_description = {'robot_description' : robot_description_config}
+    robot_description_config = xacro.process_file(os.path.join(get_package_share_directory('run_moveit_cpp'),
+                                                               'config',
+                                                               'panda.urdf.xacro'))
+    robot_description = {'robot_description' : robot_description_config.toxml()}
 
     robot_description_semantic_config = load_file('moveit_resources_panda_moveit_config', 'config/panda.srdf')
     robot_description_semantic = {'robot_description_semantic' : robot_description_semantic_config}
@@ -98,14 +102,24 @@ def generate_launch_description():
                                  output='both',
                                  parameters=[robot_description])
 
-    # Fake joint driver
-    fake_joint_driver_node = Node(package='fake_joint_driver',
-                                  executable='fake_joint_driver_node',
-                                  parameters=[{'controller_name': 'panda_arm_controller'},
-                                              os.path.join(get_package_share_directory("run_move_group"), "config", "panda_controllers.yaml"),
-                                              os.path.join(get_package_share_directory("run_move_group"), "config", "start_positions.yaml"),
-                                              robot_description]
-                                  )
+    # Fake ros2_controller system
+    ros2_control_node = Node(
+        package='controller_manager',
+        executable='ros2_control_node',
+        parameters=[robot_description,  os.path.join(get_package_share_directory("run_move_group"), "config", "panda_controllers.yaml")],
+        output={
+            'stdout': 'screen',
+            'stderr': 'screen',
+        },
+    )
+
+
+    # load joint_state_controller
+    load_joint_state_controller = ExecuteProcess(cmd=['ros2 control load_start_controller joint_state_controller'], shell=True, output='screen')
+
+    load_controllers = [load_joint_state_controller]
+    for controller in ['panda_arm_controller', 'panda_hand_controller']:
+        load_controllers += [ExecuteProcess(cmd=['ros2 control load_configure_controller', controller], shell=True, output='screen', on_exit=[ExecuteProcess(cmd=['ros2 control switch_controllers --start-controllers', controller], shell=True, output='screen')])]
 
     # Warehouse mongodb server
     mongodb_server_node = Node(package='warehouse_ros_mongo',
@@ -115,4 +129,4 @@ def generate_launch_description():
                                            {'warehouse_plugin': 'warehouse_ros_mongo::MongoDatabaseConnection'}],
                                output='screen')
 
-    return LaunchDescription([ rviz_node, static_tf, robot_state_publisher, run_move_group_node, fake_joint_driver_node, mongodb_server_node ])
+    return LaunchDescription([ rviz_node, static_tf, robot_state_publisher, run_move_group_node, ros2_control_node, mongodb_server_node ] + load_controllers)

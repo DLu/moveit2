@@ -2,7 +2,9 @@ import os
 import yaml
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import ExecuteProcess
 from ament_index_python.packages import get_package_share_directory
+import xacro
 
 def load_file(package_name, file_path):
     package_path = get_package_share_directory(package_name)
@@ -30,8 +32,10 @@ def generate_launch_description():
     moveit_cpp_yaml_file_name = get_package_share_directory('run_moveit_cpp') + "/config/moveit_cpp.yaml"
 
     # Component yaml files are grouped in separate namespaces
-    robot_description_config = load_file('moveit_resources_panda_description', 'urdf/panda.urdf')
-    robot_description = {'robot_description' : robot_description_config}
+    robot_description_config = xacro.process_file(os.path.join(get_package_share_directory('run_moveit_cpp'),
+                                                               'config',
+                                                               'panda.urdf.xacro'))
+    robot_description = {'robot_description' : robot_description_config.toxml()}
 
     robot_description_semantic_config = load_file('moveit_resources_panda_moveit_config', 'config/panda.srdf')
     robot_description_semantic = {'robot_description_semantic' : robot_description_semantic_config}
@@ -88,15 +92,23 @@ def generate_launch_description():
                                  output='both',
                                  parameters=[robot_description])
 
-    # Fake joint driver
-    fake_joint_driver_node = Node(package='fake_joint_driver',
-                                  executable='fake_joint_driver_node',
-                                  # TODO(JafarAbdi): Why this launch the two nodes (controller manager and the fake joint driver) with the same name!
-                                  # name='fake_joint_driver_node',
-                                  parameters=[{'controller_name': 'panda_arm_controller'},
-                                              os.path.join(get_package_share_directory("run_moveit_cpp"), "config", "panda_controllers.yaml"),
-                                              os.path.join(get_package_share_directory("run_moveit_cpp"), "config", "start_positions.yaml"),
-                                              robot_description]
-                                  )
+    # Fake ros2_controller system
+    ros2_control_node = Node(
+        package='controller_manager',
+        executable='ros2_control_node',
+        parameters=[robot_description,  os.path.join(get_package_share_directory("run_moveit_cpp"), "config", "panda_controllers.yaml")],
+        output={
+            'stdout': 'screen',
+            'stderr': 'screen',
+        },
+    )
 
-    return LaunchDescription([ static_tf, robot_state_publisher, rviz_node, run_moveit_cpp_node, fake_joint_driver_node ])
+
+    # load joint_state_controller
+    load_joint_state_controller = ExecuteProcess(cmd=['ros2 control load_start_controller joint_state_controller'], shell=True, output='screen')
+
+    load_controllers = [load_joint_state_controller]
+    for controller in ['panda_arm_controller', 'panda_hand_controller']:
+        load_controllers += [ExecuteProcess(cmd=['ros2 control load_configure_controller', controller], shell=True, output='screen', on_exit=[ExecuteProcess(cmd=['ros2 control switch_controllers --start-controllers', controller], shell=True, output='screen')])]
+
+    return LaunchDescription([ static_tf, robot_state_publisher, rviz_node, run_moveit_cpp_node, ros2_control_node ] + load_controllers)
