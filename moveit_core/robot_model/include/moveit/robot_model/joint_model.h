@@ -115,7 +115,8 @@ public:
     PRISMATIC,
     PLANAR,
     FLOATING,
-    FIXED
+    FIXED,
+    DIFF_DRIVE
   };
 
   /** \brief The datatype for the joint bounds */
