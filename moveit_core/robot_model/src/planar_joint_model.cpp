@@ -38,6 +38,7 @@
 #include <moveit/robot_model/planar_joint_model.h>
 #include <geometric_shapes/check_isometry.h>
 #include <boost/math/constants/constants.hpp>
+#include <angles/angles.h>
 #include <limits>
 #include <cmath>
 
@@ -141,26 +142,36 @@ void PlanarJointModel::getVariableRandomPositionsNearBy(random_numbers::RandomNu
 
 void PlanarJointModel::interpolate(const double* from, const double* to, const double t, double* state) const
 {
-  // interpolate position
-  state[0] = from[0] + (to[0] - from[0]) * t;
-  state[1] = from[1] + (to[1] - from[1]) * t;
+  double dx = to[0] - from[0];
+  double dy = to[1] - from[1];
 
-  // interpolate angle
-  double diff = to[2] - from[2];
-  if (fabs(diff) <= boost::math::constants::pi<double>())
-    state[2] = from[2] + diff * t;
+  double start_angle = from[2];
+  double goal_angle = to[2];
+  double drive_angle = atan2(dy, dx);
+
+  double initial_turn = angles::shortest_angular_distance(start_angle, drive_angle);
+  double final_turn = angles::shortest_angular_distance(drive_angle, goal_angle);
+
+  if (t <= 0.25)
+  {
+    double pct = t / 0.25;
+    state[0] = from[0];
+    state[1] = from[1];
+    state[2] = from[2] + initial_turn * pct;
+  }
+  else if (t <= 0.75)
+  {
+    double pct = (t - 0.5) / 0.5;
+    state[0] = from[0] + dx * pct;
+    state[1] = from[1] + dy * pct;
+    state[2] = drive_angle;
+  }
   else
   {
-    if (diff > 0.0)
-      diff = 2.0 * boost::math::constants::pi<double>() - diff;
-    else
-      diff = -2.0 * boost::math::constants::pi<double>() - diff;
-    state[2] = from[2] - diff * t;
-    // input states are within bounds, so the following check is sufficient
-    if (state[2] > boost::math::constants::pi<double>())
-      state[2] -= 2.0 * boost::math::constants::pi<double>();
-    else if (state[2] < -boost::math::constants::pi<double>())
-      state[2] += 2.0 * boost::math::constants::pi<double>();
+    double pct = (t - 0.75) / 0.25;
+    state[0] = to[0];
+    state[1] = to[1];
+    state[2] = drive_angle + final_turn * pct;
   }
 }
 
