@@ -30,7 +30,7 @@ def load_yaml(package_name, file_path):
 def generate_launch_description():
 
     # planning_context
-    robot_description_config = xacro.process_file(os.path.join(get_package_share_directory('run_moveit_cpp'),
+    robot_description_config = xacro.process_file(os.path.join(get_package_share_directory('moveit_resources_panda_moveit_config'),
                                                                'config',
                                                                'panda.urdf.xacro'))
     robot_description = {'robot_description' : robot_description_config.toxml()}
@@ -50,7 +50,7 @@ def generate_launch_description():
     ompl_planning_pipeline_config['move_group'].update(ompl_planning_yaml)
 
     # Trajectory Execution Functionality
-    controllers_yaml = load_yaml('run_move_group', 'config/controllers.yaml')
+    controllers_yaml = load_yaml('moveit_resources_panda_moveit_config', 'config/panda_controllers.yaml')
     moveit_controllers = { 'moveit_simple_controller_manager' : controllers_yaml,
                            'moveit_controller_manager': 'moveit_simple_controller_manager/MoveItSimpleControllerManager'}
 
@@ -106,7 +106,7 @@ def generate_launch_description():
     ros2_control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
-        parameters=[robot_description,  os.path.join(get_package_share_directory("run_move_group"), "config", "panda_controllers.yaml")],
+        parameters=[robot_description,  os.path.join(get_package_share_directory("moveit_resources_panda_moveit_config"), "config", "panda_ros_controllers.yaml")],
         output={
             'stdout': 'screen',
             'stderr': 'screen',
@@ -116,10 +116,14 @@ def generate_launch_description():
 
     # load joint_state_controller
     load_joint_state_controller = ExecuteProcess(cmd=['ros2 control load_start_controller joint_state_controller'], shell=True, output='screen')
-
     load_controllers = [load_joint_state_controller]
-    for controller in ['panda_arm_controller', 'panda_hand_controller']:
-        load_controllers += [ExecuteProcess(cmd=['ros2 control load_configure_controller', controller], shell=True, output='screen', on_exit=[ExecuteProcess(cmd=['ros2 control switch_controllers --start-controllers', controller], shell=True, output='screen')])]
+    # load panda_arm_controller
+    load_controllers += [ExecuteProcess(cmd=['ros2 control load_configure_controller panda_arm_controller'],
+                                        shell=True,
+                                        output='screen',
+                                        on_exit=[ExecuteProcess(cmd=['ros2 control switch_controllers --start-controllers panda_arm_controller'],
+                                                                shell=True,
+                                                                output='screen')])]
 
     # Warehouse mongodb server
     mongodb_server_node = Node(package='warehouse_ros_mongo',
