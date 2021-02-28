@@ -8,6 +8,8 @@ import launch_testing.actions
 from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
 from ament_index_python.packages import get_package_share_directory
+from launch.actions import ExecuteProcess
+import xacro
 
 def load_file(package_name, file_path):
     package_path = get_package_share_directory(package_name)
@@ -30,27 +32,43 @@ def load_yaml(package_name, file_path):
         return None
 
 def generate_servo_test_description(*args,
-                                    gtest_name: SomeSubstitutionsType,
-                                    start_position_path: SomeSubstitutionsType = '../config/start_positions.yaml'):
-    
+                                    gtest_name: SomeSubstitutionsType):
+
     # Get parameters using the demo config file
     servo_yaml = load_yaml('moveit_servo', 'config/panda_simulated_config.yaml')
     servo_params = { 'moveit_servo' : servo_yaml }
 
     # Get URDF and SRDF
-    robot_description_config = load_file('moveit_resources_panda_description', 'urdf/panda.urdf')
-    robot_description = {'robot_description' : robot_description_config}
+    robot_description_config = xacro.process_file(os.path.join(get_package_share_directory('moveit_resources_panda_moveit_config'),
+                                                               'config',
+                                                               'panda.urdf.xacro'))
+    robot_description = {'robot_description' : robot_description_config.toxml()}
 
     robot_description_semantic_config = load_file('moveit_resources_panda_moveit_config', 'config/panda.srdf')
     robot_description_semantic = {'robot_description_semantic' : robot_description_semantic_config}
 
-    # Is a perfect controller without dynamics
-    fake_joint_driver_node = Node(package='fake_joint_driver',
-                                  executable='fake_joint_driver_node',
-                                  parameters=[{'controller_name': 'fake_joint_trajectory_controller'},
-                                              os.path.join(get_package_share_directory("moveit_servo"), "config", "panda_controllers.yaml"),
-                                              os.path.join(os.path.dirname(__file__), start_position_path),
-                                              robot_description])
+    # Fake ros2_controller system
+    ros2_control_node = Node(
+        package='controller_manager',
+        executable='ros2_control_node',
+        parameters=[robot_description,  os.path.join(get_package_share_directory("moveit_resources_panda_moveit_config"), "config", "panda_ros_controllers.yaml")],
+        output={
+            'stdout': 'screen',
+            'stderr': 'screen',
+        },
+    )
+
+
+    # load joint_state_controller
+    load_joint_state_controller = ExecuteProcess(cmd=['ros2 control load_start_controller joint_state_controller'], shell=True, output='screen')
+    load_controllers = [load_joint_state_controller]
+    # load panda_arm_controller
+    load_controllers += [ExecuteProcess(cmd=['ros2 control load_configure_controller panda_arm_controller'],
+                                        shell=True,
+                                        output='screen',
+                                        on_exit=[ExecuteProcess(cmd=['ros2 control switch_controllers --start-controllers panda_arm_controller'],
+                                                                shell=True,
+                                                                output='screen')])]
 
     # Component nodes for tf and Servo
     test_container = ComposableNodeContainer(
@@ -88,9 +106,8 @@ def generate_servo_test_description(*args,
         launch.actions.DeclareLaunchArgument(name='test_binary_dir',
                                              description='Binary directory of package '
                                                          'containing test executables'),
-        fake_joint_driver_node,
+        ros2_control_node,
         test_container,
         servo_gtest,
         launch_testing.actions.ReadyToTest()
-    ]), {'test_container': test_container, 'servo_gtest': servo_gtest, 'fake_joint_driver_node': fake_joint_driver_node}
-
+    ] + load_controllers), {'test_container': test_container, 'servo_gtest': servo_gtest, 'ros2_control_node': ros2_control_node}
