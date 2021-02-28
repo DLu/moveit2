@@ -7,10 +7,11 @@ repositories:
     type: git
     url: https://github.com/ros-planning/moveit_msgs
     version: ros2
+  # TODO(JafarAbdi): change to upstream once https://github.com/ros-planning/moveit_resources/pull/51 is merged
   moveit_resources:
     type: git
-    url: https://github.com/ros-planning/moveit_resources
-    version: ros2
+    url: https://github.com/JafarAbdi/moveit_resources
+    version: pr-update_configs
   geometric_shapes:
     type: git
     url: https://github.com/ros-planning/geometric_shapes
