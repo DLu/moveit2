@@ -60,7 +60,7 @@ moveit_servo::ServoParametersPtr getTestParameters()
   output->linear_scale = 0.4;
   output->rotational_scale = 0.8;
   output->joint_scale = 0.5;
-  output->command_out_topic = "/fake_joint_trajectory_controller/joint_trajectory";
+  output->command_out_topic = "/panda_arm_controller/joint_trajectory";
   output->publish_period = 0.034;
   output->command_out_type = "trajectory_msgs/JointTrajectory";
   output->publish_joint_positions = true;
