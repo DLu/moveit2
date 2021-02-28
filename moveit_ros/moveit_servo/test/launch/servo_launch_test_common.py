@@ -40,10 +40,13 @@ def generate_servo_test_description(*args,
     servo_params = { 'moveit_servo' : servo_yaml }
 
     # Get URDF and SRDF
+    initial_positions_file = ''
+    if start_position_path:
+        initial_positions_file = os.path.join(os.path.dirname(__file__), start_position_path)
     robot_description_config = xacro.process_file(os.path.join(get_package_share_directory('moveit_resources_panda_moveit_config'),
                                                                'config',
                                                                'panda.urdf.xacro'),
-                                                  mappings={'initial_positions_file': os.path.join(os.path.dirname(__file__), start_position_path)})
+                                                  mappings={'initial_positions_file': initial_positions_file})
     robot_description = {'robot_description' : robot_description_config.toxml()}
 
     robot_description_semantic_config = load_file('moveit_resources_panda_moveit_config', 'config/panda.srdf')

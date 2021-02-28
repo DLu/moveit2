@@ -41,14 +41,12 @@ def load_yaml(package_name, file_path):
 
 
 def generate_servo_test_description(*args,
-                                    gtest_name: SomeSubstitutionsType,
-                                    start_position_path: SomeSubstitutionsType = ''):
+                                    gtest_name: SomeSubstitutionsType):
 
     # Get URDF and SRDF
     robot_description_config = xacro.process_file(os.path.join(get_package_share_directory('moveit_resources_panda_moveit_config'),
                                                                'config',
-                                                               'panda.urdf.xacro'),
-                                                  mappings={'initial_positions_file': os.path.join(os.path.dirname(__file__), start_position_path)})
+                                                               'panda.urdf.xacro'))
     robot_description = {'robot_description' : robot_description_config.toxml()}
 
     robot_description_semantic_config = load_file('moveit_resources_panda_moveit_config', 'config/panda.srdf')
@@ -124,8 +122,7 @@ def generate_servo_test_description(*args,
     ] + load_controllers), {'test_container': test_container ,'servo_gtest': pose_tracking_gtest, 'ros2_control_node': ros2_control_node }
 
 def generate_test_description():
-    return generate_servo_test_description(gtest_name='test_servo_pose_tracking',
-                                           start_position_path='../config/collision_start_positions.yaml')
+    return generate_servo_test_description(gtest_name='test_servo_pose_tracking')
 
 
 class TestGTestProcessActive(unittest.TestCase):
