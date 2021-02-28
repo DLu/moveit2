@@ -41,12 +41,14 @@ def load_yaml(package_name, file_path):
 
 
 def generate_servo_test_description(*args,
-                                    gtest_name: SomeSubstitutionsType):
+                                    gtest_name: SomeSubstitutionsType,
+                                    start_position_path: SomeSubstitutionsType = ''):
 
     # Get URDF and SRDF
     robot_description_config = xacro.process_file(os.path.join(get_package_share_directory('moveit_resources_panda_moveit_config'),
                                                                'config',
-                                                               'panda.urdf.xacro'))
+                                                               'panda.urdf.xacro'),
+                                                  mappings={'initial_positions_file': os.path.join(os.path.dirname(__file__), start_position_path)})
     robot_description = {'robot_description' : robot_description_config.toxml()}
 
     robot_description_semantic_config = load_file('moveit_resources_panda_moveit_config', 'config/panda.srdf')
