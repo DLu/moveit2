@@ -868,6 +868,29 @@ static inline VariableBounds jointBoundsFromURDF(const urdf::Joint* urdf_joint)
   }
   return b;
 }
+
+static inline std::vector<moveit_msgs::JointLimits> jointBoundsFromSRDF(const srdf::Model::VirtualJoint& srdf_joint)
+{
+  std::vector<moveit_msgs::JointLimits> limits;
+  for (const srdf::Model::Limit& limit : srdf_joint.limits_)
+  {
+    moveit_msgs::JointLimits limit_msg;
+    limit_msg.joint_name = limit.name_;
+    if (isfinite(limit.velocity_))
+    {
+      limit_msg.has_velocity_limits = true;
+      limit_msg.max_velocity = limit.velocity_;
+    }
+    if (isfinite(limit.acceleration_))
+    {
+      limit_msg.has_acceleration_limits = true;
+      limit_msg.max_acceleration = limit.acceleration_;
+    }
+    limits.push_back(limit_msg);
+  }
+  return limits;
+}
+
 }  // namespace
 
 JointModel* RobotModel::constructJointModel(const urdf::Joint* urdf_joint, const urdf::Link* child_link,
@@ -943,6 +966,8 @@ JointModel* RobotModel::constructJointModel(const urdf::Joint* urdf_joint, const
           new_joint_model = new FixedJointModel(virtual_joint.name_);
         else if (virtual_joint.type_ == "planar")
           new_joint_model = new PlanarJointModel(virtual_joint.name_);
+        else if (virtual_joint.type_ == "diff_drive")
+          new_joint_model = new PlanarJointModel(virtual_joint.name_, PlanarJointModel::MotionModel::DIFF_DRIVE);
         else if (virtual_joint.type_ == "floating")
           new_joint_model = new FloatingJointModel(virtual_joint.name_);
         if (new_joint_model)
@@ -951,6 +976,7 @@ JointModel* RobotModel::constructJointModel(const urdf::Joint* urdf_joint, const
           if (virtual_joint.type_ != "fixed")
           {
             model_frame_ = virtual_joint.parent_frame_;
+            new_joint_model->setVariableBounds(jointBoundsFromSRDF(virtual_joint));
           }
           break;
         }
