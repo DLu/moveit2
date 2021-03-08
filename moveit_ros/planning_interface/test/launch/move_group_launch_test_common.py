@@ -105,7 +105,7 @@ def generate_move_group_test_description(*args, gtest_name: SomeSubstitutionsTyp
                                  output='both',
                                  parameters=[robot_description])
 
-    # Fake ros2_controller system
+    # ros2_control using FakeSystem as hardware
     ros2_control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
