@@ -52,7 +52,7 @@ def generate_servo_test_description(*args,
     robot_description_semantic_config = load_file('moveit_resources_panda_moveit_config', 'config/panda.srdf')
     robot_description_semantic = {'robot_description_semantic' : robot_description_semantic_config}
 
-    # Fake ros2_controller system
+    # ros2_control using FakeSystem as hardware
     ros2_control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
