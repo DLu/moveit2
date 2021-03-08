@@ -80,7 +80,7 @@ def generate_launch_description():
         parameters=[robot_description, robot_description_semantic, kinematics_yaml, pose_tracking_params, servo_params]
     )
 
-    # Fake ros2_controller system
+    # ros2_control using FakeSystem as hardware
     ros2_control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
@@ -104,4 +104,3 @@ def generate_launch_description():
                                                                 output='screen')])]
 
     return LaunchDescription([rviz_node, static_tf, pose_tracking_node, ros2_control_node, robot_state_publisher] + load_controllers)
-
