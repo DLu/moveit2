@@ -62,7 +62,7 @@ def generate_servo_test_description(*args,
 
     kinematics_yaml = load_yaml('moveit_resources_panda_moveit_config', 'config/kinematics.yaml')
 
-    # Fake ros2_controller system
+    # ros2_control using FakeSystem as hardware
     ros2_control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
