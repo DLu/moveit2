@@ -73,7 +73,7 @@ def generate_launch_description():
                      arguments=['-d', rviz_config_file],
                      parameters=[robot_description, robot_description_semantic])
 
-    # Fake ros2_controller system
+    # ros2_control using FakeSystem as hardware
     ros2_control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
