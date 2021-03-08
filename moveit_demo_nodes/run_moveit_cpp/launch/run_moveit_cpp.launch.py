@@ -43,8 +43,8 @@ def generate_launch_description():
     kinematics_yaml = load_yaml('moveit_resources_panda_moveit_config', 'config/kinematics.yaml')
     robot_description_kinematics = { 'robot_description_kinematics' : kinematics_yaml }
 
-    controllers_yaml = load_yaml('moveit_resources_panda_moveit_config', 'config/panda_controllers.yaml')
-    moveit_controllers = { 'moveit_simple_controller_manager' : controllers_yaml,
+    moveit_simple_controllers_yaml = load_yaml('moveit_resources_panda_moveit_config', 'config/panda_controllers.yaml')
+    moveit_controllers = { 'moveit_simple_controller_manager' : moveit_simple_controllers_yaml,
                            'moveit_controller_manager': 'moveit_simple_controller_manager/MoveItSimpleControllerManager'}
 
     ompl_planning_pipeline_config = { 'ompl' : {
@@ -92,11 +92,12 @@ def generate_launch_description():
                                  output='both',
                                  parameters=[robot_description])
 
-    # Fake ros2_controller system
+    # ros2_control using FakeSystem as hardware
+    ros2_controllers_path = os.path.join(get_package_share_directory("moveit_resources_panda_moveit_config"), "config", "panda_ros_controllers.yaml")
     ros2_control_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
-        parameters=[robot_description,  os.path.join(get_package_share_directory("moveit_resources_panda_moveit_config"), "config", "panda_ros_controllers.yaml")],
+        parameters=[robot_description, ros2_controllers_path],
         output={
             'stdout': 'screen',
             'stderr': 'screen',
