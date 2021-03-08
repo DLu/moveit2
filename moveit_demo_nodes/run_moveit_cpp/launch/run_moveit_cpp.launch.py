@@ -103,7 +103,6 @@ def generate_launch_description():
         },
     )
 
-
     # load joint_state_controller
     load_joint_state_controller = ExecuteProcess(cmd=['ros2 control load_start_controller joint_state_controller'], shell=True, output='screen')
     load_controllers = [load_joint_state_controller]
