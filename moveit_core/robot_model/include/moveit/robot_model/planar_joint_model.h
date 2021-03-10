@@ -46,7 +46,14 @@ namespace core
 class PlanarJointModel : public JointModel
 {
 public:
-  PlanarJointModel(const std::string& name);
+  /** \brief different types of planar joints we support */
+  enum MotionModel
+  {
+    HOLONOMIC,  // default
+    DIFF_DRIVE
+  };
+
+  PlanarJointModel(const std::string& name, MotionModel motion_model = HOLONOMIC);
 
   void getVariableDefaultPositions(double* values, const Bounds& other_bounds) const override;
   void getVariableRandomPositions(random_numbers::RandomNumberGenerator& rng, double* values,
@@ -75,13 +82,29 @@ public:
     angular_distance_weight_ = weight;
   }
 
+  MotionModel getMotionModel() const
+  {
+    return motion_model_;
+  }
+
+  void setMotionModel(MotionModel model)
+  {
+    motion_model_ = model;
+  }
+
   /// Make the yaw component of a state's value vector be in the range [-Pi, Pi]. enforceBounds() also calls this
   /// function;
   /// Return true if a change is actually made
   bool normalizeRotation(double* values) const;
 
 private:
+  void computeDiff(const double* from, const double* to,
+                   double& dx, double& dy,
+                   double& initial_turn, double& drive_angle, double& final_turn,
+                   double& initial_time, double& drive_time, double& final_time, double& total_time) const;
+
   double angular_distance_weight_;
+  MotionModel motion_model_;
 };
 }  // namespace core
 }  // namespace moveit
