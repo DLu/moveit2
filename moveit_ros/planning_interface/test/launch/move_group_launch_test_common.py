@@ -3,7 +3,9 @@ import yaml
 import launch
 import launch_ros
 import launch_testing
+import xacro
 from launch import LaunchDescription
+from launch.actions import ExecuteProcess
 from launch.some_substitutions_type import SomeSubstitutionsType
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import ComposableNodeContainer, Node
@@ -41,8 +43,10 @@ def load_test_yaml(absolute_file_path):
 def generate_move_group_test_description(*args, gtest_name: SomeSubstitutionsType):
 
     # planning_context
-    robot_description_config = load_file('moveit_resources_panda_description', 'urdf/panda.urdf')
-    robot_description = {'robot_description' : robot_description_config}
+    robot_description_config = xacro.process_file(os.path.join(get_package_share_directory('moveit_resources_panda_moveit_config'),
+                                                               'config',
+                                                               'panda.urdf.xacro'))
+    robot_description = {'robot_description' : robot_description_config.toxml()}
 
     robot_description_semantic_config = load_file('moveit_resources_panda_moveit_config', 'config/panda.srdf')
     robot_description_semantic = {'robot_description_semantic' : robot_description_semantic_config}
@@ -60,9 +64,9 @@ def generate_move_group_test_description(*args, gtest_name: SomeSubstitutionsTyp
     ompl_planning_pipeline_config['move_group'].update(ompl_planning_yaml)
 
     # Trajectory Execution Functionality
-    controllers_yaml = load_test_yaml(os.path.join(os.path.dirname(__file__), '../config/controllers.yaml'))
+    moveit_simple_controllers_yaml = load_yaml('moveit_resources_panda_moveit_config', 'config/panda_controllers.yaml')
 
-    moveit_controllers = { 'moveit_simple_controller_manager' : controllers_yaml,
+    moveit_controllers = { 'moveit_simple_controller_manager' : moveit_simple_controllers_yaml,
                            'moveit_controller_manager': 'moveit_simple_controller_manager/MoveItSimpleControllerManager'}
 
     trajectory_execution = {'moveit_manage_controllers': True,
@@ -101,13 +105,28 @@ def generate_move_group_test_description(*args, gtest_name: SomeSubstitutionsTyp
                                  output='both',
                                  parameters=[robot_description])
 
-    # Fake joint driver
-    fake_joint_driver_node = Node(package='fake_joint_driver',
-                                  executable='fake_joint_driver_node',
-                                  parameters=[{'controller_name': 'panda_arm_controller'},
-                                              os.path.join(os.path.dirname(__file__), '../config/panda_controllers.yaml'),
-                                              os.path.join(os.path.dirname(__file__), '../config/start_positions.yaml'),
-                                              robot_description])
+    # ros2_control using FakeSystem as hardware
+    ros2_controllers_path = os.path.join(get_package_share_directory("moveit_resources_panda_moveit_config"), "config", "panda_ros_controllers.yaml")
+    ros2_control_node = Node(
+        package='controller_manager',
+        executable='ros2_control_node',
+        parameters=[robot_description, ros2_controllers_path],
+        output={
+            'stdout': 'screen',
+            'stderr': 'screen',
+        },
+    )
+
+    # load joint_state_controller
+    load_joint_state_controller = ExecuteProcess(cmd=['ros2 control load_start_controller joint_state_controller'], shell=True, output='screen')
+    load_controllers = [load_joint_state_controller]
+    # load panda_arm_controller
+    load_controllers += [ExecuteProcess(cmd=['ros2 control load_configure_controller panda_arm_controller'],
+                                        shell=True,
+                                        output='screen',
+                                        on_exit=[ExecuteProcess(cmd=['ros2 control switch_controllers --start-controllers panda_arm_controller'],
+                                                                shell=True,
+                                                                output='screen')])]
 
 
     # Warehouse mongodb server
@@ -133,13 +152,13 @@ def generate_move_group_test_description(*args, gtest_name: SomeSubstitutionsTyp
         run_move_group_node,
         static_tf,
         robot_state_publisher,
-        fake_joint_driver_node,
+        ros2_control_node,
         mongodb_server_node,
         ompl_constraint_test,
         launch_testing.actions.ReadyToTest()
-    ]), {'run_move_group_node': run_move_group_node,
+    ] + load_controllers), {'run_move_group_node': run_move_group_node,
          'static_tf': static_tf,
          'robot_state_publisher': robot_state_publisher,
-         'fake_joint_driver_node': fake_joint_driver_node,
+         'ros2_control_node': ros2_control_node,
          'mongodb_server_node': mongodb_server_node,
          'ompl_constraint_test': ompl_constraint_test}
