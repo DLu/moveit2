@@ -212,7 +212,7 @@ void RobotInteraction::decideActiveJoints(const std::string& group)
     for (const srdf::Model::VirtualJoint& joint : vj)
       if (joint.name_ == robot_model_->getRootJointName())
       {
-        if (joint.type_ != "fixed")
+        if (joint.type_ == "planar" || joint.type_ == "floating")
         {
           JointInteraction v;
           v.connecting_link = joint.child_link_;
@@ -220,10 +220,10 @@ void RobotInteraction::decideActiveJoints(const std::string& group)
           if (!v.parent_frame.empty() && v.parent_frame[0] == '/')
             v.parent_frame = v.parent_frame.substr(1);
           v.joint_name = joint.name_;
-          if (joint.type_ == "floating")
-            v.dof = 6;
-          else
+          if (joint.type_ == "planar")
             v.dof = 3;
+          else
+            v.dof = 6;
           // take the max of the X, Y, Z extent
           v.size = std::max(std::max(aabb[1] - aabb[0], aabb[3] - aabb[2]), aabb[5] - aabb[4]);
           active_vj_.push_back(v);

@@ -46,8 +46,8 @@ namespace moveit
 {
 namespace core
 {
-PlanarJointModel::PlanarJointModel(const std::string& name, MotionModel motion_model)
-  : JointModel(name), angular_distance_weight_(1.0), motion_model_(motion_model)
+PlanarJointModel::PlanarJointModel(const std::string& name)
+  : JointModel(name), angular_distance_weight_(1.0), motion_model_(HOLONOMIC)
 {
   type_ = PLANAR;
 
@@ -141,40 +141,17 @@ void PlanarJointModel::getVariableRandomPositionsNearBy(random_numbers::RandomNu
   normalizeRotation(values);
 }
 
-void PlanarJointModel::computeDiff(const double* from, const double* to,
-                                   double& dx, double& dy,
-                                   double& initial_turn, double& drive_angle, double& final_turn,
-                                   double& initial_time, double& drive_time, double& final_time,
-                                   double& total_time) const
+void computeTurnDriveTurnGeometry(const double* from, const double* to,
+                                  double& dx, double& dy,
+                                  double& initial_turn, double& drive_angle, double& final_turn)
 {
   dx = to[0] - from[0];
   dy = to[1] - from[1];
   drive_angle = atan2(dy, dx);
 
   initial_turn = angles::shortest_angular_distance(from[2], drive_angle);
-  final_turn = angles::shortest_angular_distance(drive_angle, to[2]);
-
-  double d = hypot(dx, dy);
-  if (variable_bounds_[0].velocity_bounded_ && false)
-  {
-    drive_time = d / variable_bounds_[0].max_velocity_;
-  }
-  else
-  {
-    drive_time = d;
-  }
-
-  if (variable_bounds_[2].velocity_bounded_ && false)
-  {
-    initial_time = initial_turn / variable_bounds_[2].max_velocity_;
-    final_time = final_turn / variable_bounds_[2].max_velocity_;
-  }
-  else
-  {
-    initial_time = initial_turn * angular_distance_weight_;
-    final_time = final_turn * angular_distance_weight_;
-  }
-  total_time = initial_time + drive_time + final_time;
+  drive_angle = from[2] + initial_turn;
+  final_turn = to[2] - drive_angle;
 }
 
 void PlanarJointModel::interpolate(const double* from, const double* to, const double t, double* state) const
@@ -205,12 +182,18 @@ void PlanarJointModel::interpolate(const double* from, const double* to, const d
   }
   else if (motion_model_ == DIFF_DRIVE)
   {
-    double dx, dy, initial_turn, drive_angle, final_turn, initial_time, drive_time, final_time, total_time;
-    computeDiff(from, to, dx, dy, initial_turn, drive_angle, final_turn, initial_time, drive_time, final_time, total_time);
+    double dx, dy, initial_turn, drive_angle, final_turn;
+    computeTurnDriveTurnGeometry(from, to, dx, dy, initial_turn, drive_angle, final_turn);
 
-    double initial_frac = initial_time / total_time;
-    double drive_frac = drive_time / total_time;
-    double final_frac = final_time / total_time;
+    double initial_d = fabs(initial_turn) * angular_distance_weight_;
+    double drive_d = hypot(dx, dy);
+    double final_d = fabs(final_turn) * angular_distance_weight_;
+
+    double total_d = initial_d + drive_d + final_d;
+
+    double initial_frac = initial_d / total_d;
+    double drive_frac = drive_d / total_d;
+    double final_frac = final_d / total_d;
 
     double pct;
     if (t <= initial_frac)
@@ -250,14 +233,15 @@ double PlanarJointModel::distance(const double* values1, const double* values2) 
   }
   else if (motion_model_ == DIFF_DRIVE)
   {
+    // Shortcut to avoid extraneous calculations
     if (values1[0] == values2[0] && values1[1] == values2[1] && values1[2] == values2[2])
     {
       return 0.0;
     }
-    double dx, dy, initial_turn, drive_angle, final_turn, initial_time, drive_time, final_time, total_time;
-    computeDiff(values1, values2, dx, dy, initial_turn, drive_angle, final_turn, initial_time, drive_time, final_time,
-                total_time);
-    return total_time;
+
+    double dx, dy, initial_turn, drive_angle, final_turn;
+    computeTurnDriveTurnGeometry(values1, values2, dx, dy, initial_turn, drive_angle, final_turn);
+    return hypot(dx, dy) + angular_distance_weight_ * (fabs(initial_turn) + fabs(final_turn));
   }
 
   return 0.0;
