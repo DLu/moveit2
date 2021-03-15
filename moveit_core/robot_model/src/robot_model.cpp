@@ -943,8 +943,6 @@ JointModel* RobotModel::constructJointModel(const urdf::Joint* urdf_joint, const
           new_joint_model = new FixedJointModel(virtual_joint.name_);
         else if (virtual_joint.type_ == "planar")
           new_joint_model = new PlanarJointModel(virtual_joint.name_);
-        else if (virtual_joint.type_ == "diff_drive")
-          new_joint_model = new PlanarJointModel(virtual_joint.name_, PlanarJointModel::MotionModel::DIFF_DRIVE);
         else if (virtual_joint.type_ == "floating")
           new_joint_model = new FloatingJointModel(virtual_joint.name_);
         if (new_joint_model)
