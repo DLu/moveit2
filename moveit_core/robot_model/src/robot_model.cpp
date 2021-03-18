@@ -869,12 +869,12 @@ static inline VariableBounds jointBoundsFromURDF(const urdf::Joint* urdf_joint)
   return b;
 }
 
-static inline std::vector<moveit_msgs::JointLimits> jointBoundsFromSRDF(const srdf::Model::VirtualJoint& srdf_joint)
+static inline std::vector<moveit_msgs::msg::JointLimits> jointBoundsFromSRDF(const srdf::Model::VirtualJoint& srdf_joint)
 {
-  std::vector<moveit_msgs::JointLimits> limits;
+  std::vector<moveit_msgs::msg::JointLimits> limits;
   for (const srdf::Model::Limit& limit : srdf_joint.limits_)
   {
-    moveit_msgs::JointLimits limit_msg;
+    moveit_msgs::msg::JointLimits limit_msg;
     limit_msg.joint_name = limit.name_;
     if (isfinite(limit.velocity_))
     {
