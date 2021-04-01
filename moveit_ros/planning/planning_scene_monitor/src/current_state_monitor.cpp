@@ -144,11 +144,12 @@ void planning_scene_monitor::CurrentStateMonitor::startStateMonitor(const std::s
     if (tf_buffer_ && !robot_model_->getMultiDOFJointModels().empty())
     {
       using callback_t = std::function<void(const tf2_msgs::msg::TFMessage::ConstSharedPtr)>;
+      tf_buffer_->setUsingDedicatedThread(true);
       transform_subscriber_ = node_->create_subscription<tf2_msgs::msg::TFMessage>(
-          "/tf", tf2_ros::DynamicListenerQoS(),
+          "/tf", tf2_ros::DynamicListenerQoS(25),
           callback_t(std::bind(&CurrentStateMonitor::transfromCallback, this, std::placeholders::_1, false)));
       static_transfrom_subscriber_ = node_->create_subscription<tf2_msgs::msg::TFMessage>(
-          "/tf_static", tf2_ros::StaticListenerQoS(),
+          "/tf_static", tf2_ros::StaticListenerQoS(25),
           callback_t(std::bind(&CurrentStateMonitor::transfromCallback, this, std::placeholders::_1, true)));
     }
     state_monitor_started_ = true;
