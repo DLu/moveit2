@@ -50,7 +50,7 @@
 using namespace std::chrono_literals;  // for s, ms, etc.
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("moveit_servo.servo_calcs");
-constexpr auto ROS_LOG_THROTTLE_PERIOD = std::chrono::nanoseconds(30ms).count();
+constexpr auto ROS_LOG_THROTTLE_PERIOD = std::chrono::milliseconds(3000).count();
 
 namespace moveit_servo
 {
@@ -203,8 +203,7 @@ void ServoCalcs::start()
     // I do not know of a robot that takes acceleration commands.
     // However, some controllers check that this data is non-empty.
     // Send all zeros, for now.
-    std::vector<double> acceleration(num_joints_);
-    point.accelerations = acceleration;
+    point.accelerations.resize(num_joints_);
   }
   initial_joint_trajectory->points.push_back(point);
   last_sent_command_ = std::move(initial_joint_trajectory);
@@ -583,7 +582,7 @@ bool ServoCalcs::internalServoUpdate(Eigen::ArrayXd& delta_theta,
   composeJointTrajMessage(internal_joint_state_, joint_trajectory);
 
   // Enforce SRDF position limits, might halt if needed, set prev_vel to 0
-  if (!enforcePositionLimits())
+  if (!enforcePositionLimits(joint_trajectory))
   {
     suddenHalt(joint_trajectory);
     status_ = StatusCode::JOINT_BOUND;
@@ -810,22 +809,24 @@ void ServoCalcs::enforceVelLimits(Eigen::ArrayXd& delta_theta)
   }
 }
 
-bool ServoCalcs::enforcePositionLimits()
+bool ServoCalcs::enforcePositionLimits(trajectory_msgs::msg::JointTrajectory& joint_trajectory) const
 {
+  // Halt if we're past a joint margin and joint velocity is moving even farther past
   bool halting = false;
+  double joint_angle = 0;
 
   for (auto joint : joint_model_group_->getActiveJointModels())
   {
-    // Halt if we're past a joint margin and joint velocity is moving even farther past
-    double joint_angle = 0;
     for (std::size_t c = 0; c < original_joint_state_.name.size(); ++c)
     {
+      // Use the most recent robot joint state
       if (original_joint_state_.name[c] == joint->getName())
       {
         joint_angle = original_joint_state_.position.at(c);
         break;
       }
     }
+
     if (!current_state_->satisfiesPositionBounds(joint, -parameters_->joint_limit_margin))
     {
       const std::vector<moveit_msgs::msg::JointLimits> limits = joint->getVariableBoundsMsg();
@@ -833,9 +834,14 @@ bool ServoCalcs::enforcePositionLimits()
       // Joint limits are not defined for some joints. Skip them.
       if (!limits.empty())
       {
-        if ((current_state_->getJointVelocities(joint)[0] < 0 &&
+        // Check if pending velocity command is moving in the right direction
+        auto joint_itr =
+            std::find(joint_trajectory.joint_names.begin(), joint_trajectory.joint_names.end(), joint->getName());
+        auto joint_idx = std::distance(joint_trajectory.joint_names.begin(), joint_itr);
+
+        if ((joint_trajectory.points[0].velocities[joint_idx] < 0 &&
              (joint_angle < (limits[0].min_position + parameters_->joint_limit_margin))) ||
-            (current_state_->getJointVelocities(joint)[0] > 0 &&
+            (joint_trajectory.points[0].velocities[joint_idx] > 0 &&
              (joint_angle > (limits[0].max_position - parameters_->joint_limit_margin))))
         {
           rclcpp::Clock& clock = *node_->get_clock();
@@ -843,10 +849,12 @@ bool ServoCalcs::enforcePositionLimits()
                                       node_->get_name()
                                           << " " << joint->getName() << " close to a position limit. Halting.");
           halting = true;
+          break;
         }
       }
     }
   }
+
   return !halting;
 }
 
@@ -865,8 +873,10 @@ void ServoCalcs::suddenHalt(trajectory_msgs::msg::JointTrajectory& joint_traject
   // being 0 seconds in the past, the smallest supported timestep is added as time from start to the trajectory point.
   point.time_from_start = rclcpp::Duration(0, 1);
 
-  point.positions.resize(num_joints_);
-  point.velocities.resize(num_joints_);
+  if (parameters_->publish_joint_positions)
+    point.positions.resize(num_joints_);
+  if (parameters_->publish_joint_velocities)
+    point.velocities.resize(num_joints_);
 
   // Assert the following loop is safe to execute
   assert(original_joint_state_.position.size() >= num_joints_);

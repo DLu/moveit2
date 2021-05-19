@@ -6,7 +6,10 @@ The MoveIt Motion Planning Framework for **ROS 2**. For ROS 1, see [MoveIt 1](ht
 
 ## Continuous Integration Status
 
-[![Format](https://github.com/ros-planning/moveit2/actions/workflows/format.yml/badge.svg?branch=main)](https://github.com/ros-planning/moveit2/actions/workflows/format.yml?branch=main) [![BuildAndTest](https://github.com/ros-planning/moveit2/actions/workflows/industrial_ci_action.yml/badge.svg?branch=main)](https://github.com/ros-planning/moveit2/actions/workflows/industrial_ci_action.yml?branch=main) [![codecov](https://codecov.io/gh/ros-planning/moveit2/branch/main/graph/badge.svg?token=W7uHKcY0ly)](https://codecov.io/gh/ros-planning/moveit2)
+
+[![Formatting (pre-commit)](https://github.com/ros-planning/moveit2/actions/workflows/format.yaml/badge.svg?branch=main)](https://github.com/ros-planning/moveit2/actions/workflows/format.yaml?query=branch%3Amain)
+[![Build and Test (Foxy)](https://github.com/ros-planning/moveit2/actions/workflows/build_and_test.yaml/badge.svg?branch=main)](https://github.com/ros-planning/moveit2/actions/workflows/build_and_test.yaml?query=branch%3Amain)
+[![Code Coverage](https://codecov.io/gh/ros-planning/moveit2/branch/main/graph/badge.svg?token=W7uHKcY0ly)](https://codecov.io/gh/ros-planning/moveit2)
 
 ## General MoveIt Documentation
 
@@ -41,7 +44,7 @@ This open source project is maintained by supporters from around the world — s
   <img src="https://picknik.ai/assets/images/logo.jpg" width="168">
 </a>
 
-[PickNik Robotics](https://picknik.ai/) is leading and organizing the development of MoveIt 2.
+[PickNik Inc.](https://picknik.ai/) is leading and organizing the development of MoveIt 2.
 If you would like to support this project, please contact hello@picknik.ai
 
 <a href="http://rosin-project.eu">
