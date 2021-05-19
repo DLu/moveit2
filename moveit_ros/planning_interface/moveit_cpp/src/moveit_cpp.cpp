@@ -65,7 +65,7 @@ MoveItCpp::MoveItCpp(const rclcpp::Node::SharedPtr& node, const Options& options
   if (!loadPlanningSceneMonitor(options.planning_scene_monitor_options))
   {
     const std::string error = "Unable to configure planning scene monitor";
-    RCLCPP_FATAL(LOGGER, error);
+    RCLCPP_FATAL_STREAM(LOGGER, error);
     throw std::runtime_error(error);
   }
 
@@ -74,7 +74,7 @@ MoveItCpp::MoveItCpp(const rclcpp::Node::SharedPtr& node, const Options& options
   {
     const std::string error = "Unable to construct robot model. Please make sure all needed information is on the "
                               "parameter server.";
-    RCLCPP_FATAL(LOGGER, error);
+    RCLCPP_FATAL_STREAM(LOGGER, error);
     throw std::runtime_error(error);
   }
 
@@ -82,7 +82,7 @@ MoveItCpp::MoveItCpp(const rclcpp::Node::SharedPtr& node, const Options& options
   if (load_planning_pipelines && !loadPlanningPipelines(options.planning_pipeline_options))
   {
     const std::string error = "Failed to load planning pipelines from parameter server";
-    RCLCPP_FATAL(LOGGER, error);
+    RCLCPP_FATAL_STREAM(LOGGER, error);
     throw std::runtime_error(error);
   }
 
