@@ -52,8 +52,28 @@ public:
   {
   }
 
-  void initialize(const rclcpp::Node::SharedPtr& /* node */, const std::string& /* parameter_namespace */) override
+  double getParam(const rclcpp::Node::SharedPtr& node, const std::string& parameter_namespace,
+                  const std::string& parameter_name, double default_value) const
   {
+    std::string full_name = parameter_namespace.empty() ? parameter_name : parameter_namespace + "." + parameter_name;
+    double value;
+    if (!node->get_parameter(full_name, value))
+    {
+      RCLCPP_INFO(LOGGER, "Param '%s' was not set. Using default value: %f", full_name.c_str(), default_value);
+      return default_value;
+    }
+    else
+    {
+      RCLCPP_INFO(LOGGER, "Param '%s' was set to %f", full_name.c_str(), value);
+      return value;
+    }
+  }
+
+  void initialize(const rclcpp::Node::SharedPtr& node, const std::string& parameter_namespace) override
+  {
+    path_tolerance_ = getParam(node, parameter_namespace, "path_tolerance", 0.1);
+    resample_dt_ = getParam(node, parameter_namespace, "resample_dt", 0.1);
+    min_angle_change_ = getParam(node, parameter_namespace, "min_angle_change", 0.001);
   }
 
   std::string getDescription() const override
@@ -69,7 +89,7 @@ public:
     if (result && res.trajectory_)
     {
       RCLCPP_DEBUG(LOGGER, " Running '%s'", getDescription().c_str());
-      TimeOptimalTrajectoryGeneration totg;
+      TimeOptimalTrajectoryGeneration totg(path_tolerance_, resample_dt_, min_angle_change_);
       if (!totg.computeTimeStamps(*res.trajectory_, req.max_velocity_scaling_factor,
                                   req.max_acceleration_scaling_factor))
       {
@@ -80,6 +100,10 @@ public:
 
     return result;
   }
+protected:
+  double path_tolerance_;
+  double resample_dt_;
+  double min_angle_change_;
 };
 
 }  // namespace default_planner_request_adapters
