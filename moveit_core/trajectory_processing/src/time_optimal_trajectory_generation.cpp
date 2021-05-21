@@ -1002,7 +1002,7 @@ bool TimeOptimalTrajectoryGeneration::computeTimeStamps(robot_trajectory::RobotT
   moveit::core::RobotState waypoint = moveit::core::RobotState(trajectory.getWayPoint(0));
   trajectory.clear();
   double last_t = 0;
-  for (size_t sample = 0; sample < sample_count; ++sample)
+  for (size_t sample = 0; sample <= sample_count; ++sample)
   {
     // always sample the end of the trajectory as well
     double t = std::min(parameterized.getDuration(), sample * resample_dt_);
