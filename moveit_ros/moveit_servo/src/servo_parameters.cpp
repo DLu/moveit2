@@ -47,31 +47,6 @@ using namespace std::placeholders;  // for _1, _2 etc.
 
 namespace moveit_servo
 {
-template <typename T>
-void declareOrGetParam(T& output_value, const std::string& param_name, const rclcpp::Node::SharedPtr& node,
-                       const rclcpp::Logger& logger, const T default_value)
-{
-  try
-  {
-    if (node->has_parameter(param_name))
-    {
-      node->get_parameter<T>(param_name, output_value);
-    }
-    else
-    {
-      output_value = node->declare_parameter<T>(param_name, default_value);
-    }
-  }
-  catch (const rclcpp::exceptions::InvalidParameterTypeException& e)
-  {
-    RCLCPP_WARN_STREAM(logger, "InvalidParameterTypeException(" << param_name << "): " << e.what());
-    RCLCPP_ERROR_STREAM(logger, "Error getting parameter \'" << param_name << "\', check parameter type in YAML file");
-    throw e;
-  }
-
-  RCLCPP_INFO_STREAM(logger, "Found parameter - " << param_name << ": " << output_value);
-}
-
 rcl_interfaces::msg::SetParametersResult
 ServoParameters::setParametersCallback(std::vector<rclcpp::Parameter> parameters)
 {
@@ -160,15 +135,10 @@ ServoParameters::SharedConstPtr ServoParameters::makeServoParameters(const rclcp
   // Collision checking
   declareOrGetParam<bool>(parameters->check_collisions, ns + ".check_collisions", node, logger);
   declareOrGetParam<double>(parameters->collision_check_rate, ns + ".collision_check_rate", node, logger);
-  declareOrGetParam<std::string>(parameters->collision_check_type, ns + ".collision_check_type", node, logger);
   declareOrGetParam<double>(parameters->self_collision_proximity_threshold, ns + ".self_collision_proximity_threshold",
                             node, logger);
   declareOrGetParam<double>(parameters->scene_collision_proximity_threshold,
                             ns + ".scene_collision_proximity_threshold", node, logger);
-  declareOrGetParam<double>(parameters->collision_distance_safety_factor, ns + ".collision_distance_safety_factor",
-                            node, logger);
-  declareOrGetParam<double>(parameters->min_allowable_collision_distance, ns + ".min_allowable_collision_distance",
-                            node, logger);
 
   // Begin input checking
   if (parameters->publish_period <= 0.)
@@ -239,11 +209,6 @@ ServoParameters::SharedConstPtr ServoParameters::makeServoParameters(const rclcp
     return nullptr;
   }
   // Collision checking
-  if (parameters->collision_check_type != "threshold_distance" && parameters->collision_check_type != "stop_distance")
-  {
-    RCLCPP_WARN(logger, "collision_check_type must be 'threshold_distance' or 'stop_distance'");
-    return nullptr;
-  }
   if (parameters->self_collision_proximity_threshold <= 0.)
   {
     RCLCPP_WARN(logger, "Parameter 'self_collision_proximity_threshold' should be "
@@ -264,18 +229,6 @@ ServoParameters::SharedConstPtr ServoParameters::makeServoParameters(const rclcp
   if (parameters->collision_check_rate <= 0)
   {
     RCLCPP_WARN(logger, "Parameter 'collision_check_rate' should be "
-                        "greater than zero. Check yaml file.");
-    return nullptr;
-  }
-  if (parameters->collision_distance_safety_factor < 1)
-  {
-    RCLCPP_WARN(logger, "Parameter 'collision_distance_safety_factor' should be "
-                        "greater than or equal to 1. Check yaml file.");
-    return nullptr;
-  }
-  if (parameters->min_allowable_collision_distance <= 0)
-  {
-    RCLCPP_WARN(logger, "Parameter 'min_allowable_collision_distance' should be "
                         "greater than zero. Check yaml file.");
     return nullptr;
   }

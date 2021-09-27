@@ -57,7 +57,11 @@
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <std_msgs/msg/int8.hpp>
 #include <std_srvs/srv/empty.hpp>
+#if __has_include(<tf2_eigen/tf2_eigen.hpp>)
+#include <tf2_eigen/tf2_eigen.hpp>
+#else
 #include <tf2_eigen/tf2_eigen.h>
+#endif
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
 
 // moveit_servo
@@ -127,9 +131,6 @@ protected:
   /** \brief Parse the incoming joint msg for the joints of our MoveGroup */
   void updateJoints();
 
-  /** \brief Finds the worst case stopping time based on accel limits, for collision checking */
-  void calculateWorstCaseStopTime();
-
   /**
    * Checks a JointJog msg for valid (non-NaN) velocities
    * @param cmd the desired joint servo command
@@ -160,9 +161,6 @@ protected:
   void suddenHalt(trajectory_msgs::msg::JointTrajectory& joint_trajectory) const;
   void suddenHalt(sensor_msgs::msg::JointState& joint_state,
                   const std::vector<const moveit::core::JointModel*>& joints_to_halt) const;
-
-  /** \brief  Scale the delta theta to match joint velocity/acceleration limits */
-  void enforceVelLimits(Eigen::ArrayXd& delta_theta);
 
   /** \brief Avoid overshooting joint limits
       \return Vector of the joints that would move farther past position margin limits
@@ -333,7 +331,7 @@ protected:
 
   const int gazebo_redundant_message_count_ = 30;
 
-  uint num_joints_;
+  unsigned int num_joints_;
 
   // True -> allow drift in this dimension. In the command frame. [x, y, z, roll, pitch, yaw]
   std::array<bool, 6> drift_dimensions_ = { { false, false, false, false, false, false } };
@@ -359,7 +357,5 @@ protected:
   // dynamic parameters
   std::string robot_link_command_frame_;
   rcl_interfaces::msg::SetParametersResult robotLinkCommandFrameCallback(const rclcpp::Parameter& parameter);
-
-  friend class ServoFixture;
 };
 }  // namespace moveit_servo

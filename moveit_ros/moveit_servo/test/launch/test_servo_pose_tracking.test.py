@@ -56,6 +56,11 @@ def generate_servo_test_description(*args, gtest_name: SomeSubstitutionsType):
     robot_description_semantic = {
         "robot_description_semantic": robot_description_semantic_config
     }
+    joint_limits_yaml = {
+        "robot_description_planning": load_yaml(
+            "moveit_resources_panda_moveit_config", "config/joint_limits.yaml"
+        )
+    }
 
     # Get parameters for the Pose Tracking node
     pose_tracking_yaml = load_yaml("moveit_servo", "config/pose_tracking_settings.yaml")
@@ -89,7 +94,7 @@ def generate_servo_test_description(*args, gtest_name: SomeSubstitutionsType):
 
     # Load controllers
     load_controllers = []
-    for controller in ["panda_arm_controller", "joint_state_controller"]:
+    for controller in ["panda_arm_controller", "joint_state_broadcaster"]:
         load_controllers += [
             ExecuteProcess(
                 cmd=["ros2 run controller_manager spawner.py {}".format(controller)],
@@ -131,6 +136,7 @@ def generate_servo_test_description(*args, gtest_name: SomeSubstitutionsType):
             pose_tracking_params,
             servo_params,
             kinematics_yaml,
+            joint_limits_yaml,
         ],
         output="screen",
     )

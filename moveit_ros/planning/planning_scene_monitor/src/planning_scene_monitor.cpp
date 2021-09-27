@@ -42,8 +42,16 @@
 
 #include <tf2/exceptions.h>
 #include <tf2/LinearMath/Transform.h>
+#if __has_include(<tf2_eigen/tf2_eigen.hpp>)
+#include <tf2_eigen/tf2_eigen.hpp>
+#else
 #include <tf2_eigen/tf2_eigen.h>
+#endif
+#if __has_include(<tf2_geometry_msgs/tf2_geometry_msgs.hpp>)
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#endif
 #include <moveit/profiler/profiler.h>
 
 #include <boost/algorithm/string/join.hpp>
@@ -103,7 +111,9 @@ PlanningSceneMonitor::PlanningSceneMonitor(const rclcpp::Node::SharedPtr& node,
   std::vector<std::string> new_args = rclcpp::NodeOptions().arguments();
   new_args.push_back("--ros-args");
   new_args.push_back("-r");
-  new_args.push_back(std::string("__node:=") + node_->get_name() + "_private");
+  // Add random ID to prevent warnings about multiple publishers within the same node
+  new_args.push_back(std::string("__node:=") + node_->get_name() + "_private_" +
+                     std::to_string(reinterpret_cast<std::size_t>(this)));
   new_args.push_back("--");
   pnode_ = std::make_shared<rclcpp::Node>("_", node_->get_namespace(), rclcpp::NodeOptions().arguments(new_args));
   // use same callback queue as root_nh_
@@ -205,7 +215,7 @@ void PlanningSceneMonitor::initialize(const planning_scene::PlanningScenePtr& sc
     node_->get_parameter_or(robot_description_ + "_planning.shape_transform_cache_lookup_wait_time", temp_wait_time,
                             temp_wait_time);
 
-  shape_transform_cache_lookup_wait_time_ = rclcpp::Duration((int64_t)temp_wait_time * 1.0e+9);
+  shape_transform_cache_lookup_wait_time_ = rclcpp::Duration(std::chrono::nanoseconds((int64_t)temp_wait_time));
 
   state_update_pending_ = false;
   // Period for 0.1 sec
@@ -386,7 +396,7 @@ void PlanningSceneMonitor::scenePublishingThread()
   {
     moveit_msgs::msg::PlanningScene msg;
     {
-      occupancy_map_monitor::OccMapTree::ReadLock lock;
+      collision_detection::OccMapTree::ReadLock lock;
       if (octomap_monitor_)
         lock = octomap_monitor_->getOcTreePtr()->reading();
       scene_->getPlanningSceneMsg(msg);
@@ -413,7 +423,7 @@ void PlanningSceneMonitor::scenePublishingThread()
             is_full = true;
           else
           {
-            occupancy_map_monitor::OccMapTree::ReadLock lock;
+            collision_detection::OccMapTree::ReadLock lock;
             if (octomap_monitor_)
               lock = octomap_monitor_->getOcTreePtr()->reading();
             scene_->getPlanningSceneDiffMsg(msg);
@@ -444,7 +454,7 @@ void PlanningSceneMonitor::scenePublishingThread()
           }
           if (is_full)
           {
-            occupancy_map_monitor::OccMapTree::ReadLock lock;
+            collision_detection::OccMapTree::ReadLock lock;
             if (octomap_monitor_)
               lock = octomap_monitor_->getOcTreePtr()->reading();
             scene_->getPlanningSceneMsg(msg);
@@ -1022,7 +1032,7 @@ bool PlanningSceneMonitor::waitForCurrentRobotState(const rclcpp::Time& t, doubl
   while (last_robot_motion_time_ < t &&  // Wait until the state update actually reaches the scene.
          timeout > std::chrono::seconds())
   {
-    RCLCPP_DEBUG(LOGGER, "last robot motion: %i ago", (t - last_robot_motion_time_).seconds());
+    RCLCPP_DEBUG(LOGGER, "last robot motion: %f ago", (t - last_robot_motion_time_).seconds());
     new_scene_update_condition_.wait_for(lock, boost::chrono::nanoseconds((int)timeout.count()));
     timeout -= std::chrono::system_clock::now() - start;  // compute remaining wait_time
   }
@@ -1031,7 +1041,7 @@ bool PlanningSceneMonitor::waitForCurrentRobotState(const rclcpp::Time& t, doubl
   if (!success && prev_robot_motion_time != last_robot_motion_time_)
     RCLCPP_WARN(LOGGER, "Maybe failed to update robot state, time diff: %.3fs", (t - last_robot_motion_time_).seconds());
 
-  RCLCPP_DEBUG(LOGGER, "sync done: robot motion: %i scene update: %i", (t - last_robot_motion_time_).seconds(),
+  RCLCPP_DEBUG(LOGGER, "sync done: robot motion: %f scene update: %f", (t - last_robot_motion_time_).seconds(),
                (t - last_update_time_).seconds());
   return success;
 }

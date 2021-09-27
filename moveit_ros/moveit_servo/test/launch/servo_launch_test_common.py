@@ -75,6 +75,11 @@ def generate_servo_test_description(
     robot_description_semantic = {
         "robot_description_semantic": robot_description_semantic_config
     }
+    joint_limits_yaml = {
+        "robot_description_planning": load_yaml(
+            "moveit_resources_panda_moveit_config", "config/joint_limits.yaml"
+        )
+    }
 
     # ros2_control using FakeSystem as hardware
     ros2_controllers_path = os.path.join(
@@ -94,7 +99,7 @@ def generate_servo_test_description(
 
     # Load controllers
     load_controllers = []
-    for controller in ["panda_arm_controller", "joint_state_controller"]:
+    for controller in ["panda_arm_controller", "joint_state_broadcaster"]:
         load_controllers += [
             ExecuteProcess(
                 cmd=["ros2 run controller_manager spawner.py {}".format(controller)],
@@ -140,6 +145,7 @@ def generate_servo_test_description(
                     servo_params,
                     robot_description,
                     robot_description_semantic,
+                    joint_limits_yaml,
                 ],
                 extra_arguments=[{"use_intra_process_comm": True}],
             ),

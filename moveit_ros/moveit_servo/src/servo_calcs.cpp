@@ -46,6 +46,7 @@
 
 // #include <moveit_servo/make_shared_from_pool.h> // TODO(adamp): create an issue about this
 #include <moveit_servo/servo_calcs.h>
+#include <moveit_servo/enforce_limits.hpp>
 
 using namespace std::chrono_literals;  // for s, ms, etc.
 
@@ -106,6 +107,11 @@ ServoCalcs::ServoCalcs(rclcpp::Node::SharedPtr node,
   // MoveIt Setup
   current_state_ = planning_scene_monitor_->getStateMonitor()->getCurrentState();
   joint_model_group_ = current_state_->getJointModelGroup(parameters_->move_group_name);
+  if (joint_model_group_ == nullptr)
+  {
+    RCLCPP_ERROR_STREAM(LOGGER, "Invalid move group name: `" << parameters_->move_group_name << "`");
+    throw std::runtime_error("Invalid move group name");
+  }
   prev_joint_velocity_ = Eigen::ArrayXd::Zero(joint_model_group_->getActiveJointModels().size());
 
   // Subscribe to command topics
@@ -295,10 +301,6 @@ void ServoCalcs::calculateSingleIteration()
   // 1) in case the getCommandFrameTransform() method is being used
   // 2) so the low-pass filters are up to date and don't cause a jump
   updateJoints();
-
-  // Calculate and publish worst stop time for collision checker
-  if (parameters_->check_collisions && parameters_->collision_check_type == "stop_distance")
-    calculateWorstCaseStopTime();
 
   // Update from latest state
   current_state_ = planning_scene_monitor_->getStateMonitor()->getCurrentState();
@@ -554,7 +556,7 @@ bool ServoCalcs::internalServoUpdate(Eigen::ArrayXd& delta_theta,
   internal_joint_state_ = original_joint_state_;
 
   // Enforce SRDF Velocity, Acceleration limits
-  enforceVelLimits(delta_theta);
+  delta_theta = enforceVelocityLimits(joint_model_group_, parameters_->publish_period, delta_theta);
 
   // Apply collision scaling
   double collision_scale = collision_velocity_scale_;
@@ -765,30 +767,6 @@ double ServoCalcs::velocityScalingFactorForSingularity(const Eigen::VectorXd& co
   return velocity_scale;
 }
 
-void ServoCalcs::enforceVelLimits(Eigen::ArrayXd& delta_theta)
-{
-  // Convert to joint angle velocities for checking and applying joint specific velocity limits.
-  Eigen::ArrayXd velocity = delta_theta / parameters_->publish_period;
-
-  std::size_t joint_delta_index{ 0 };
-  double velocity_scaling_factor{ 1.0 };
-  for (const moveit::core::JointModel* joint : joint_model_group_->getActiveJointModels())
-  {
-    const auto& bounds = joint->getVariableBounds(joint->getName());
-    if (bounds.velocity_bounded_ && velocity(joint_delta_index) != 0.0)
-    {
-      const double unbounded_velocity = velocity(joint_delta_index);
-      // Clamp each joint velocity to a joint specific [min_velocity, max_velocity] range.
-      const auto bounded_velocity = std::min(std::max(unbounded_velocity, bounds.min_velocity_), bounds.max_velocity_);
-      velocity_scaling_factor = std::min(velocity_scaling_factor, bounded_velocity / unbounded_velocity);
-    }
-    ++joint_delta_index;
-  }
-
-  // Convert back to joint angle increments.
-  delta_theta = velocity_scaling_factor * velocity * parameters_->publish_period;
-}
-
 std::vector<const moveit::core::JointModel*>
 ServoCalcs::enforcePositionLimits(sensor_msgs::msg::JointState& joint_state) const
 {
@@ -809,7 +787,7 @@ ServoCalcs::enforcePositionLimits(sensor_msgs::msg::JointState& joint_state) con
 
     if (!joint->satisfiesPositionBounds(&joint_angle, -parameters_->joint_limit_margin))
     {
-      const std::vector<moveit_msgs::msg::JointLimits> limits = joint->getVariableBoundsMsg();
+      const std::vector<moveit_msgs::msg::JointLimits>& limits = joint->getVariableBoundsMsg();
 
       // Joint limits are not defined for some joints. Skip them.
       if (!limits.empty())
@@ -904,60 +882,6 @@ void ServoCalcs::updateJoints()
 
   // Cache the original joints in case they need to be reset
   original_joint_state_ = internal_joint_state_;
-}
-
-// Calculate worst case joint stop time, for collision checking
-void ServoCalcs::calculateWorstCaseStopTime()
-{
-  std::string joint_name = "";
-  moveit::core::JointModel::Bounds kinematic_bounds;
-  double accel_limit = 0;
-  double joint_velocity = 0;
-  double worst_case_stop_time = 0;
-  for (size_t jt_state_idx = 0; jt_state_idx < internal_joint_state_.velocity.size(); ++jt_state_idx)
-  {
-    joint_name = internal_joint_state_.name[jt_state_idx];
-
-    // Get acceleration limit for this joint
-    for (auto joint_model : joint_model_group_->getActiveJointModels())
-    {
-      if (joint_model->getName() == joint_name)
-      {
-        kinematic_bounds = joint_model->getVariableBounds();
-        // Some joints do not have acceleration limits
-        if (kinematic_bounds[0].acceleration_bounded_)
-        {
-          // Be conservative when calculating overall acceleration limit from min and max limits
-          accel_limit =
-              std::min(fabs(kinematic_bounds[0].min_acceleration_), fabs(kinematic_bounds[0].max_acceleration_));
-        }
-        else
-        {
-          rclcpp::Clock& clock = *node_->get_clock();
-          RCLCPP_ERROR_STREAM_THROTTLE(LOGGER, clock, ROS_LOG_THROTTLE_PERIOD,
-                                       "An acceleration limit is not defined for this joint; minimum stop distance "
-                                       "should not be used for collision checking");
-
-          // TODO(adamp): figure out what to do here. We definitely don't want to allow 'stop_distance' collision
-          // checking with no acceleration limits defined.
-        }
-        break;
-      }
-    }
-
-    // Get the current joint velocity
-    joint_velocity = internal_joint_state_.velocity[jt_state_idx];
-
-    // Calculate worst case stop time
-    worst_case_stop_time = std::max(worst_case_stop_time, fabs(joint_velocity / accel_limit));
-  }
-
-  // publish message
-  {
-    auto msg = std::make_unique<std_msgs::msg::Float64>();
-    msg->data = worst_case_stop_time;
-    worst_case_stop_time_pub_->publish(std::move(msg));
-  }
 }
 
 bool ServoCalcs::checkValidCommand(const control_msgs::msg::JointJog& cmd)
