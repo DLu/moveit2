@@ -178,9 +178,6 @@ install(
     lib/${PROJECT_NAME}
 )
 
-#install(TARGETS ${PROJECT_NAME}_updater
-#  DESTINATION lib/${PROJECT_NAME})
-
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY resources DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY templates DESTINATION share/${PROJECT_NAME})
