@@ -169,6 +169,11 @@ ament_target_dependencies(
   "srdfdom"
 )
 
+set_target_properties(
+  ${PROJECT_NAME}_updater
+  PROPERTIES OUTPUT_NAME collisions_updater
+  PREFIX ""
+)
 
 install(
   TARGETS
