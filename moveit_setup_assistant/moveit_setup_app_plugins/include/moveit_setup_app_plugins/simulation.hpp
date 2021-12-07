@@ -51,6 +51,10 @@ public:
 
   bool isReady() const override
   {
+    // TODO
+    return false;
   }
+
+protected:
 };
 }  // namespace moveit_setup_app_plugins
