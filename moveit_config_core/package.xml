@@ -1,0 +1,16 @@
+<package>
+  <name>moveit_config_core</name>
+  <version>2.3.0</version>
+  <description>
+     Core files that other MoveIt configs can build on
+  </description>
+  <author email="davidvlu@gmail.com">David V. Lu!!</author>
+  <maintainer email="moveit_releasers@googlegroups.com">MoveIt Release Team</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
