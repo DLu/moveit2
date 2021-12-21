@@ -19,6 +19,7 @@
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>rviz2</run_depend>
   <run_depend>xacro</run_depend>
+  <run_depend>warehouse_ros_mongo</run_depend>
   <export>
     <build_type>ament_python</build_type>
   </export>
