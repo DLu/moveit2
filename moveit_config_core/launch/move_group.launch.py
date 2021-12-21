@@ -87,7 +87,7 @@ def generate_launch_description():
     move_group_params = [
         get_planning_parameters_config(core_config_path),
         kinematics_config,
-        sensors_config,
+        # sensors_config,
         trajectory_config,
         joint_limits_config,
         controller_config,
