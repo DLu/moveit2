@@ -7,7 +7,11 @@ from launch.substitutions import LaunchConfiguration
 
 from launch_ros.parameter_descriptions import ParameterValue
 
-from moveit_config_core import add_debuggable_node, DeclareBooleanLaunchArg
+from moveit_config_core import (
+    add_debuggable_node,
+    get_planning_parameters_config,
+    DeclareBooleanLaunchArg,
+)
 
 
 def generate_launch_description():
@@ -57,12 +61,6 @@ def generate_launch_description():
         value_type=str,
     )
 
-    planning_parameters = [
-        core_config_path,
-        "/config/",
-        LaunchConfiguration("pipeline"),
-        "_planning.yaml",
-    ]
     kinematics_config = [moveit_config_path, "/config/kinematics.yaml"]
     sensors_config = [moveit_config_path, "/config/sensors_3d.yaml"]
     trajectory_config = [moveit_config_path, "/config/trajectory_execution.yaml"]
@@ -87,7 +85,7 @@ def generate_launch_description():
     }
 
     move_group_params = [
-        planning_parameters,
+        get_planning_parameters_config(core_config_path),
         kinematics_config,
         sensors_config,
         trajectory_config,

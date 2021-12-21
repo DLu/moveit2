@@ -33,3 +33,12 @@ def add_debuggable_node(ld, package, executable, condition_name="debug", **kwarg
         **kwargs
     )
     ld.add_action(debug_node)
+
+
+def get_planning_parameters_config(core_config_path):
+    return [
+        core_config_path,
+        "/config/",
+        LaunchConfiguration("pipeline"),
+        "_planning.yaml",
+    ]
