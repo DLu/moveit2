@@ -10,7 +10,15 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <run_depend>ament_index_python</run_depend>
+  <run_depend>launch</run_depend>
+  <run_depend>launch_ros</run_depend>
+  <run_depend>moveit_planners_ompl</run_depend>
+  <run_depend>moveit_ros_move_group</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>rviz2</run_depend>
+  <run_depend>xacro</run_depend>
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_python</build_type>
   </export>
 </package>
