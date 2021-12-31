@@ -35,8 +35,8 @@
 /* Author: Dave Coleman */
 
 // SA
-#include "robot_poses_widget.h"
-#include "header_widget.h"
+#include <moveit_setup_srdf_plugins/robot_poses_widget.hpp>
+#include <moveit_setup_framework/qt/helper_widgets.hpp>
 #include <moveit_msgs/msg/joint_limits.hpp>
 // Qt
 #include <QApplication>
@@ -56,13 +56,12 @@
 #include <moveit_msgs/msg/display_robot_state.hpp>
 #include <moveit/planning_scene/planning_scene.h>
 
-namespace moveit_setup_assistant
+namespace moveit_setup_srdf_plugins
 {
 // ******************************************************************************************
 // Outer User Interface for MoveIt Configuration Assistant
 // ******************************************************************************************
-RobotPosesWidget::RobotPosesWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
-  : SetupScreenWidget(parent), config_data_(config_data)
+void RobotPosesWidget::onInit()
 {
   // Set pointer to null so later we can tell if we need to delete it
   joint_list_layout_ = nullptr;
@@ -72,12 +71,12 @@ RobotPosesWidget::RobotPosesWidget(QWidget* parent, const MoveItConfigDataPtr& c
 
   // Top Header Area ------------------------------------------------
 
-  HeaderWidget* header =
-      new HeaderWidget("Define Robot Poses",
-                       "Create poses for the robot. Poses are defined as sets of joint values for "
-                       "particular planning groups. This is useful for things like <i>home position</i>."
-                       "The first pose for each robot will be its initial pose in simulation.",
-                       this);
+  auto header = new moveit_setup_framework::HeaderWidget(
+      "Define Robot Poses",
+      "Create poses for the robot. Poses are defined as sets of joint values for "
+      "particular planning groups. This is useful for things like <i>home position</i>."
+      "The first pose for each robot will be its initial pose in simulation.",
+      this);
   layout->addWidget(header);
 
   // Create contents screens ---------------------------------------
@@ -305,7 +304,7 @@ void RobotPosesWidget::showNewScreen()
   pose_name_field_->setText("");
 
   // Announce that this widget is in modal mode
-  Q_EMIT isModal(true);
+  Q_EMIT setModalMode(true);
 }
 
 // ******************************************************************************************
@@ -352,10 +351,10 @@ void RobotPosesWidget::showPose(srdf::Model::GroupState* pose)
   publishJoints();
 
   // Unhighlight all links
-  Q_EMIT unhighlightAll();
+  rviz_panel_->unhighlightAll();
 
   // Highlight group
-  Q_EMIT highlightGroup(pose->group_);
+  rviz_panel_->highlightGroup(pose->group_);
 }
 
 // ******************************************************************************************
@@ -370,7 +369,7 @@ void RobotPosesWidget::showDefaultPose()
   publishJoints();
 
   // Unhighlight all links
-  Q_EMIT unhighlightAll();
+  rviz_panel_->unhighlightAll();
 }
 
 // ******************************************************************************************
@@ -382,7 +381,7 @@ void RobotPosesWidget::playPoses()
   for (std::vector<srdf::Model::GroupState>::iterator pose_it = config_data_->srdf_->group_states_.begin();
        pose_it != config_data_->srdf_->group_states_.end(); ++pose_it)
   {
-    ROS_INFO_STREAM("Showing pose " << pose_it->name_);
+    RCLCPP_INFO_STREAM(setup_step_.getLogger(), "Showing pose " << pose_it->name_);
     showPose(&(*pose_it));
     ros::Duration(0.05).sleep();
     QApplication::processEvents();
@@ -431,7 +430,7 @@ void RobotPosesWidget::edit(int row)
   stacked_widget_->setCurrentIndex(1);
 
   // Announce that this widget is in modal mode
-  Q_EMIT isModal(true);
+  Q_EMIT setModalMode(true);
 
   // Manually send the load joint sliders signal
   loadJointSliders(QString(pose->group_.c_str()));
@@ -523,8 +522,8 @@ void RobotPosesWidget::loadJointSliders(const QString& selected)
   publishJoints();
 
   // Highlight the planning group
-  Q_EMIT unhighlightAll();
-  Q_EMIT highlightGroup(group_name);
+  rviz_panel_->unhighlightAll();
+  rviz_panel_->highlightGroup(group_name);
 }
 
 // ******************************************************************************************
@@ -681,7 +680,7 @@ void RobotPosesWidget::doneEditing()
   stacked_widget_->setCurrentIndex(0);
 
   // Announce that this widget is done with modal mode
-  Q_EMIT isModal(false);
+  Q_EMIT setModalMode(false);
 }
 
 // ******************************************************************************************
@@ -693,7 +692,7 @@ void RobotPosesWidget::cancelEditing()
   stacked_widget_->setCurrentIndex(0);
 
   // Announce that this widget is done with modal mode
-  Q_EMIT isModal(false);
+  Q_EMIT setModalMode(false);
 }
 
 // ******************************************************************************************
@@ -904,4 +903,7 @@ void SliderWidget::changeJointSlider()
   Q_EMIT jointValueChanged(joint_model_->getName(), value);
 }
 
-}  // namespace moveit_setup_assistant
+}  // namespace moveit_setup_srdf_plugins
+
+#include <pluginlib/class_list_macros.hpp>  // NOLINT
+PLUGINLIB_EXPORT_CLASS(moveit_setup_srdf_plugins::RobotPosesWidget, moveit_setup_framework::SetupStepWidget)

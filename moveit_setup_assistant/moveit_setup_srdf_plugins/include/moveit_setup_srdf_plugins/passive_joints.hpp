@@ -32,29 +32,26 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: YOUR_NAME */
+/* Author: David V. Lu!! */
 #pragma once
 
 #include <moveit_setup_framework/setup_step.hpp>
 
-namespace PACKAGE_NAME
+namespace moveit_setup_srdf_plugins
 {
-class SETUP_STEP : public moveit_setup_framework::SetupStep
+class PassiveJoints : public moveit_setup_framework::SetupStep
 {
 public:
   std::string getName() const override
   {
-    return "SETUP_STEP";
+    return "Passive Joints";
   }
 
   void onInit() override;
 
   bool isReady() const override
   {
-    // TODO
     return false;
   }
-
-protected:
 };
-}  // namespace PACKAGE_NAME
+}  // namespace moveit_setup_srdf_plugins

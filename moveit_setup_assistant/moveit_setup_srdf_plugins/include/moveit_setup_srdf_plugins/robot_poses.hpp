@@ -32,14 +32,26 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: YOUR_NAME */
+/* Author: David V. Lu!! */
+#pragma once
 
-#include <PACKAGE_NAME/SETUP_STEP.hpp>
+#include <moveit_setup_framework/setup_step.hpp>
 
-namespace PACKAGE_NAME
+namespace moveit_setup_srdf_plugins
 {
-void SETUP_STEP::onInit()
+class RobotPoses : public moveit_setup_framework::SetupStep
 {
-}
+public:
+  std::string getName() const override
+  {
+    return "Robot Poses";
+  }
 
-}  // namespace PACKAGE_NAME
+  void onInit() override;
+
+  bool isReady() const override
+  {
+    return false;
+  }
+};
+}  // namespace moveit_setup_srdf_plugins

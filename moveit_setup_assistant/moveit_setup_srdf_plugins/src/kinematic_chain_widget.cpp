@@ -267,7 +267,7 @@ void KinematicChainWidget::itemSelected()
   QTreeWidgetItem* item = link_tree_->currentItem();
   if (item != nullptr)
   {
-    Q_EMIT unhighlightAll();
+    rviz_panel_->unhighlightAll();
 
     std::string name = item->text(0).toStdString();
 
@@ -276,7 +276,7 @@ void KinematicChainWidget::itemSelected()
       return;
 
     // Check that item is not empty
-    Q_EMIT highlightLink(item->text(0).toStdString(), QColor(255, 0, 0));
+    rviz_panel_->highlightLink(item->text(0).toStdString(), QColor(255, 0, 0));
   }
 }
 }  // namespace moveit_setup_assistant

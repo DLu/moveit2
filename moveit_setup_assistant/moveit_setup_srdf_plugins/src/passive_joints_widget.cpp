@@ -35,8 +35,8 @@
 /* Author: Dave Coleman */
 
 // SA
-#include "passive_joints_widget.h"
-#include "header_widget.h"
+#include <moveit_setup_srdf_plugins/passive_joints_widget.hpp>
+#include <moveit_setup_framework/qt/helper_widgets.hpp>
 #include "double_list_widget.h"
 
 // Qt
@@ -45,23 +45,22 @@
 #include <QMessageBox>
 #include <QTableWidget>
 
-namespace moveit_setup_assistant
+namespace moveit_setup_srdf_plugins
 {
 // ******************************************************************************************
 // Constructor
 // ******************************************************************************************
-PassiveJointsWidget::PassiveJointsWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
-  : SetupScreenWidget(parent), config_data_(config_data)
+void PassiveJointsWidget::onInit()
 {
   // Basic widget container
   QVBoxLayout* layout = new QVBoxLayout();
 
   // Top Header Area ------------------------------------------------
 
-  HeaderWidget* header = new HeaderWidget("Define Passive Joints",
-                                          "Specify the set of passive joints (not actuated). Joint "
-                                          "state is not expected to be published for these joints.",
-                                          this);
+  auto header = new moveit_setup_framework::HeaderWidget("Define Passive Joints",
+                                                         "Specify the set of passive joints (not actuated). Joint "
+                                                         "state is not expected to be published for these joints.",
+                                                         this);
   layout->addWidget(header);
 
   // Joints edit widget
@@ -134,7 +133,7 @@ void PassiveJointsWidget::selectionUpdated()
 void PassiveJointsWidget::previewSelectedJoints(const std::vector<std::string>& joints)
 {
   // Unhighlight all links
-  Q_EMIT unhighlightAll();
+  rviz_panel_->unhighlightAll();
 
   for (const std::string& joint : joints)
   {
@@ -155,8 +154,11 @@ void PassiveJointsWidget::previewSelectedJoints(const std::vector<std::string>& 
     }
 
     // Highlight link
-    Q_EMIT highlightLink(link, QColor(255, 0, 0));
+    rviz_panel_->highlightLink(link, QColor(255, 0, 0));
   }
 }
 
-}  // namespace moveit_setup_assistant
+}  // namespace moveit_setup_srdf_plugins
+
+#include <pluginlib/class_list_macros.hpp>  // NOLINT
+PLUGINLIB_EXPORT_CLASS(moveit_setup_srdf_plugins::PassiveJointsWidget, moveit_setup_framework::SetupStepWidget)

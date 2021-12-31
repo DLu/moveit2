@@ -34,8 +34,8 @@
 /* Author: Mohamad Ayman */
 
 // SA
-#include "simulation_widget.h"
-#include "header_widget.h"
+#include <moveit_setup_app_plugins/simulation_widget.hpp>
+#include <moveit_setup_framework/qt/helper_widgets.hpp>
 
 // Qt
 #include <QColor>
@@ -50,13 +50,12 @@
 
 #include <regex>
 
-namespace moveit_setup_assistant
+namespace moveit_setup_app_plugins
 {
 // ******************************************************************************************
 // Constructor
 // ******************************************************************************************
-SimulationWidget::SimulationWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
-  : SetupScreenWidget(parent), config_data_(config_data)
+void SimulationWidget::onInit()
 {
   // Basic widget container
   QVBoxLayout* layout = new QVBoxLayout();
@@ -64,11 +63,12 @@ SimulationWidget::SimulationWidget(QWidget* parent, const MoveItConfigDataPtr& c
 
   // Top Header Area ------------------------------------------------
 
-  HeaderWidget* header = new HeaderWidget("Simulate With Gazebo",
-                                          "The following tool will auto-generate the URDF changes needed "
-                                          "for Gazebo compatibility with ROSControl and MoveIt. The "
-                                          "needed changes are shown in green.",
-                                          this);
+  auto header =
+      new moveit_setup_framework::HeaderWidget("Simulate With Gazebo",
+                                               "The following tool will auto-generate the URDF changes needed "
+                                               "for Gazebo compatibility with ROSControl and MoveIt. The "
+                                               "needed changes are shown in green.",
+                                               this);
   layout->addWidget(header);
 
   // Spacing
@@ -227,4 +227,7 @@ void SimulationWidget::copyURDF(const QString& /*link*/)
   simulation_text_->copy();
 }
 
-}  // namespace moveit_setup_assistant
+}  // namespace moveit_setup_app_plugins
+
+#include <pluginlib/class_list_macros.hpp>  // NOLINT
+PLUGINLIB_EXPORT_CLASS(moveit_setup_app_plugins::SimulationWidget, moveit_setup_framework::SetupStepWidget)

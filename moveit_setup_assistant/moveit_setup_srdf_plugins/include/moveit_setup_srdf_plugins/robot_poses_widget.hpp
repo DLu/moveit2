@@ -48,15 +48,12 @@ class QTableWidget;
 class QVBoxLayout;
 
 // SA
-#ifndef Q_MOC_RUN
-#include <moveit/setup_assistant/tools/moveit_config_data.h>
-#endif
+#include <moveit_setup_framework/qt/setup_step_widget.hpp>
+#include <moveit_setup_srdf_plugins/robot_poses.hpp>
 
-#include "setup_screen_widget.h"  // a base class for screens in the setup assistant
-
-namespace moveit_setup_assistant
+namespace moveit_setup_srdf_plugins
 {
-class RobotPosesWidget : public SetupScreenWidget
+class RobotPosesWidget : public moveit_setup_framework::SetupStepWidget
 {
   Q_OBJECT
 
@@ -65,10 +62,15 @@ public:
   // Public Functions
   // ******************************************************************************************
 
-  RobotPosesWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
+  void onInit() override;
 
   /// Received when this widget is chosen from the navigation menu
   void focusGiven() override;
+
+  moveit_setup_framework::SetupStep& getSetupStep() override
+  {
+    return setup_step_;
+  }
 
   // ******************************************************************************************
   // Qt Components
@@ -141,8 +143,7 @@ private:
   // Variables
   // ******************************************************************************************
 
-  /// Contains all the configuration data for the setup assistant
-  moveit_setup_assistant::MoveItConfigDataPtr config_data_;
+  RobotPoses setup_step_;
 
   /// Pointer to currently edited group state
   srdf::Model::GroupState* current_edit_pose_;
@@ -279,7 +280,7 @@ private:
   // ******************************************************************************************
 };
 
-}  // namespace moveit_setup_assistant
+}  // namespace moveit_setup_srdf_plugins
 
 // Declare std::string as metatype so we can use it in a signal
 Q_DECLARE_METATYPE(std::string)

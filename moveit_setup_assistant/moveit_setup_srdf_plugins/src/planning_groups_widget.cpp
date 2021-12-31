@@ -47,8 +47,8 @@
 */
 // ******************************************************************************************
 
-#include "header_widget.h"
-#include "planning_groups_widget.h"
+#include <moveit_setup_framework/qt/helper_widgets.hpp>
+#include <moveit_setup_srdf_plugins/planning_groups_widget.hpp>
 #include "double_list_widget.h"      // for joints, links and subgroups pages
 #include "kinematic_chain_widget.h"  // for kinematic chain page
 #include "group_edit_widget.h"       // for group rename page
@@ -70,7 +70,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/depth_first_search.hpp>
 
-namespace moveit_setup_assistant
+namespace moveit_setup_srdf_plugins
 {
 // Name of rviz topic in ROS
 static const std::string VIS_TOPIC_NAME = "planning_components_visualization";
@@ -95,14 +95,13 @@ protected:
 // ******************************************************************************************
 // Constructor
 // ******************************************************************************************
-PlanningGroupsWidget::PlanningGroupsWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
-  : SetupScreenWidget(parent), config_data_(config_data)
+void PlanningGroupsWidget::onInit()
 {
   // Basic widget container
   QVBoxLayout* layout = new QVBoxLayout();
 
   // Top Label Area ------------------------------------------------
-  HeaderWidget* header = new HeaderWidget(
+  auto header = new moveit_setup_framework::HeaderWidget(
       "Define Planning Groups",
       "Create and edit 'joint model' groups for your robot based on joint collections, "
       "link collections, kinematic chains or subgroups. "
@@ -443,10 +442,10 @@ void PlanningGroupsWidget::previewSelected()
   PlanGroupType plan_group = item->data(0, Qt::UserRole).value<PlanGroupType>();
 
   // Unhighlight all links
-  Q_EMIT unhighlightAll();
+  rviz_panel_->unhighlightAll();
 
   // Highlight the group
-  Q_EMIT(highlightGroup(plan_group.group_->name_));
+  rviz_panel_->highlightGroup(plan_group.group_->name_));
 }
 
 // ******************************************************************************************
@@ -1168,8 +1167,8 @@ bool PlanningGroupsWidget::saveGroupScreen()
       // Check if this eef's parent group references old group name. if so, update it
       if (eef_it->parent_group_.compare(old_group_name) == 0)  // same name
       {
-        ROS_DEBUG_STREAM_NAMED("setup_assistant",
-                               "Changed eef '" << eef_it->name_ << "' to new parent group name " << group_name);
+        RCLCPP_DEBUG_STREAM_NAMED(setup_step_.getLogger(), "setup_assistant",
+                                  "Changed eef '" << eef_it->name_ << "' to new parent group name " << group_name);
         eef_it->parent_group_ = group_name;  // updated
         config_data_->changes |= MoveItConfigData::END_EFFECTORS;
       }
@@ -1177,8 +1176,8 @@ bool PlanningGroupsWidget::saveGroupScreen()
       // Check if this eef's group references old group name. if so, update it
       if (eef_it->component_group_.compare(old_group_name) == 0)  // same name
       {
-        ROS_DEBUG_STREAM_NAMED("setup_assistant",
-                               "Changed eef '" << eef_it->name_ << "' to new group name " << group_name);
+        RCLCPP_DEBUG_STREAM_NAMED(setup_step_.getLogger(), "setup_assistant",
+                                  "Changed eef '" << eef_it->name_ << "' to new group name " << group_name);
         eef_it->component_group_ = group_name;  // updated
         config_data_->changes |= MoveItConfigData::END_EFFECTORS;
       }
@@ -1191,9 +1190,9 @@ bool PlanningGroupsWidget::saveGroupScreen()
       // Check if this eef's parent group references old group name. if so, update it
       if (state_it->group_.compare(old_group_name) == 0)  // same name
       {
-        ROS_DEBUG_STREAM_NAMED("setup_assistant", "Changed group state group '" << state_it->group_
-                                                                                << "' to new parent group name "
-                                                                                << group_name);
+        RCLCPP_DEBUG_STREAM_NAMED(setup_step_.getLogger(), "setup_assistant",
+                                  "Changed group state group '" << state_it->group_ << "' to new parent group name "
+                                                                << group_name);
         state_it->group_ = group_name;  // updated
         config_data_->changes |= MoveItConfigData::POSES;
       }
@@ -1367,7 +1366,7 @@ void PlanningGroupsWidget::showMainScreen()
   stacked_widget_->setCurrentIndex(0);
 
   // Announce that this widget is not in modal mode anymore
-  Q_EMIT isModal(false);
+  Q_EMIT setModalMode(false);
 }
 
 // ******************************************************************************************
@@ -1378,7 +1377,7 @@ void PlanningGroupsWidget::changeScreen(int index)
   stacked_widget_->setCurrentIndex(index);
 
   // Announce this widget's mode
-  Q_EMIT isModal(index != 0);
+  Q_EMIT setModalMode(index != 0);
 }
 
 // ******************************************************************************************
@@ -1387,7 +1386,7 @@ void PlanningGroupsWidget::changeScreen(int index)
 void PlanningGroupsWidget::previewSelectedLink(const std::vector<std::string>& links)
 {
   // Unhighlight all links
-  Q_EMIT unhighlightAll();
+  rviz_panel_->unhighlightAll();
 
   for (const std::string& link : links)
   {
@@ -1397,7 +1396,7 @@ void PlanningGroupsWidget::previewSelectedLink(const std::vector<std::string>& l
     }
 
     // Highlight link
-    Q_EMIT highlightLink(link, QColor(255, 0, 0));
+    rviz_panel_->highlightLink(link, QColor(255, 0, 0));
   }
 }
 
@@ -1407,7 +1406,7 @@ void PlanningGroupsWidget::previewSelectedLink(const std::vector<std::string>& l
 void PlanningGroupsWidget::previewSelectedJoints(const std::vector<std::string>& joints)
 {
   // Unhighlight all links
-  Q_EMIT unhighlightAll();
+  rviz_panel_->unhighlightAll();
 
   for (const std::string& joint : joints)
   {
@@ -1428,7 +1427,7 @@ void PlanningGroupsWidget::previewSelectedJoints(const std::vector<std::string>&
     }
 
     // Highlight link
-    Q_EMIT highlightLink(link, QColor(255, 0, 0));
+    rviz_panel_->highlightLink(link, QColor(255, 0, 0));
   }
 }
 
@@ -1438,16 +1437,16 @@ void PlanningGroupsWidget::previewSelectedJoints(const std::vector<std::string>&
 void PlanningGroupsWidget::previewSelectedSubgroup(const std::vector<std::string>& groups)
 {
   // Unhighlight all links
-  Q_EMIT unhighlightAll();
+  rviz_panel_->unhighlightAll();
 
   for (const std::string& group : groups)
   {
     // Highlight group
-    Q_EMIT highlightGroup(group);
+    rviz_panel_->highlightGroup(group);
   }
 }
 
-}  // namespace moveit_setup_assistant
+}  // namespace moveit_setup_srdf_plugins
 
 // ******************************************************************************************
 // ******************************************************************************************
@@ -1459,3 +1458,6 @@ PlanGroupType::PlanGroupType(srdf::Model::Group* group, const moveit_setup_assis
   : group_(group), type_(type)
 {
 }
+
+#include <pluginlib/class_list_macros.hpp>  // NOLINT
+PLUGINLIB_EXPORT_CLASS(moveit_setup_srdf_plugins::PlanningGroupsWidget, moveit_setup_framework::SetupStepWidget)

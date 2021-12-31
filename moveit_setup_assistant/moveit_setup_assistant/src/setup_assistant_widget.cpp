@@ -92,6 +92,12 @@ SetupAssistantWidget::SetupAssistantWidget(rviz_common::ros_integration::RosNode
   setup_steps.push_back("moveit_setup_core_plugins::StartScreenWidget");
   setup_steps.push_back("moveit_setup_srdf_plugins::DefaultCollisionsWidget");
   setup_steps.push_back("moveit_setup_srdf_plugins::VirtualJointsWidget");
+  setup_steps.push_back("moveit_setup_srdf_plugins::PlanningGroupsWidget");
+  setup_steps.push_back("moveit_setup_srdf_plugins::RobotPosesWidget");
+  setup_steps.push_back("moveit_setup_srdf_plugins::EndEffectorsWidget");
+  setup_steps.push_back("moveit_setup_srdf_plugins::PassiveJointsWidget");
+  setup_steps.push_back("moveit_setup_app_plugins::ROSControllersWidget");
+  setup_steps.push_back("moveit_setup_app_plugins::SimulationWidget");
   setup_steps.push_back("moveit_setup_app_plugins::PerceptionWidget");
   setup_steps.push_back("moveit_setup_core_plugins::AuthorInformation");
   setup_steps.push_back("moveit_setup_core_plugins::ConfigurationFilesWidget");

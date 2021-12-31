@@ -35,8 +35,8 @@
 /* Author: Dave Coleman */
 
 // SA
-#include "end_effectors_widget.h"
-#include "header_widget.h"
+#include <moveit_setup_srdf_plugins/end_effectors_widget.hpp>
+#include <moveit_setup_framework/qt/helper_widgets.hpp>
 
 // Qt
 #include <QApplication>
@@ -55,25 +55,25 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-namespace moveit_setup_assistant
+namespace moveit_setup_srdf_plugins
 {
 // ******************************************************************************************
 // Constructor
 // ******************************************************************************************
-EndEffectorsWidget::EndEffectorsWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
-  : SetupScreenWidget(parent), config_data_(config_data)
+void EndEffectorsWidget::onInit()
 {
   // Basic widget container
   QVBoxLayout* layout = new QVBoxLayout();
 
   // Top Header Area ------------------------------------------------
 
-  HeaderWidget* header = new HeaderWidget("Define End Effectors",
-                                          "Setup your robot's end effectors. These are planning groups "
-                                          "corresponding to grippers or tools, attached to a parent "
-                                          "planning group (an arm). The specified parent link is used as the "
-                                          "reference frame for IK attempts.",
-                                          this);
+  auto header =
+      new moveit_setup_framework::HeaderWidget("Define End Effectors",
+                                               "Setup your robot's end effectors. These are planning groups "
+                                               "corresponding to grippers or tools, attached to a parent "
+                                               "planning group (an arm). The specified parent link is used as the "
+                                               "reference frame for IK attempts.",
+                                               this);
   layout->addWidget(header);
 
   // Create contents screens ---------------------------------------
@@ -246,7 +246,7 @@ void EndEffectorsWidget::showNewScreen()
   stacked_widget_->setCurrentIndex(1);
 
   // Announce that this widget is in modal mode
-  Q_EMIT isModal(true);
+  Q_EMIT setModalMode(true);
 }
 
 // ******************************************************************************************
@@ -273,10 +273,10 @@ void EndEffectorsWidget::previewClicked(int /*row*/, int /*column*/)
   srdf::Model::EndEffector* effector = findEffectorByName(selected[0]->text().toStdString());
 
   // Unhighlight all links
-  Q_EMIT unhighlightAll();
+  rviz_panel_->unhighlightAll();
 
   // Highlight group
-  Q_EMIT highlightGroup(effector->component_group_);
+  rviz_panel_->highlightGroup(effector->component_group_);
 }
 
 // ******************************************************************************************
@@ -289,10 +289,10 @@ void EndEffectorsWidget::previewClickedString(const QString& name)
     return;
 
   // Unhighlight all links
-  Q_EMIT unhighlightAll();
+  rviz_panel_->unhighlightAll();
 
   // Highlight group
-  Q_EMIT highlightGroup(name.toStdString());
+  rviz_panel_->highlightGroup(name.toStdString());
 }
 
 // ******************************************************************************************
@@ -356,7 +356,7 @@ void EndEffectorsWidget::edit(const std::string& name)
   stacked_widget_->setCurrentIndex(1);
 
   // Announce that this widget is in modal mode
-  Q_EMIT isModal(true);
+  Q_EMIT setModalMode(true);
 }
 
 // ******************************************************************************************
@@ -580,7 +580,7 @@ void EndEffectorsWidget::doneEditing()
   stacked_widget_->setCurrentIndex(0);
 
   // Announce that this widget is not in modal mode
-  Q_EMIT isModal(false);
+  Q_EMIT setModalMode(false);
 }
 
 // ******************************************************************************************
@@ -595,7 +595,7 @@ void EndEffectorsWidget::cancelEditing()
   previewClicked(0, 0);  // the number parameters are actually meaningless
 
   // Announce that this widget is not in modal mode
-  Q_EMIT isModal(false);
+  Q_EMIT setModalMode(false);
 }
 
 // ******************************************************************************************
@@ -666,4 +666,7 @@ void EndEffectorsWidget::focusGiven()
   loadParentComboBox();
 }
 
-}  // namespace moveit_setup_assistant
+}  // namespace moveit_setup_srdf_plugins
+
+#include <pluginlib/class_list_macros.hpp>  // NOLINT
+PLUGINLIB_EXPORT_CLASS(moveit_setup_srdf_plugins::EndEffectorsWidget, moveit_setup_framework::SetupStepWidget)

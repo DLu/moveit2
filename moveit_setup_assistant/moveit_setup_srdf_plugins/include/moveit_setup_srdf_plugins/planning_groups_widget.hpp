@@ -42,17 +42,14 @@ class QStackedWidget;
 class QTreeWidget;
 class QTreeWidgetItem;
 
-// Setup Asst
-#ifndef Q_MOC_RUN
-#include <moveit/setup_assistant/tools/moveit_config_data.h>
-#endif
-
-#include "setup_screen_widget.h"  // a base class for screens in the setup assistant
+// SA
+#include <moveit_setup_framework/qt/setup_step_widget.hpp>
+#include <moveit_setup_srdf_plugins/planning_groups.hpp>
 
 // Forward Declaration (outside of namespace for Qt)
 class PlanGroupType;
 
-namespace moveit_setup_assistant
+namespace moveit_setup_srdf_plugins
 {
 class DoubleListWidget;
 class KinematicChainWidget;
@@ -73,7 +70,7 @@ enum GroupType
 // CLASS
 // ******************************************************************************************
 // ******************************************************************************************
-class PlanningGroupsWidget : public SetupScreenWidget
+class PlanningGroupsWidget : public moveit_setup_framework::SetupStepWidget
 {
   Q_OBJECT
 
@@ -82,12 +79,17 @@ public:
   // Public Functions
   // ******************************************************************************************
 
-  PlanningGroupsWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
+  void onInit() override;
 
   void changeScreen(int index);
 
   /// Received when this widget is chosen from the navigation menu
   void focusGiven() override;
+
+  moveit_setup_framework::SetupStep& getSetupStep() override
+  {
+    return setup_step_;
+  }
 
 private Q_SLOTS:
 
@@ -166,8 +168,7 @@ private:
   // Variables
   // ******************************************************************************************
 
-  /// Contains all the configuration data for the setup assistant
-  moveit_setup_assistant::MoveItConfigDataPtr config_data_;
+  PlanningGroups setup_step_;
 
   /// Remember what group we are editing when an edit screen is being shown
   std::string current_edit_group_;
@@ -204,7 +205,7 @@ private:
   /// Switch to current groups view
   void showMainScreen();
 };
-}  // namespace moveit_setup_assistant
+}  // namespace moveit_setup_srdf_plugins
 
 // ******************************************************************************************
 // ******************************************************************************************
