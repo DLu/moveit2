@@ -37,11 +37,11 @@
 #pragma once
 
 // Qt
-class QComboBox;
-class QLineEdit;
-class QPushButton;
-class QStackedWidget;
-class QTableWidget;
+#include <QComboBox>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QStackedWidget>
+#include <QTableWidget>
 
 // SA
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>

@@ -37,14 +37,10 @@
 #pragma once
 
 #include <QWidget>
-class QComboBox;
-class QLabel;
-class QLineEdit;
-class QPushButton;
-
-#ifndef Q_MOC_RUN
-#include <moveit/setup_assistant/tools/moveit_config_data.h>
-#endif
+#include <QComboBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
 
 namespace moveit_setup_assistant
 {

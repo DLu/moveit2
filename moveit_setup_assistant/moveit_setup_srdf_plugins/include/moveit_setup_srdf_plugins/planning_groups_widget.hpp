@@ -37,10 +37,10 @@
 #pragma once
 
 // Qt
-class QPushButton;
-class QStackedWidget;
-class QTreeWidget;
-class QTreeWidgetItem;
+#include <QPushButton>
+#include <QStackedWidget>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 
 // SA
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>

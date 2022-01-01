@@ -49,9 +49,9 @@
 
 #include <moveit_setup_framework/qt/helper_widgets.hpp>
 #include <moveit_setup_srdf_plugins/planning_groups_widget.hpp>
-#include "double_list_widget.h"      // for joints, links and subgroups pages
-#include "kinematic_chain_widget.h"  // for kinematic chain page
-#include "group_edit_widget.h"       // for group rename page
+#include <moveit_setup_framework/qt/double_list_widget.hpp>      // for joints, links and subgroups pages
+#include <moveit_setup_srdf_plugins/kinematic_chain_widget.hpp>  // for kinematic chain page
+#include <moveit_setup_srdf_plugins/group_edit_widget.hpp>       // for group rename page
 // Qt
 #include <QApplication>
 #include <QComboBox>

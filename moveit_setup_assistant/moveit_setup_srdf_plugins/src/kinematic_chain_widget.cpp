@@ -43,7 +43,7 @@
 #include <QMessageBox>
 #include <QLabel>
 #include <QTreeWidget>
-#include "kinematic_chain_widget.h"
+#include <moveit_setup_srdf_plugins/kinematic_chain_widget.hpp>
 
 namespace moveit_setup_assistant
 {

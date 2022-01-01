@@ -37,14 +37,10 @@
 #pragma once
 
 #include <QWidget>
-class QLabel;
-class QLineEdit;
-class QTreeWidget;
-class QTreeWidgetItem;
-
-#ifndef Q_MOC_RUN
-#include <moveit/setup_assistant/tools/moveit_config_data.h>
-#endif
+#include <QLabel>
+#include <QLineEdit>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 
 namespace moveit_setup_assistant
 {
