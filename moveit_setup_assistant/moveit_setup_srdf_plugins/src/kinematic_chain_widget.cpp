@@ -45,13 +45,13 @@
 #include <QTreeWidget>
 #include <moveit_setup_srdf_plugins/kinematic_chain_widget.hpp>
 
-namespace moveit_setup_assistant
+namespace moveit_setup_srdf_plugins
 {
 // ******************************************************************************************
 // Constructor
 // ******************************************************************************************
-KinematicChainWidget::KinematicChainWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
-  : QWidget(parent), config_data_(config_data)
+KinematicChainWidget::KinematicChainWidget(QWidget* parent, moveit_setup_framework::RVizPanel* rviz_panel)
+  : QWidget(parent), rviz_panel_(rviz_panel)
 {
   // Basic widget container
   QVBoxLayout* layout = new QVBoxLayout();
@@ -138,19 +138,14 @@ KinematicChainWidget::KinematicChainWidget(QWidget* parent, const MoveItConfigDa
 // ******************************************************************************************
 // Load robot links into tree
 // ******************************************************************************************
-void KinematicChainWidget::setAvailable()
+void KinematicChainWidget::setAvailable(const LinkTree& link_tree)
 {
   // Only load the kinematic chain once
   if (kinematic_chain_loaded_)
     return;
 
-  // Retrieve pointer to the shared kinematic model
-  const moveit::core::RobotModelConstPtr& model = config_data_->getRobotModel();
-
-  // Get the root joint
-  const moveit::core::JointModel* root_joint = model->getRootJoint();
-
-  addLinktoTreeRecursive(root_joint->getChildLinkModel(), nullptr);
+  QTreeWidgetItem* root_item = addLinkChildRecursive(nullptr, link_tree);
+  link_tree_->addTopLevelItem(root_item);
 
   // Remember that we have loaded the chain
   kinematic_chain_loaded_ = true;
@@ -159,60 +154,17 @@ void KinematicChainWidget::setAvailable()
 // ******************************************************************************************
 //
 // ******************************************************************************************
-void KinematicChainWidget::addLinktoTreeRecursive(const moveit::core::LinkModel* link,
-                                                  const moveit::core::LinkModel* parent)
+QTreeWidgetItem* KinematicChainWidget::addLinkChildRecursive(QTreeWidgetItem* parent, const LinkTree& link)
 {
-  // Create new tree item
-  QTreeWidgetItem* new_item = new QTreeWidgetItem(link_tree_);
+  QTreeWidgetItem* new_item = new QTreeWidgetItem(parent);
+  new_item->setText(0, link.getName().c_str());
 
-  // Add item to tree
-  if (parent == nullptr)
+  for (const LinkTree& child : link.getChildren())
   {
-    new_item->setText(0, link->getName().c_str());
-    link_tree_->addTopLevelItem(new_item);
+    QTreeWidgetItem* new_child = addLinkChildRecursive(new_item, child);
+    new_item->addChild(new_child);
   }
-  else
-  {
-    for (int i = 0; i < link_tree_->topLevelItemCount(); ++i)
-    {
-      if (addLinkChildRecursive(link_tree_->topLevelItem(i), link, parent->getName()))
-      {
-        break;
-      }
-    }
-  }
-  for (std::size_t i = 0; i < link->getChildJointModels().size(); ++i)
-  {
-    addLinktoTreeRecursive(link->getChildJointModels()[i]->getChildLinkModel(), link);
-  }
-}
-
-// ******************************************************************************************
-//
-// ******************************************************************************************
-bool KinematicChainWidget::addLinkChildRecursive(QTreeWidgetItem* parent, const moveit::core::LinkModel* link,
-                                                 const std::string& parent_name)
-{
-  if (parent->text(0).toStdString() == parent_name)
-  {
-    QTreeWidgetItem* new_item = new QTreeWidgetItem(parent);
-    new_item->setText(0, link->getName().c_str());
-
-    parent->addChild(new_item);
-    return true;
-  }
-  else
-  {
-    for (int i = 0; i < parent->childCount(); ++i)
-    {
-      if (addLinkChildRecursive(parent->child(i), link, parent_name))
-      {
-        return true;
-      }
-    }
-  }
-
-  return false;
+  return new_item;
 }
 
 // ******************************************************************************************
@@ -279,4 +231,4 @@ void KinematicChainWidget::itemSelected()
     rviz_panel_->highlightLink(item->text(0).toStdString(), QColor(255, 0, 0));
   }
 }
-}  // namespace moveit_setup_assistant
+}  // namespace moveit_setup_srdf_plugins

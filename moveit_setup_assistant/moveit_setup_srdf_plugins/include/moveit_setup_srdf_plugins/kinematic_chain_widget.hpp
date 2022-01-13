@@ -42,7 +42,10 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 
-namespace moveit_setup_assistant
+#include <moveit_setup_framework/qt/rviz_panel.hpp>
+#include <moveit_setup_srdf_plugins/link_tree.hpp>
+
+namespace moveit_setup_srdf_plugins
 {
 class KinematicChainWidget : public QWidget
 {
@@ -57,18 +60,15 @@ public:
   // ******************************************************************************************
 
   /// Constructor
-  KinematicChainWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
+  KinematicChainWidget(QWidget* parent, moveit_setup_framework::RVizPanel* rviz_panel);
 
   /// Loads the available data list
-  void setAvailable();
+  void setAvailable(const LinkTree& link_tree);
 
   /// Set the link field with previous value
   void setSelected(const std::string& base_link, const std::string& tip_link);
 
-  void addLinktoTreeRecursive(const moveit::core::LinkModel* link, const moveit::core::LinkModel* parent);
-
-  bool addLinkChildRecursive(QTreeWidgetItem* parent, const moveit::core::LinkModel* link,
-                             const std::string& parent_name);
+  QTreeWidgetItem* addLinkChildRecursive(QTreeWidgetItem* parent, const LinkTree& link);
 
   // ******************************************************************************************
   // Qt Components
@@ -109,25 +109,17 @@ Q_SIGNALS:
   /// Event sent when user presses cancel button
   void cancelEditing();
 
-  /// Event for telling rviz to highlight a link of the robot
-  void highlightLink(const std::string& name, const QColor& /*_t2*/);
-
-  /// Event for telling rviz to unhighlight all links of the robot
-  void unhighlightAll();
-
 private:
   // ******************************************************************************************
   // Variables
   // ******************************************************************************************
 
-  /// Contains all the configuration data for the setup assistant
-  moveit_setup_assistant::MoveItConfigDataPtr config_data_;
-
   /// Remember if the chain tree has been loaded
   bool kinematic_chain_loaded_;
+  moveit_setup_framework::RVizPanel* rviz_panel_;
 
   // ******************************************************************************************
   // Private Functions
   // ******************************************************************************************
 };
-}  // namespace moveit_setup_assistant
+}  // namespace moveit_setup_srdf_plugins
