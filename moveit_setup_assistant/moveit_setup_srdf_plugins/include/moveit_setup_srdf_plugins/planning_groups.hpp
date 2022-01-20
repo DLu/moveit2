@@ -36,6 +36,7 @@
 #pragma once
 
 #include <moveit_setup_framework/setup_step.hpp>
+#include <moveit_setup_srdf_plugins/group_meta_config.hpp>
 
 namespace moveit_setup_srdf_plugins
 {
@@ -53,5 +54,10 @@ public:
   {
     return false;
   }
+
+  std::vector<std::string> getKinematicPlanners() const;
+
+protected:
+  std::shared_ptr<GroupMetaConfig> group_meta_config_;
 };
 }  // namespace moveit_setup_srdf_plugins

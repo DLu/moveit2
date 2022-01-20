@@ -35,11 +35,43 @@
 /* Author: David V. Lu!! */
 
 #include <moveit_setup_srdf_plugins/planning_groups.hpp>
+#include <moveit/kinematics_base/kinematics_base.h>
+#include <pluginlib/class_loader.hpp>  // for loading all avail kinematic planners
 
 namespace moveit_setup_srdf_plugins
 {
 void PlanningGroups::onInit()
 {
+  config_data_->registerType("group_meta", "moveit_setup_srdf_plugins::GroupMetaConfig");
+  group_meta_config_ = config_data_->get<GroupMetaConfig>("group_meta");
+}
+
+std::vector<std::string> PlanningGroups::getKinematicPlanners() const
+{
+  // load all avail kin planners
+  std::unique_ptr<pluginlib::ClassLoader<kinematics::KinematicsBase>> loader;
+  try
+  {
+    loader = std::make_unique<pluginlib::ClassLoader<kinematics::KinematicsBase>>("moveit_core",
+                                                                                  "kinematics::KinematicsBase");
+  }
+  catch (pluginlib::PluginlibException& ex)
+  {
+    throw std::runtime_error(std::string("Exception while creating class loader for kinematic "
+                                         "solver plugins: ") +
+                             ex.what());
+  }
+
+  std::vector<std::string> planners(loader->getDeclaredClasses());
+
+  // Warn if no plugins are found
+  if (planners.empty())
+  {
+    throw std::runtime_error("No MoveIt-compatible kinematics solvers found. Try "
+                             "installing moveit_kinematics (sudo apt-get install "
+                             "ros-${ROS_DISTRO}-moveit-kinematics)");
+  }
+  return planners;
 }
 
 }  // namespace moveit_setup_srdf_plugins

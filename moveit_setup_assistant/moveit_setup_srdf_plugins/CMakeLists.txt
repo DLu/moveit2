@@ -18,6 +18,7 @@ qt5_wrap_cpp(MOC_FILES
     include/moveit_setup_srdf_plugins/passive_joints_widget.hpp
     include/moveit_setup_srdf_plugins/planning_groups_widget.hpp
     include/moveit_setup_srdf_plugins/robot_poses_widget.hpp
+    include/moveit_setup_srdf_plugins/group_edit_widget.hpp
     include/moveit_setup_srdf_plugins/kinematic_chain_widget.hpp
     include/moveit_setup_srdf_plugins/rotated_header_view.hpp
     include/moveit_setup_srdf_plugins/virtual_joints_widget.hpp
@@ -37,9 +38,11 @@ add_library(${PROJECT_NAME}
     src/planning_groups_widget.cpp
     src/robot_poses.cpp
     src/robot_poses_widget.cpp
+    src/group_edit_widget.cpp
     src/group_meta_config.cpp
     src/link_tree.cpp
     src/kinematic_chain_widget.cpp
+    src/planning_groups.cpp
     src/rotated_header_view.cpp
     src/virtual_joints.cpp
     src/virtual_joints_widget.cpp
