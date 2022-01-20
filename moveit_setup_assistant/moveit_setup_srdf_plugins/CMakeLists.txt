@@ -37,6 +37,7 @@ add_library(${PROJECT_NAME}
     src/planning_groups_widget.cpp
     src/robot_poses.cpp
     src/robot_poses_widget.cpp
+    src/group_meta_config.cpp
     src/link_tree.cpp
     src/kinematic_chain_widget.cpp
     src/rotated_header_view.cpp
