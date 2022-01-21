@@ -40,6 +40,8 @@ namespace moveit_setup_srdf_plugins
 {
 void EndEffectors::onInit()
 {
+  srdf_config_ = config_data_->get<moveit_setup_framework::SRDFConfig>("srdf");
+  urdf_config_ = config_data_->get<moveit_setup_framework::URDFConfig>("urdf");
 }
 
 }  // namespace moveit_setup_srdf_plugins

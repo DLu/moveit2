@@ -65,6 +65,16 @@ public:
   bool isConfigured() const override;
   void loadPrevious(const std::string& package_path, const YAML::Node& node) override;
 
+  void deleteGroup(const std::string& group_name);
+  void renameGroup(const std::string& old_group_name, const std::string& new_group_name);
+
+  const GroupMetaData& getMetaData(const std::string& group_name) const
+  {
+    return group_meta_data_.at(group_name);
+  }
+
+  void setMetaData(const std::string& group_name, const GroupMetaData& meta_data);
+
   class GeneratedGroupMetaConfig : public moveit_setup_framework::YamlGeneratedFile
   {
   public:

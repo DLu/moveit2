@@ -87,9 +87,40 @@ public:
     return srdf_.groups_;
   }
 
+  std::vector<srdf::Model::GroupState>& getGroupStates()
+  {
+    return srdf_.group_states_;
+  }
+
   std::vector<srdf::Model::VirtualJoint>& getVirtualJoints()
   {
     return srdf_.virtual_joints_;
+  }
+
+  void removePoseByName(const std::string& pose_name)
+  {
+    for (std::vector<srdf::Model::GroupState>::iterator pose_it = srdf_.group_states_.begin();
+         pose_it != srdf_.group_states_.end(); ++pose_it)
+    {
+      if (pose_it->name_ == pose_name)
+      {
+        srdf_.group_states_.erase(pose_it);
+        return;
+      }
+    }
+  }
+
+  void removeEefByName(const std::string& eef_name)
+  {
+    for (std::vector<srdf::Model::EndEffector>::iterator eef_it = srdf_.end_effectors_.begin();
+         eef_it != srdf_.end_effectors_.end(); ++eef_it)
+    {
+      if (eef_it->name_ == eef_name)
+      {
+        srdf_.end_effectors_.erase(eef_it);
+        return;
+      }
+    }
   }
 
   class GeneratedSRDF : public GeneratedFile

@@ -44,17 +44,16 @@
 
 // SA
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>
+#include <moveit_setup_framework/qt/double_list_widget.hpp>
 #include <moveit_setup_srdf_plugins/planning_groups.hpp>
+#include <moveit_setup_srdf_plugins/kinematic_chain_widget.hpp>  // for kinematic chain page
+#include <moveit_setup_srdf_plugins/group_edit_widget.hpp>       // for group rename page
 
 // Forward Declaration (outside of namespace for Qt)
 class PlanGroupType;
 
 namespace moveit_setup_srdf_plugins
 {
-class DoubleListWidget;
-class KinematicChainWidget;
-class GroupEditWidget;
-
 // Custom Type
 enum GroupType
 {
@@ -158,9 +157,9 @@ private:
   // Stacked Layout SUBPAGES -------------------------------------------
 
   QWidget* groups_tree_widget_;
-  DoubleListWidget* joints_widget_;
-  DoubleListWidget* links_widget_;
-  DoubleListWidget* subgroups_widget_;
+  moveit_setup_framework::DoubleListWidget* joints_widget_;
+  moveit_setup_framework::DoubleListWidget* links_widget_;
+  moveit_setup_framework::DoubleListWidget* subgroups_widget_;
   KinematicChainWidget* chain_widget_;
   GroupEditWidget* group_edit_widget_;
 
@@ -188,9 +187,6 @@ private:
 
   /// Recursively build the SRDF tree
   void loadGroupsTreeRecursive(srdf::Model::Group& group_it, QTreeWidgetItem* parent);
-
-  // Convenience function for getting a group pointer
-  srdf::Model::Group* findGroupByName(const std::string& name);
 
   // Load edit screen
   void loadJointsScreen(srdf::Model::Group* this_group);
@@ -220,7 +216,7 @@ public:
   PlanGroupType()
   {
   }
-  PlanGroupType(srdf::Model::Group* group, const moveit_setup_assistant::GroupType type);
+  PlanGroupType(srdf::Model::Group* group, const moveit_setup_srdf_plugins::GroupType type);
   virtual ~PlanGroupType()
   {
     ;
@@ -228,7 +224,7 @@ public:
 
   srdf::Model::Group* group_;
 
-  moveit_setup_assistant::GroupType type_;
+  moveit_setup_srdf_plugins::GroupType type_;
 };
 
 Q_DECLARE_METATYPE(PlanGroupType);

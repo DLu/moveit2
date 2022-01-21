@@ -73,6 +73,8 @@ public:
   /// Set the names of the two columns in the widget
   void setColumnNames(const QString& col1, const QString& col2);
 
+  std::vector<std::string> getSelectedValues(unsigned int column = 0) const;
+
   // ******************************************************************************************
   // Qt Components
   // ******************************************************************************************

@@ -138,13 +138,13 @@ KinematicChainWidget::KinematicChainWidget(QWidget* parent, moveit_setup_framewo
 // ******************************************************************************************
 // Load robot links into tree
 // ******************************************************************************************
-void KinematicChainWidget::setAvailable(const LinkTree& link_tree)
+void KinematicChainWidget::setAvailable(const LinkNameTree& link_name_tree)
 {
   // Only load the kinematic chain once
   if (kinematic_chain_loaded_)
     return;
 
-  QTreeWidgetItem* root_item = addLinkChildRecursive(nullptr, link_tree);
+  QTreeWidgetItem* root_item = addLinkChildRecursive(nullptr, link_name_tree);
   link_tree_->addTopLevelItem(root_item);
 
   // Remember that we have loaded the chain
@@ -154,12 +154,12 @@ void KinematicChainWidget::setAvailable(const LinkTree& link_tree)
 // ******************************************************************************************
 //
 // ******************************************************************************************
-QTreeWidgetItem* KinematicChainWidget::addLinkChildRecursive(QTreeWidgetItem* parent, const LinkTree& link)
+QTreeWidgetItem* KinematicChainWidget::addLinkChildRecursive(QTreeWidgetItem* parent, const LinkNameTree& link)
 {
   QTreeWidgetItem* new_item = new QTreeWidgetItem(parent);
-  new_item->setText(0, link.getName().c_str());
+  new_item->setText(0, link.data.c_str());
 
-  for (const LinkTree& child : link.getChildren())
+  for (const LinkNameTree& child : link.children)
   {
     QTreeWidgetItem* new_child = addLinkChildRecursive(new_item, child);
     new_item->addChild(new_child);

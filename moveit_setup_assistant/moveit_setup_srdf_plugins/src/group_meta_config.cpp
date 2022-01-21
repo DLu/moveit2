@@ -160,4 +160,26 @@ void GroupMetaConfig::collectVariables(std::vector<moveit_setup_framework::Templ
   variables.push_back(moveit_setup_framework::TemplateVariable("KINEMATICS_PARAMETERS_FILE_NAMES_BLOCK",
                                                                kinematics_parameters_files_block));
 }
+
+void GroupMetaConfig::deleteGroup(const std::string& group_name)
+{
+  group_meta_data_.erase(group_name);
+  changed_ = true;
+}
+
+void GroupMetaConfig::renameGroup(const std::string& old_group_name, const std::string& new_group_name)
+{
+  group_meta_data_[new_group_name] = group_meta_data_[old_group_name];
+  group_meta_data_.erase(old_group_name);
+  changed_ = true;
+}
+
+void GroupMetaConfig::setMetaData(const std::string& group_name, const GroupMetaData& meta_data)
+{
+  group_meta_data_[group_name] = meta_data;
+  changed_ = true;
+}
 }  // namespace moveit_setup_srdf_plugins
+
+#include <pluginlib/class_list_macros.hpp>  // NOLINT
+PLUGINLIB_EXPORT_CLASS(moveit_setup_srdf_plugins::GroupMetaConfig, moveit_setup_framework::SetupConfig)

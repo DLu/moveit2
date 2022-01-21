@@ -43,17 +43,13 @@
 #include <QTreeWidgetItem>
 
 #include <moveit_setup_framework/qt/rviz_panel.hpp>
-#include <moveit_setup_srdf_plugins/link_tree.hpp>
+#include <moveit_setup_srdf_plugins/planning_groups.hpp>
 
 namespace moveit_setup_srdf_plugins
 {
 class KinematicChainWidget : public QWidget
 {
   Q_OBJECT
-
-  // ******************************************************************************************
-  // Reusable double list widget for selecting and deselecting a subset from a set
-  // ******************************************************************************************
 public:
   // ******************************************************************************************
   // Public Functions
@@ -63,12 +59,12 @@ public:
   KinematicChainWidget(QWidget* parent, moveit_setup_framework::RVizPanel* rviz_panel);
 
   /// Loads the available data list
-  void setAvailable(const LinkTree& link_tree);
+  void setAvailable(const LinkNameTree& link_name_tree);
 
   /// Set the link field with previous value
   void setSelected(const std::string& base_link, const std::string& tip_link);
 
-  QTreeWidgetItem* addLinkChildRecursive(QTreeWidgetItem* parent, const LinkTree& link);
+  QTreeWidgetItem* addLinkChildRecursive(QTreeWidgetItem* parent, const LinkNameTree& link);
 
   // ******************************************************************************************
   // Qt Components

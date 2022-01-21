@@ -35,26 +35,15 @@
 /* Author: David V. Lu!! */
 #pragma once
 
-#include <moveit/robot_model/robot_model.h>
+#include <vector>
 
 namespace moveit_setup_srdf_plugins
 {
-class LinkTree
+template <typename T>
+class GenericTree
 {
 public:
-  LinkTree(const moveit::core::LinkModel* link);
-
-  const std::string& getName() const
-  {
-    return name_;
-  }
-  const std::vector<LinkTree>& getChildren() const
-  {
-    return children_;
-  }
-
-protected:
-  std::string name_;
-  std::vector<LinkTree> children_;
+  T data;
+  std::vector<GenericTree<T>> children;
 };
 }  // namespace moveit_setup_srdf_plugins
