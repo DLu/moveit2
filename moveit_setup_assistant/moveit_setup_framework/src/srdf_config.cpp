@@ -69,6 +69,8 @@ void SRDFConfig::loadURDFModel()
 
   auto urdf_config = config_data_->get<URDFConfig>("urdf");
   urdf_model_ = urdf_config->getModelPtr();
+  srdf_.robot_name_ = urdf_model_->getName();
+  parent_node_->set_parameter(rclcpp::Parameter("robot_description_semantic", srdf_.getSRDFString()));
 }
 
 void SRDFConfig::loadSRDFFile(const std::string& package_path, const std::string& relative_path)

@@ -70,7 +70,15 @@ public:
 
   const GroupMetaData& getMetaData(const std::string& group_name) const
   {
-    return group_meta_data_.at(group_name);
+    const auto& match = group_meta_data_.find(group_name);
+    if (match != group_meta_data_.end())
+    {
+      return match->second;
+    }
+    else
+    {
+      return default_values_;
+    }
   }
 
   void setMetaData(const std::string& group_name, const GroupMetaData& meta_data);
@@ -119,6 +127,8 @@ protected:
 
   /// Planning groups extra data not found in srdf but used in config files
   std::map<std::string, GroupMetaData> group_meta_data_;
+
+  GroupMetaData default_values_;
 
   bool changed_{ false };
 };
