@@ -10,24 +10,14 @@ from moveit_config_core import DeclareBooleanLaunchArg
 
 def generate_launch_description():
     ld = LaunchDescription()
-    ld.add_action(DeclareLaunchArgument("moveit_config_path"))  # Required argument
-    moveit_config_path = LaunchConfiguration("moveit_config_path")
-
+    ld.add_action(DeclareLaunchArgument("moveit_warehouse_database_path")) # Required argument
     ld.add_action(DeclareBooleanLaunchArg("reset", default_value=False))
 
-    # If not specified, we'll use a default database location
-    ld.add_action(
-        DeclareLaunchArgument(
-            "moveit_warehouse_database_path",
-            default=str(moveit_config_path / "default_warehouse_mongo_db"),
-        )
-    )
-
     # The default DB port for moveit (not default MongoDB port to avoid potential conflicts)
-    ld.add_action(DeclareLaunchArgument("moveit_warehouse_port", default="33829"))
+    ld.add_action(DeclareLaunchArgument("moveit_warehouse_port", default_value="33829"))
 
     # The default DB host for moveit
-    ld.add_action(DeclareLaunchArgument("moveit_warehouse_host", default="localhost"))
+    ld.add_action(DeclareLaunchArgument("moveit_warehouse_host", default_value="localhost"))
 
     # Load warehouse parameters
     db_parameters = [
@@ -44,7 +34,7 @@ def generate_launch_description():
     db_node = Node(
         package="warehouse_ros_mongo",
         executable="mongo_wrapper_ros.py",
-        cwd="ROS_HOME",
+        # cwd="ROS_HOME",
         parameters=db_parameters,
     )
     ld.add_action(db_node)
