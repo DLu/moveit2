@@ -36,21 +36,20 @@
 #pragma once
 
 // Qt
-class QHBoxLayout;
-class QPushButton;
-class QStackedWidget;
-class QTreeWidget;
-class QTreeWidgetItem;
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QStackedWidget>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 
 // SA
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>
+#include <moveit_setup_framework/qt/double_list_widget.hpp>
 #include <moveit_setup_app_plugins/ros_controllers.hpp>
+#include <moveit_setup_app_plugins/controller_edit_widget.hpp>
 
 namespace moveit_setup_app_plugins
 {
-class DoubleListWidget;
-class ControllerEditWidget;
-
 class ROSControllersWidget : public moveit_setup_framework::SetupStepWidget
 {
   Q_OBJECT

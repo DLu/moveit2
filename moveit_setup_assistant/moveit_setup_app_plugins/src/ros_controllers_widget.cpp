@@ -671,7 +671,7 @@ bool ROSControllersWidget::saveControllerScreen()
   // Check if this is an existing controller
   if (!current_edit_controller_.empty())
   {
-    // Find the controller we are editing based on the goup name string
+    // Find the controller we are editing based on the group name string
     searched_controller = config_data_->findROSControllerByName(current_edit_controller_);
   }
 

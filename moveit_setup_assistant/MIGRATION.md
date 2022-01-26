@@ -10,10 +10,10 @@ This file should be deleted once all tasks are complete. Also delete `SETUP_STEP
  * `moveit_setup_srdf_plugins`
    * [x] Self-Collisions
    * [x] Virtual Joints
-   * [ ] Planning Groups
-   * [ ] Robot Poses
-   * [ ] End Effectors
-   * [ ] Passive Joints
+   * [x] Planning Groups
+   * [x] Robot Poses
+   * [x] End Effectors
+   * [x] Passive Joints
  * `moveit_setup_app_plugins`
    * [ ] ROS Control
    * [ ] Simulation

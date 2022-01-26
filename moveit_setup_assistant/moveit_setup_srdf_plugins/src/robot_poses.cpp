@@ -47,7 +47,7 @@ void RobotPoses::onInit()
   pub_robot_state_ = parent_node_->create_publisher<moveit_msgs::msg::DisplayRobotState>("moveit_robot_state", 1);
 
   // Set the planning scene
-  srdf_config_->getPlanningScene()->setName("MoveIt Planning Scene");
+  // srdf_config_->getPlanningScene()->setName("MoveIt Planning Scene");
 
   // Collision Detection initializtion -------------------------------
 
