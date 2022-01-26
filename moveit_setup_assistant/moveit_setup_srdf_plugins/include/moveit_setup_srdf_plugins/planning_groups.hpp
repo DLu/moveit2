@@ -79,12 +79,7 @@ public:
 
   std::vector<std::string> getGroupNames() const
   {
-    std::vector<std::string> group_names;
-    for (srdf::Model::Group& group : srdf_config_->getGroups())
-    {
-      group_names.push_back(group.name_);
-    }
-    return group_names;
+    return srdf_config_->getGroupNames();
   }
 
   /**

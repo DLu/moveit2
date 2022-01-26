@@ -261,7 +261,7 @@ void PlanningGroups::deleteGroup(const std::string& group_name)
 {
   for (const std::string& pose_name : getPosesByGroup(group_name))
   {
-    srdf_config_->removePoseByName(pose_name);
+    srdf_config_->removePoseByName(pose_name, group_name);
   }
   for (const std::string& eef_name : getEndEffectorsByGroup(group_name))
   {

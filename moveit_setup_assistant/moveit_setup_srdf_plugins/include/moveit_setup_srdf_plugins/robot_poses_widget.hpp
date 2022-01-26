@@ -135,9 +135,6 @@ private Q_SLOTS:
    */
   void updateRobotModel(const std::string& name, double value);
 
-  /// Publishes a joint state message based on all the slider locations in a planning group, to rviz
-  void publishJoints();
-
 private:
   // ******************************************************************************************
   // Variables
@@ -148,25 +145,9 @@ private:
   /// Pointer to currently edited group state
   srdf::Model::GroupState* current_edit_pose_;
 
-  /// Remember the publisher for quick publishing later
-  ros::Publisher pub_robot_state_;
-
-  // ******************************************************************************************
-  // Collision Variables
-  // ******************************************************************************************
-  collision_detection::CollisionRequest request;
-
   // ******************************************************************************************
   // Private Functions
   // ******************************************************************************************
-
-  /**
-   * Find the associated data by name
-   *
-   * @param name - name of data to find in datastructure
-   * @return pointer to data in datastructure
-   */
-  srdf::Model::GroupState* findPoseByName(const std::string& name, const std::string& group);
 
   /**
    * Create the main list view of poses for robot
@@ -204,7 +185,7 @@ private:
   /**
    * Show the robot in the current pose
    */
-  void showPose(srdf::Model::GroupState* pose);
+  void showPose(const srdf::Model::GroupState& pose);
 };
 
 // ******************************************************************************************

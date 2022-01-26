@@ -36,6 +36,8 @@
 #pragma once
 
 #include <moveit_setup_framework/setup_step.hpp>
+#include <moveit_setup_framework/data/srdf_config.hpp>
+#include <moveit_msgs/msg/display_robot_state.hpp>
 
 namespace moveit_setup_srdf_plugins
 {
@@ -51,7 +53,67 @@ public:
 
   bool isReady() const override
   {
-    return false;
+    return !srdf_config_->getGroupNames().empty();
   }
+
+  std::vector<std::string> getGroupNames() const
+  {
+    return srdf_config_->getGroupNames();
+  }
+
+  /**
+   * Find the associated data by name
+   *
+   * @param name - name of data to find in datastructure
+   * @return pointer to data in datastructure
+   */
+  srdf::Model::GroupState* findPoseByName(const std::string& name, const std::string& group);
+
+  std::vector<srdf::Model::GroupState>& getGroupStates()
+  {
+    return srdf_config_->getGroupStates();
+  }
+
+  moveit::core::RobotState& getState()
+  {
+    return srdf_config_->getPlanningScene()->getCurrentStateNonConst();
+  }
+
+  /**
+   * @brief Publish the given state on the moveit_robot_state topic and return true if it is in collision
+   */
+  bool publishState(const moveit::core::RobotState& robot_state);
+
+  /**
+   * @brief Returns a vector of joint models for the given group name
+   * @throws runtime_error if the group does not exist
+   *
+   * Note: "Simple" means we exclude Passive/Mimic/MultiDOF joints
+   */
+  std::vector<const moveit::core::JointModel*> getSimpleJointModels(const std::string& group_name) const;
+
+  void removePoseByName(const std::string& pose_name, const std::string& group_name)
+  {
+    return srdf_config_->removePoseByName(pose_name, group_name);
+  }
+
+  void setToCurrentValues(srdf::Model::GroupState& group_state);
+
+  /// Load the allowed collision matrix from the SRDF's list of link pairs
+  void loadAllowedCollisionMatrix();
+
+protected:
+  /// Remember the publisher for quick publishing later
+  rclcpp::Publisher<moveit_msgs::msg::DisplayRobotState>::SharedPtr pub_robot_state_;
+
+  // ******************************************************************************************
+  // Collision Variables
+  // ******************************************************************************************
+  collision_detection::CollisionRequest request;
+
+  /// Allowed collision matrix for robot poses
+  collision_detection::AllowedCollisionMatrix allowed_collision_matrix_;
+
+  std::shared_ptr<moveit_setup_framework::SRDFConfig> srdf_config_;
 };
 }  // namespace moveit_setup_srdf_plugins

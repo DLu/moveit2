@@ -87,6 +87,16 @@ public:
     return srdf_.groups_;
   }
 
+  std::vector<std::string> getGroupNames() const
+  {
+    std::vector<std::string> group_names;
+    for (const srdf::Model::Group& group : srdf_.groups_)
+    {
+      group_names.push_back(group.name_);
+    }
+    return group_names;
+  }
+
   std::vector<srdf::Model::GroupState>& getGroupStates()
   {
     return srdf_.group_states_;
@@ -97,12 +107,12 @@ public:
     return srdf_.virtual_joints_;
   }
 
-  void removePoseByName(const std::string& pose_name)
+  void removePoseByName(const std::string& pose_name, const std::string& group_name)
   {
     for (std::vector<srdf::Model::GroupState>::iterator pose_it = srdf_.group_states_.begin();
          pose_it != srdf_.group_states_.end(); ++pose_it)
     {
-      if (pose_it->name_ == pose_name)
+      if (pose_it->name_ == pose_name && pose_it->group_ == group_name)
       {
         srdf_.group_states_.erase(pose_it);
         return;
