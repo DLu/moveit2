@@ -44,4 +44,20 @@ void EndEffectors::onInit()
   urdf_config_ = config_data_->get<moveit_setup_framework::URDFConfig>("urdf");
 }
 
+// ******************************************************************************************
+// Find the associated data by name
+// ******************************************************************************************
+srdf::Model::EndEffector* EndEffectors::findEffectorByName(const std::string& name)
+{
+  // Find the group state we are editing based on the effector name
+  for (srdf::Model::EndEffector& end_effector : srdf_config_->getEndEffectors())
+  {
+    if (end_effector.name_ == name)  // string match
+    {
+      return &end_effector;  // convert to pointer from iterator
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace moveit_setup_srdf_plugins

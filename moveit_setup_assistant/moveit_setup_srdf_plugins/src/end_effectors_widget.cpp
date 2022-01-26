@@ -370,10 +370,10 @@ void EndEffectorsWidget::loadGroupsComboBox()
   parent_group_name_field_->addItem("");  // optional setting
 
   // Add all group names to combo box
-  for (srdf::Model::Group& group : config_data_->srdf_->groups_)
+  for (const std::string& group_name : setup_step_.getGroupNames())
   {
-    group_name_field_->addItem(group.name_.c_str());
-    parent_group_name_field_->addItem(group.name_.c_str());
+    group_name_field_->addItem(group_name.c_str());
+    parent_group_name_field_->addItem(group_name.c_str());
   }
 }
 
@@ -386,13 +386,10 @@ void EndEffectorsWidget::loadParentComboBox()
   parent_name_field_->clear();
 
   // Get all links in robot model
-  std::vector<const moveit::core::LinkModel*> link_models = config_data_->getRobotModel()->getLinkModels();
-
   // Add all links to combo box
-  for (std::vector<const moveit::core::LinkModel*>::const_iterator link_it = link_models.begin();
-       link_it < link_models.end(); ++link_it)
+  for (const std::string& link_name : setup_step_.getLinkNames())
   {
-    parent_name_field_->addItem((*link_it)->getName().c_str());
+    parent_name_field_->addItem(link_name.c_str());
   }
 }
 
@@ -401,17 +398,7 @@ void EndEffectorsWidget::loadParentComboBox()
 // ******************************************************************************************
 srdf::Model::EndEffector* EndEffectorsWidget::findEffectorByName(const std::string& name)
 {
-  // Find the group state we are editing based on the effector name
-  srdf::Model::EndEffector* searched_group = nullptr;  // used for holding our search results
-
-  for (srdf::Model::EndEffector& end_effector : config_data_->srdf_->end_effectors_)
-  {
-    if (end_effector.name_ == name)  // string match
-    {
-      searched_group = &end_effector;  // convert to pointer from iterator
-      break;                           // we are done searching
-    }
-  }
+  srdf::Model::EndEffector* searched_group = setup_step_.findEffectorByName(name);
 
   // Check if effector was found
   if (searched_group == nullptr)  // not found
@@ -448,21 +435,10 @@ void EndEffectorsWidget::deleteSelected()
     return;
   }
 
-  // Delete effector from vector
-  for (std::vector<srdf::Model::EndEffector>::iterator effector_it = config_data_->srdf_->end_effectors_.begin();
-       effector_it != config_data_->srdf_->end_effectors_.end(); ++effector_it)
-  {
-    // check if this is the group we want to delete
-    if (effector_it->name_ == current_edit_effector_)  // string match
-    {
-      config_data_->srdf_->end_effectors_.erase(effector_it);
-      break;
-    }
-  }
+  setup_step_.removeEefByName(current_edit_effector_);
 
   // Reload main screen table
   loadDataTable();
-  config_data_->changes |= MoveItConfigData::END_EFFECTORS;
 }
 
 // ******************************************************************************************
@@ -486,23 +462,17 @@ void EndEffectorsWidget::doneEditing()
   // Check if this is an existing group
   if (!current_edit_effector_.empty())
   {
-    // Find the group we are editing based on the goup name string
+    // Find the group we are editing based on the group name string
     searched_data = findEffectorByName(current_edit_effector_);
-  }
 
-  // Check that the effector name is unique
-  for (const auto& eef : config_data_->srdf_->end_effectors_)
-  {
-    if (eef.name_ == effector_name)
+    // Check that the effector name is unique
+    srdf::Model::EndEffector* match = setup_step_.findEffectorByName(effector_name);
+    // is this our existing effector? check if effector pointers are same
+    if (match && match != searched_data)
     {
-      // is this our existing effector? check if effector pointers are same
-      if (&eef != searched_data)
-      {
-        QMessageBox::warning(
-            this, "Error Saving",
-            QString("An end-effector named '").append(effector_name.c_str()).append("'already exists!"));
-        return;
-      }
+      QMessageBox::warning(this, "Error Saving",
+                           QString("An end-effector named '").append(effector_name.c_str()).append("'already exists!"));
+      return;
     }
   }
 
@@ -520,22 +490,23 @@ void EndEffectorsWidget::doneEditing()
     return;
   }
 
-  const moveit::core::JointModelGroup* jmg =
-      config_data_->getRobotModel()->getJointModelGroup(group_name_field_->currentText().toStdString());
   /*
-  if (jmg->hasLinkModel(parent_name_field_->currentText().toStdString()))
+  if (!setup_step_.isLinkInGroup(parent_name_field_->currentText().toStdString(),
+                                 group_name_field_->currentText().toStdString()))
   {
-    QMessageBox::warning( this, "Error Saving", QString::fromStdString("Group " +
-  group_name_field_->currentText().toStdString() + " contains the link " +
-  parent_name_field_->currentText().toStdString() + ". However, the parent link of the end-effector should not belong to
-  the group for the end-effector itself."));
+    QMessageBox::warning(this, "Error Saving",
+                         QString::fromStdString("Group " + group_name_field_->currentText().toStdString() +
+                                                " contains the link " + parent_name_field_->currentText().toStdString() +
+                                                ". However, the parent link of the end-effector should not belong to "
+                                                "the group for the end-effector itself."));
     return;
   }
   */
+
   if (!parent_group_name_field_->currentText().isEmpty())
   {
-    jmg = config_data_->getRobotModel()->getJointModelGroup(parent_group_name_field_->currentText().toStdString());
-    if (!jmg->hasLinkModel(parent_name_field_->currentText().toStdString()))
+    if (!setup_step_.isLinkInGroup(parent_name_field_->currentText().toStdString(),
+                                   parent_group_name_field_->currentText().toStdString()))
     {
       QMessageBox::warning(this, "Error Saving",
                            QString::fromStdString("The specified parent group '" +
@@ -545,8 +516,6 @@ void EndEffectorsWidget::doneEditing()
       return;
     }
   }
-
-  config_data_->changes |= MoveItConfigData::END_EFFECTORS;
 
   // Save the new effector name or create the new effector ----------------------------
   bool is_new = false;
@@ -559,15 +528,14 @@ void EndEffectorsWidget::doneEditing()
   }
 
   // Copy name data ----------------------------------------------------
-  searched_data->name_ = effector_name;
-  searched_data->parent_link_ = parent_name_field_->currentText().toStdString();
-  searched_data->component_group_ = group_name_field_->currentText().toStdString();
-  searched_data->parent_group_ = parent_group_name_field_->currentText().toStdString();
+  setup_step_.setProperties(searched_data, effector_name, parent_name_field_->currentText().toStdString(),
+                            group_name_field_->currentText().toStdString(),
+                            parent_group_name_field_->currentText().toStdString());
 
   // Insert new effectors into group state vector --------------------------
   if (is_new)
   {
-    config_data_->srdf_->end_effectors_.push_back(*searched_data);
+    setup_step_.getEndEffectors().push_back(*searched_data);
     delete searched_data;
   }
 
@@ -608,12 +576,14 @@ void EndEffectorsWidget::loadDataTable()
   data_table_->setDisabled(true);         // make sure we disable it so that the cellChanged event is not called
   data_table_->clearContents();
 
+  const auto& end_effectors = setup_step_.getEndEffectors();
+
   // Set size of datatable
-  data_table_->setRowCount(config_data_->srdf_->end_effectors_.size());
+  data_table_->setRowCount(end_effectors.size());
 
   // Loop through every end effector
   int row = 0;
-  for (const auto& eef : config_data_->srdf_->end_effectors_)
+  for (const auto& eef : end_effectors)
   {
     // Create row elements
     QTableWidgetItem* data_name = new QTableWidgetItem(eef.name_.c_str());
@@ -646,7 +616,7 @@ void EndEffectorsWidget::loadDataTable()
   data_table_->resizeColumnToContents(3);
 
   // Show edit button if applicable
-  if (!config_data_->srdf_->end_effectors_.empty())
+  if (!end_effectors.empty())
     btn_edit_->show();
 }
 
