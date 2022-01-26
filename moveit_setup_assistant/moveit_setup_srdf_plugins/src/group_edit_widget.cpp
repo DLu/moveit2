@@ -320,10 +320,8 @@ void GroupEditWidget::loadKinematicPlannersComboBox()
     kinematics_solver_field_->addItem(kinematics_plugin_name.c_str());
   }
 
-  std::vector<OMPLPlannerDescription> planners = config_data_->getOMPLPlanners();
-  for (OMPLPlannerDescription& planner : planners)
+  for (const std::string& planner_name : setup_step_.getOMPLPlanners())
   {
-    std::string planner_name = planner.name_;
     default_planner_field_->addItem(planner_name.c_str());
   }
 }

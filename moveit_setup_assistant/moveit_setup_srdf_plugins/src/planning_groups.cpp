@@ -380,4 +380,37 @@ std::vector<std::string> PlanningGroups::getKinematicPlanners() const
   return planners;
 }
 
+std::vector<std::string> PlanningGroups::getOMPLPlanners() const
+{
+  std::vector<std::string> planner_names;
+  // TODO: This should call ompl_interface::PlanningContextManager::getRegisteredPlannerAllocators to load the
+  //       names dynamically
+  planner_names.push_back("AnytimePathShortening");
+  planner_names.push_back("SBL");
+  planner_names.push_back("EST");
+  planner_names.push_back("LBKPIECE");
+  planner_names.push_back("BKPIECE");
+  planner_names.push_back("KPIECE");
+  planner_names.push_back("RRT");
+  planner_names.push_back("RRTConnect");
+  planner_names.push_back("RRTstar");
+  planner_names.push_back("TRRT");
+  planner_names.push_back("PRM");
+  planner_names.push_back("PRMstar");
+  planner_names.push_back("FMT");
+  planner_names.push_back("BFMT");
+  planner_names.push_back("PDST");
+  planner_names.push_back("STRIDE");
+  planner_names.push_back("BiTRRT");
+  planner_names.push_back("LBTRRT");
+  planner_names.push_back("BiEST");
+  planner_names.push_back("ProjEST");
+  planner_names.push_back("LazyPRM");
+  planner_names.push_back("LazyPRMstar");
+  planner_names.push_back("SPARS");
+  planner_names.push_back("SPARStwo");
+
+  return planner_names;
+}
+
 }  // namespace moveit_setup_srdf_plugins

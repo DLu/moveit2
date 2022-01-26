@@ -91,6 +91,7 @@ public:
   srdf::Model::Group* findGroupByName(const std::string& name);
 
   std::vector<std::string> getKinematicPlanners() const;
+  std::vector<std::string> getOMPLPlanners() const;
 
   const std::vector<std::string>& getJointNames() const
   {
