@@ -107,6 +107,22 @@ public:
     return srdf_.virtual_joints_;
   }
 
+  std::vector<srdf::Model::PassiveJoint>& getPassiveJoints()
+  {
+    return srdf_.passive_joints_;
+  }
+
+  std::string getChildOfJoint(const std::string& joint_name) const
+  {
+    const moveit::core::JointModel* joint_model = getRobotModel()->getJointModel(joint_name);
+    // Check that a joint model was found
+    if (!joint_model)
+    {
+      return "";
+    }
+    return joint_model->getChildLinkModel()->getName();
+  }
+
   void removePoseByName(const std::string& pose_name, const std::string& group_name)
   {
     for (std::vector<srdf::Model::GroupState>::iterator pose_it = srdf_.group_states_.begin();

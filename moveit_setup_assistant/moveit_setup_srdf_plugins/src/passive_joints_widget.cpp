@@ -37,7 +37,6 @@
 // SA
 #include <moveit_setup_srdf_plugins/passive_joints_widget.hpp>
 #include <moveit_setup_framework/qt/helper_widgets.hpp>
-#include "double_list_widget.h"
 
 // Qt
 #include <QFormLayout>
@@ -64,7 +63,7 @@ void PassiveJointsWidget::onInit()
   layout->addWidget(header);
 
   // Joints edit widget
-  joints_widget_ = new DoubleListWidget(this, config_data_, "Joint Collection", "Joint", false);
+  joints_widget_ = new moveit_setup_framework::DoubleListWidget(this, "Joint Collection", "Joint", false);
   connect(joints_widget_, SIGNAL(selectionUpdated()), this, SLOT(selectionUpdated()));
   connect(joints_widget_, SIGNAL(previewSelected(std::vector<std::string>)), this,
           SLOT(previewSelectedJoints(std::vector<std::string>)));
@@ -87,29 +86,18 @@ void PassiveJointsWidget::focusGiven()
 {
   joints_widget_->clearContents();
 
-  // Retrieve pointer to the shared kinematic model
-  const moveit::core::RobotModelConstPtr& model = config_data_->getRobotModel();
+  std::vector<std::string> active_joints = setup_step_.getActiveJoints();
 
-  // Get the names of the all joints
-  const std::vector<std::string>& joints = model->getJointModelNames();
-
-  if (joints.empty())
+  if (active_joints.empty())
   {
     QMessageBox::critical(this, "Error Loading", "No joints found for robot model");
     return;
   }
-  std::vector<std::string> active_joints;
-  for (const std::string& joint : joints)
-    if (model->getJointModel(joint)->getVariableCount() > 0)
-      active_joints.push_back(joint);
 
   // Set the available joints (left box)
   joints_widget_->setAvailable(active_joints);
 
-  std::vector<std::string> passive_joints;
-  for (srdf::Model::PassiveJoint& passive_joint : config_data_->srdf_->passive_joints_)
-    passive_joints.push_back(passive_joint.name_);
-  joints_widget_->setSelected(passive_joints);
+  joints_widget_->setSelected(setup_step_.getPassiveJoints());
 }
 
 // ******************************************************************************************
@@ -117,14 +105,7 @@ void PassiveJointsWidget::focusGiven()
 // ******************************************************************************************
 void PassiveJointsWidget::selectionUpdated()
 {
-  config_data_->srdf_->passive_joints_.clear();
-  for (int i = 0; i < joints_widget_->selected_data_table_->rowCount(); ++i)
-  {
-    srdf::Model::PassiveJoint pj;
-    pj.name_ = joints_widget_->selected_data_table_->item(i, 0)->text().toStdString();
-    config_data_->srdf_->passive_joints_.push_back(pj);
-  }
-  config_data_->changes |= MoveItConfigData::PASSIVE_JOINTS;
+  setup_step_.setPassiveJoints(joints_widget_->getSelectedValues());
 }
 
 // ******************************************************************************************
@@ -137,17 +118,8 @@ void PassiveJointsWidget::previewSelectedJoints(const std::vector<std::string>& 
 
   for (const std::string& joint : joints)
   {
-    const moveit::core::JointModel* joint_model = config_data_->getRobotModel()->getJointModel(joint);
-
-    // Check that a joint model was found
-    if (!joint_model)
-    {
-      continue;
-    }
-
-    // Get the name of the link
-    const std::string link = joint_model->getChildLinkModel()->getName();
-
+    std::string link = setup_step_.getChildOfJoint(joint);
+    // Check that a joint model/link was found
     if (link.empty())
     {
       continue;

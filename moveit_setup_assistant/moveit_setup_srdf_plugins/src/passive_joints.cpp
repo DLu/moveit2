@@ -40,6 +40,48 @@ namespace moveit_setup_srdf_plugins
 {
 void PassiveJoints::onInit()
 {
+  srdf_config_ = config_data_->get<moveit_setup_framework::SRDFConfig>("srdf");
+}
+
+std::vector<std::string> PassiveJoints::getActiveJoints() const
+{
+  std::vector<std::string> active_joints;
+
+  // Retrieve pointer to the shared kinematic model
+  const moveit::core::RobotModelConstPtr& model = srdf_config_->getRobotModel();
+
+  // Get the names of the all joints
+  for (const std::string& joint : model->getJointModelNames())
+  {
+    if (model->getJointModel(joint)->getVariableCount() > 0)
+    {
+      active_joints.push_back(joint);
+    }
+  }
+  return active_joints;
+}
+
+std::vector<std::string> PassiveJoints::getPassiveJoints() const
+{
+  std::vector<std::string> passive_joints;
+  for (const srdf::Model::PassiveJoint& passive_joint : srdf_config_->getPassiveJoints())
+  {
+    passive_joints.push_back(passive_joint.name_);
+  }
+  return passive_joints;
+}
+
+void PassiveJoints::setPassiveJoints(const std::vector<std::string>& passive_joint_names)
+{
+  std::vector<srdf::Model::PassiveJoint>& passive_joints = srdf_config_->getPassiveJoints();
+  passive_joints.clear();
+  for (const std::string& passive_joint : passive_joint_names)
+  {
+    srdf::Model::PassiveJoint pj;
+    pj.name_ = passive_joint;
+    passive_joints.push_back(pj);
+  }
+  srdf_config_->updateRobotModel(true);
 }
 
 }  // namespace moveit_setup_srdf_plugins

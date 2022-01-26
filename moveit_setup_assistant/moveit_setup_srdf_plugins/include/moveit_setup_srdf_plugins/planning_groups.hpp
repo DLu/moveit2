@@ -102,15 +102,9 @@ public:
     return srdf_config_->getRobotModel()->getLinkModelNames();
   }
 
-  std::string getChildOfJoint(const std::string& joint_name)
+  std::string getChildOfJoint(const std::string& joint_name) const
   {
-    const moveit::core::JointModel* joint_model = srdf_config_->getRobotModel()->getJointModel(joint_name);
-    // Check that a joint model was found
-    if (!joint_model)
-    {
-      return "";
-    }
-    return joint_model->getChildLinkModel()->getName();
+    return srdf_config_->getChildOfJoint(joint_name);
   }
 
   std::string getJointType(const std::string& joint_name) const

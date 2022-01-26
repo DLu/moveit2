@@ -36,6 +36,7 @@
 #pragma once
 
 #include <moveit_setup_framework/setup_step.hpp>
+#include <moveit_setup_framework/data/srdf_config.hpp>
 
 namespace moveit_setup_srdf_plugins
 {
@@ -51,7 +52,27 @@ public:
 
   bool isReady() const override
   {
-    return false;
+    return srdf_config_->isConfigured();
   }
+
+  /**
+   * @brief Return all active (non-fixed) joint names
+   */
+  std::vector<std::string> getActiveJoints() const;
+
+  /**
+   * @brief Return all passive joint names (according to srdf)
+   */
+  std::vector<std::string> getPassiveJoints() const;
+
+  std::string getChildOfJoint(const std::string& joint_name) const
+  {
+    return srdf_config_->getChildOfJoint(joint_name);
+  }
+
+  void setPassiveJoints(const std::vector<std::string>& passive_joints);
+
+protected:
+  std::shared_ptr<moveit_setup_framework::SRDFConfig> srdf_config_;
 };
 }  // namespace moveit_setup_srdf_plugins

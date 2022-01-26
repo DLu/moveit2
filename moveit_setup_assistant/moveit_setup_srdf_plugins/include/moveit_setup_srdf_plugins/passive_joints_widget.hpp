@@ -38,11 +38,11 @@
 
 // SA
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>
+#include <moveit_setup_framework/qt/double_list_widget.hpp>
 #include <moveit_setup_srdf_plugins/passive_joints.hpp>
 
 namespace moveit_setup_srdf_plugins
 {
-class DoubleListWidget;
 class PassiveJointsWidget : public moveit_setup_framework::SetupStepWidget
 {
   Q_OBJECT
@@ -66,7 +66,7 @@ public:
   // Qt Components
   // ******************************************************************************************
 
-  DoubleListWidget* joints_widget_;
+  moveit_setup_framework::DoubleListWidget* joints_widget_;
 
 private Q_SLOTS:
 
