@@ -178,7 +178,7 @@ void SRDFConfig::collectVariables(std::vector<TemplateVariable>& variables)
       continue;
     }
     vjb << "  <node pkg=\"tf2_ros\" type=\"static_transform_publisher\" name=\"virtual_joint_broadcaster_" << counter
-        << "\" args=\"0 0 0 0 0 0 " << vj.parent_frame_ << " " << vj.child_link_ << "\" />\n";
+        << "\" args=\"0 0 0 0 0 0 " << vj.parent_frame_ << " " << vj.child_link_ << "\" />" << std::endl;
     counter++;
   }
   variables.push_back(TemplateVariable("VIRTUAL_JOINT_BROADCASTER", vjb.str()));
