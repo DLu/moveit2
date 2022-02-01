@@ -34,10 +34,10 @@
 /* Author: Mohamad Ayman */
 
 // SA
-#include "ros_controllers_widget.h"
+#include <moveit_setup_app_plugins/ros_controllers_widget.hpp>
 #include "double_list_widget.h"
 #include "controller_edit_widget.h"
-#include "header_widget.h"
+#include <moveit_setup_framework/qt/helper_widgets.hpp>
 #include <moveit_msgs/msg/joint_limits.hpp>
 // Qt
 #include <QApplication>
@@ -60,13 +60,12 @@
 #include <regex>
 #include <moveit/robot_state/conversions.h>
 
-namespace moveit_setup_assistant
+namespace moveit_setup_app_plugins
 {
 // ******************************************************************************************
 // Outer User Interface for MoveIt Configuration Assistant
 // ******************************************************************************************
-ROSControllersWidget::ROSControllersWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
-  : SetupScreenWidget(parent), config_data_(config_data)
+void ROSControllersWidget::onInit()
 {
   // Basic widget container
   QVBoxLayout* layout = new QVBoxLayout();
@@ -77,7 +76,7 @@ ROSControllersWidget::ROSControllersWidget(QWidget* parent, const MoveItConfigDa
   this->setWindowTitle("ROS Control Controllers");  // title of window
 
   // Top Header Area ------------------------------------------------
-  moveit_setup_assistant::HeaderWidget* header = new moveit_setup_assistant::HeaderWidget(
+  auto header = new moveit_setup_framework::HeaderWidget(
       "Setup ROS Controllers", "Configure MoveIt to work with ROS Control to control the robot's physical hardware",
       this);
   layout->addWidget(header);
@@ -373,11 +372,13 @@ void ROSControllersWidget::deleteController()
   // Delete actual controller
   if (config_data_->deleteROSController(controller_name))
   {
-    ROS_INFO_STREAM_NAMED("Setup Assistant", "Controller " << controller_name << " deleted succefully");
+    RCLCPP_INFO_STREAM_NAMED(setup_step_.getLogger(), "Setup Assistant",
+                             "Controller " << controller_name << " deleted succefully");
   }
   else
   {
-    ROS_WARN_STREAM_NAMED("Setup Assistant", "Couldn't delete Controller " << controller_name);
+    RCLCPP_WARN_STREAM_NAMED(setup_step_.getLogger(), "Setup Assistant",
+                             "Couldn't delete Controller " << controller_name);
   }
 
   current_edit_controller_.clear();
@@ -473,7 +474,7 @@ void ROSControllersWidget::cancelEditing()
 void ROSControllersWidget::previewSelectedJoints(const std::vector<std::string>& joints)
 {
   // Unhighlight all links
-  Q_EMIT unhighlightAll();
+  rviz_panel_->unhighlightAll();
 
   for (const std::string& joint : joints)
   {
@@ -494,7 +495,7 @@ void ROSControllersWidget::previewSelectedJoints(const std::vector<std::string>&
     }
 
     // Highlight link
-    Q_EMIT highlightLink(link, QColor(255, 0, 0));
+    rviz_panel_->highlightLink(link, QColor(255, 0, 0));
   }
 }
 
@@ -504,12 +505,12 @@ void ROSControllersWidget::previewSelectedJoints(const std::vector<std::string>&
 void ROSControllersWidget::previewSelectedGroup(const std::vector<std::string>& groups)
 {
   // Unhighlight all links
-  Q_EMIT unhighlightAll();
+  rviz_panel_->unhighlightAll();
 
   for (const std::string& group : groups)
   {
     // Highlight group
-    Q_EMIT highlightGroup(group);
+    rviz_panel_->highlightGroup(group);
   }
 }
 
@@ -670,7 +671,7 @@ bool ROSControllersWidget::saveControllerScreen()
   // Check if this is an existing controller
   if (!current_edit_controller_.empty())
   {
-    // Find the controller we are editing based on the goup name string
+    // Find the controller we are editing based on the group name string
     searched_controller = config_data_->findROSControllerByName(current_edit_controller_);
   }
 
@@ -807,7 +808,7 @@ void ROSControllersWidget::showMainScreen()
   stacked_widget_->setCurrentIndex(0);
 
   // Announce that this widget is not in modal mode
-  Q_EMIT isModal(false);
+  Q_EMIT setModalMode(false);
 }
 
 // ******************************************************************************************
@@ -818,7 +819,7 @@ void ROSControllersWidget::changeScreen(int index)
   stacked_widget_->setCurrentIndex(index);
 
   // Announce this widget's mode
-  Q_EMIT isModal(index != 0);
+  Q_EMIT setModalMode(index != 0);
 }
 
 // ******************************************************************************************
@@ -842,4 +843,7 @@ void ROSControllersWidget::itemSelectionChanged()
   }
 }
 
-}  // namespace moveit_setup_assistant
+}  // namespace moveit_setup_app_plugins
+
+#include <pluginlib/class_list_macros.hpp>  // NOLINT
+PLUGINLIB_EXPORT_CLASS(moveit_setup_app_plugins::ROSControllersWidget, moveit_setup_framework::SetupStepWidget)

@@ -37,16 +37,12 @@
 #pragma once
 
 #include <QWidget>
-class QLabel;
-class QTableWidget;
-class QTableWidgetItem;
-class QItemSelection;
+#include <QLabel>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QItemSelection>
 
-#ifndef Q_MOC_RUN
-#include <moveit/setup_assistant/tools/moveit_config_data.h>
-#endif
-
-namespace moveit_setup_assistant
+namespace moveit_setup_framework
 {
 class DoubleListWidget : public QWidget
 {
@@ -61,8 +57,7 @@ public:
   // ******************************************************************************************
 
   /// Constructor
-  DoubleListWidget(QWidget* parent, const MoveItConfigDataPtr& config_data, const QString& long_name,
-                   const QString& short_name, bool add_ok_cancel = true);
+  DoubleListWidget(QWidget* parent, const QString& long_name, const QString& short_name, bool add_ok_cancel = true);
 
   /// Loads the available data list
   void setAvailable(const std::vector<std::string>& items);
@@ -77,6 +72,8 @@ public:
 
   /// Set the names of the two columns in the widget
   void setColumnNames(const QString& col1, const QString& col2);
+
+  std::vector<std::string> getSelectedValues(unsigned int column = 0) const;
 
   // ******************************************************************************************
   // Qt Components
@@ -130,9 +127,6 @@ private:
   // Variables
   // ******************************************************************************************
 
-  /// Contains all the configuration data for the setup assistant
-  moveit_setup_assistant::MoveItConfigDataPtr config_data_;
-
   // ******************************************************************************************
   // Private Functions
   // ******************************************************************************************
@@ -141,4 +135,4 @@ private:
   void previewSelected(const QList<QTableWidgetItem*>& selected);
 };
 
-}  // namespace moveit_setup_assistant
+}  // namespace moveit_setup_framework

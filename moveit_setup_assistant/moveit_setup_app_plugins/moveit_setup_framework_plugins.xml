@@ -2,7 +2,16 @@
   <class type="moveit_setup_app_plugins::PerceptionWidget" base_class_type="moveit_setup_framework::SetupStepWidget">
     <description>Configures the sensor suite</description>
   </class>
+  <class type="moveit_setup_app_plugins::SimulationWidget" base_class_type="moveit_setup_framework::SetupStepWidget">
+    <description>Configures the simulation</description>
+  </class>
+  <class type="moveit_setup_app_plugins::ROSControllersWidget" base_class_type="moveit_setup_framework::SetupStepWidget">
+    <description>Configures the ros2_control plugins</description>
+  </class>
   <class type="moveit_setup_app_plugins::PerceptionConfig" base_class_type="moveit_setup_framework::SetupConfig">
     <description>Data for perception step</description>
+  </class>
+  <class type="moveit_setup_app_plugins::ControllerConfig" base_class_type="moveit_setup_framework::SetupConfig">
+    <description>Data for ROS Controllers</description>
   </class>
 </library>

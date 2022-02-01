@@ -92,6 +92,12 @@ SetupAssistantWidget::SetupAssistantWidget(rviz_common::ros_integration::RosNode
   setup_steps.push_back("moveit_setup_core_plugins::StartScreenWidget");
   setup_steps.push_back("moveit_setup_srdf_plugins::DefaultCollisionsWidget");
   setup_steps.push_back("moveit_setup_srdf_plugins::VirtualJointsWidget");
+  setup_steps.push_back("moveit_setup_srdf_plugins::PlanningGroupsWidget");
+  setup_steps.push_back("moveit_setup_srdf_plugins::RobotPosesWidget");
+  setup_steps.push_back("moveit_setup_srdf_plugins::EndEffectorsWidget");
+  setup_steps.push_back("moveit_setup_srdf_plugins::PassiveJointsWidget");
+  // setup_steps.push_back("moveit_setup_app_plugins::ROSControllersWidget");
+  // setup_steps.push_back("moveit_setup_app_plugins::SimulationWidget");
   setup_steps.push_back("moveit_setup_app_plugins::PerceptionWidget");
   setup_steps.push_back("moveit_setup_core_plugins::AuthorInformationWidget");
   setup_steps.push_back("moveit_setup_core_plugins::ConfigurationFilesWidget");
@@ -138,6 +144,7 @@ SetupAssistantWidget::SetupAssistantWidget(rviz_common::ros_integration::RosNode
   navs_view_->setNavs(nav_name_list_);
   if (!steps_.empty())
   {
+    navs_view_->setEnabled(0, true);
     moveToScreen(0);
   }
 
@@ -203,6 +210,10 @@ void SetupAssistantWidget::onAdvanceRequest()
 void SetupAssistantWidget::moveToScreen(const int index)
 {
   boost::mutex::scoped_lock slock(change_screen_lock_);
+  if (!navs_view_->isEnabled(index))
+  {
+    return;
+  }
 
   if (current_index_ != index)
   {
@@ -234,7 +245,7 @@ void SetupAssistantWidget::moveToScreen(const int index)
 }
 
 // ******************************************************************************************
-// Ping ROS on internval
+// Ping ROS on interval
 // ******************************************************************************************
 void SetupAssistantWidget::updateTimer()
 {
@@ -282,7 +293,7 @@ void SetupAssistantWidget::onModalModeUpdate(bool isModal)
 
   for (int i = 0; i < nav_name_list_.count(); ++i)
   {
-    navs_view_->setEnabled(i, !isModal);
+    navs_view_->setEnabled(i, !isModal && steps_[i]->isReady());
   }
 }
 

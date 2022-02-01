@@ -56,9 +56,6 @@ public:
   void loadPrevious(const std::string& package_path, const YAML::Node& node) override;
   YAML::Node saveToYaml() const override;
 
-  /// Load SRDF String
-  void loadSRDFString(const std::string& srdf_string);
-
   /// Load SRDF File
   void loadSRDFFile(const std::string& package_path, const std::string& relative_path);
   void loadSRDFFile(const std::string& srdf_file_path);
@@ -90,9 +87,66 @@ public:
     return srdf_.groups_;
   }
 
+  std::vector<std::string> getGroupNames() const
+  {
+    std::vector<std::string> group_names;
+    for (const srdf::Model::Group& group : srdf_.groups_)
+    {
+      group_names.push_back(group.name_);
+    }
+    return group_names;
+  }
+
+  std::vector<srdf::Model::GroupState>& getGroupStates()
+  {
+    return srdf_.group_states_;
+  }
+
   std::vector<srdf::Model::VirtualJoint>& getVirtualJoints()
   {
     return srdf_.virtual_joints_;
+  }
+
+  std::vector<srdf::Model::PassiveJoint>& getPassiveJoints()
+  {
+    return srdf_.passive_joints_;
+  }
+
+  std::string getChildOfJoint(const std::string& joint_name) const
+  {
+    const moveit::core::JointModel* joint_model = getRobotModel()->getJointModel(joint_name);
+    // Check that a joint model was found
+    if (!joint_model)
+    {
+      return "";
+    }
+    return joint_model->getChildLinkModel()->getName();
+  }
+
+  void removePoseByName(const std::string& pose_name, const std::string& group_name)
+  {
+    for (std::vector<srdf::Model::GroupState>::iterator pose_it = srdf_.group_states_.begin();
+         pose_it != srdf_.group_states_.end(); ++pose_it)
+    {
+      if (pose_it->name_ == pose_name && pose_it->group_ == group_name)
+      {
+        srdf_.group_states_.erase(pose_it);
+        return;
+      }
+    }
+  }
+
+  void removeEefByName(const std::string& eef_name)
+  {
+    for (std::vector<srdf::Model::EndEffector>::iterator eef_it = srdf_.end_effectors_.begin();
+         eef_it != srdf_.end_effectors_.end(); ++eef_it)
+    {
+      if (eef_it->name_ == eef_name)
+      {
+        srdf_.end_effectors_.erase(eef_it);
+        return;
+      }
+    }
   }
 
   class GeneratedSRDF : public GeneratedFile

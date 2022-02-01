@@ -75,9 +75,6 @@ public:
    */
   void linkPairsFromSRDF();
 
-  /// Load the allowed collision matrix from the SRDF's list of link pairs
-  void loadAllowedCollisionMatrix();
-
   LinkPairMap& getLinkPairs()
   {
     return link_pairs_;
@@ -96,9 +93,6 @@ protected:
 
   /// main storage of link pair data
   LinkPairMap link_pairs_;
-
-  /// Allowed collision matrix for robot poses
-  collision_detection::AllowedCollisionMatrix allowed_collision_matrix_;
 
   // For threaded operations
   boost::thread worker_;
