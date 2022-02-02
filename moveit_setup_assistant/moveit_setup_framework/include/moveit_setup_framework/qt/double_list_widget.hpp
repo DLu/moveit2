@@ -73,7 +73,8 @@ public:
   /// Set the names of the two columns in the widget
   void setColumnNames(const QString& col1, const QString& col2);
 
-  std::vector<std::string> getSelectedValues(unsigned int column = 0) const;
+  /// Return all the values that are in the "selected" subset
+  std::vector<std::string> getSelectedValues() const;
 
   // ******************************************************************************************
   // Qt Components

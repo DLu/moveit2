@@ -41,6 +41,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+
 #include <moveit_setup_srdf_plugins/planning_groups.hpp>
 
 namespace moveit_setup_srdf_plugins

@@ -41,7 +41,7 @@ namespace moveit_setup_srdf_plugins
 {
 void RobotPoses::onInit()
 {
-  srdf_config_ = config_data_->get<moveit_setup_framework::SRDFConfig>("srdf");
+  SRDFStep::onInit();
 
   // Create scene publisher for later use
   pub_robot_state_ = parent_node_->create_publisher<moveit_msgs::msg::DisplayRobotState>("moveit_robot_state", 1);
@@ -151,7 +151,7 @@ void RobotPoses::setToCurrentValues(srdf::Model::GroupState& group_state)
     // Add joint vector to SRDF
     group_state.joint_values_[joint_model->getName()] = std::move(joint_values);
   }
-  srdf_config_->updateRobotModel(true);
+  srdf_config_->updateRobotModel(moveit_setup_framework::POSES);
 }
 
 }  // namespace moveit_setup_srdf_plugins

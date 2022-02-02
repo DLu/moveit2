@@ -35,24 +35,16 @@
 /* Author: David V. Lu!! */
 #pragma once
 
-#include <moveit_setup_framework/setup_step.hpp>
-#include <moveit_setup_framework/data/srdf_config.hpp>
+#include <moveit_setup_srdf_plugins/srdf_step.hpp>
 
 namespace moveit_setup_srdf_plugins
 {
-class PassiveJoints : public moveit_setup_framework::SetupStep
+class PassiveJoints : public SRDFStep
 {
 public:
   std::string getName() const override
   {
     return "Passive Joints";
-  }
-
-  void onInit() override;
-
-  bool isReady() const override
-  {
-    return srdf_config_->isConfigured();
   }
 
   /**

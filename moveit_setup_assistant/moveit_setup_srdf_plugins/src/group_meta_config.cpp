@@ -59,6 +59,38 @@ void GroupMetaConfig::loadPrevious(const std::string& package_path, const YAML::
   }
 }
 
+void GroupMetaConfig::deleteGroup(const std::string& group_name)
+{
+  group_meta_data_.erase(group_name);
+  changed_ = true;
+}
+
+void GroupMetaConfig::renameGroup(const std::string& old_group_name, const std::string& new_group_name)
+{
+  group_meta_data_[new_group_name] = group_meta_data_[old_group_name];
+  group_meta_data_.erase(old_group_name);
+  changed_ = true;
+}
+
+const GroupMetaData& GroupMetaConfig::getMetaData(const std::string& group_name) const
+{
+  const auto& match = group_meta_data_.find(group_name);
+  if (match != group_meta_data_.end())
+  {
+    return match->second;
+  }
+  else
+  {
+    return default_values_;
+  }
+}
+
+void GroupMetaConfig::setMetaData(const std::string& group_name, const GroupMetaData& meta_data)
+{
+  group_meta_data_[group_name] = meta_data;
+  changed_ = true;
+}
+
 bool GroupMetaConfig::inputKinematicsYAML(const std::string& file_path)
 {
   // Load file
@@ -161,24 +193,6 @@ void GroupMetaConfig::collectVariables(std::vector<moveit_setup_framework::Templ
                                                                kinematics_parameters_files_block));
 }
 
-void GroupMetaConfig::deleteGroup(const std::string& group_name)
-{
-  group_meta_data_.erase(group_name);
-  changed_ = true;
-}
-
-void GroupMetaConfig::renameGroup(const std::string& old_group_name, const std::string& new_group_name)
-{
-  group_meta_data_[new_group_name] = group_meta_data_[old_group_name];
-  group_meta_data_.erase(old_group_name);
-  changed_ = true;
-}
-
-void GroupMetaConfig::setMetaData(const std::string& group_name, const GroupMetaData& meta_data)
-{
-  group_meta_data_[group_name] = meta_data;
-  changed_ = true;
-}
 }  // namespace moveit_setup_srdf_plugins
 
 #include <pluginlib/class_list_macros.hpp>  // NOLINT

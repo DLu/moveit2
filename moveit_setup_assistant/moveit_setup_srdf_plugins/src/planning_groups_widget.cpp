@@ -230,7 +230,8 @@ void PlanningGroupsWidget::loadGroupsTree()
   groups_tree_->clear();                   // reset the tree
 
   // Display all groups by looping through them
-  for (srdf::Model::Group& group : setup_step_.getGroups())
+  std::vector<srdf::Model::Group>& groups = setup_step_.getContainer();
+  for (srdf::Model::Group& group : groups)
   {
     loadGroupsTreeRecursive(group, nullptr);
   }
@@ -240,7 +241,7 @@ void PlanningGroupsWidget::loadGroupsTree()
   groups_tree_->setDisabled(false);       // make sure we disable it so that the cellChanged event is not called
 
   // Show Edit button if there are things to edit
-  if (!setup_step_.getGroups().empty())
+  if (!groups.empty())
   {
     btn_edit_->show();
     btn_delete_->show();
@@ -375,7 +376,7 @@ void PlanningGroupsWidget::loadGroupsTreeRecursive(srdf::Model::Group& group_it,
 
     try
     {
-      searched_group = setup_step_.findGroupByName(*subgroup_it);
+      searched_group = setup_step_.find(*subgroup_it);
     }
     catch (const std::runtime_error& e)
     {
@@ -648,7 +649,6 @@ void PlanningGroupsWidget::deleteGroup()
   {
     return;
   }
-
   // Ensure we want to delete the end_effectors
   std::vector<std::string> eef_names = setup_step_.getEndEffectorsByGroup(group_to_delete);
   if (!eef_names.empty() &&
@@ -819,27 +819,15 @@ bool PlanningGroupsWidget::saveGroupScreen()
     return false;
   }
 
-  bool new_group = current_edit_group_.empty();
-  if (new_group)
+  try
   {
-    setup_step_.createGroup(group_name);
-    adding_new_group_ = true;  // remember this group is new
+    adding_new_group_ = current_edit_group_.empty();
+    setup_step_.get(group_name, current_edit_group_);
   }
-  else
+  catch (const std::runtime_error& e)
   {
-    srdf::Model::Group* searched_group = setup_step_.findGroupByName(current_edit_group_);
-    adding_new_group_ = false;
-
-    if (current_edit_group_ != group_name)
-    {
-      srdf::Model::Group* existing_group = setup_step_.findGroupByName(group_name);
-      if (existing_group)
-      {
-        QMessageBox::warning(this, "Error Saving", "A group already exists with that name!");
-        return false;
-      }
-      setup_step_.renameGroup(searched_group->name_, group_name);
-    }
+    QMessageBox::warning(this, "Error Saving", e.what());
+    return false;
   }
 
   setup_step_.setMetaData(group_name, meta_data);
@@ -876,7 +864,7 @@ void PlanningGroupsWidget::saveGroupScreenJoints()
     return;
 
   // Find the group we are editing based on the group name string
-  loadJointsScreen(setup_step_.findGroupByName(current_edit_group_));
+  loadJointsScreen(setup_step_.find(current_edit_group_));
   return_screen_ = GROUP;
 
   // Switch to screen
@@ -893,7 +881,7 @@ void PlanningGroupsWidget::saveGroupScreenLinks()
     return;
 
   // Find the group we are editing based on the group name string
-  loadLinksScreen(setup_step_.findGroupByName(current_edit_group_));
+  loadLinksScreen(setup_step_.find(current_edit_group_));
   return_screen_ = GROUP;
 
   // Switch to screen
@@ -910,7 +898,7 @@ void PlanningGroupsWidget::saveGroupScreenChain()
     return;
 
   // Find the group we are editing based on the group name string
-  loadChainScreen(setup_step_.findGroupByName(current_edit_group_));
+  loadChainScreen(setup_step_.find(current_edit_group_));
   return_screen_ = GROUP;
 
   // Switch to screen
@@ -927,7 +915,7 @@ void PlanningGroupsWidget::saveGroupScreenSubgroups()
     return;
 
   // Find the group we are editing based on the group name string
-  loadSubgroupsScreen(setup_step_.findGroupByName(current_edit_group_));
+  loadSubgroupsScreen(setup_step_.find(current_edit_group_));
   return_screen_ = GROUP;
 
   // Switch to screen
@@ -947,7 +935,7 @@ void PlanningGroupsWidget::cancelEditing()
   }
   if (!current_edit_group_.empty() && adding_new_group_)
   {
-    srdf::Model::Group* editing = setup_step_.findGroupByName(current_edit_group_);
+    srdf::Model::Group* editing = setup_step_.find(current_edit_group_);
     if (editing && editing->joints_.empty() && editing->links_.empty() && editing->chains_.empty() &&
         editing->subgroups_.empty())
     {

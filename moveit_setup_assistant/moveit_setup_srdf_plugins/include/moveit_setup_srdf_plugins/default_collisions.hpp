@@ -35,26 +35,18 @@
 /* Author: David V. Lu!! */
 #pragma once
 
-#include <moveit_setup_framework/setup_step.hpp>
-#include <moveit_setup_framework/data/srdf_config.hpp>
+#include <moveit_setup_srdf_plugins/srdf_step.hpp>
 #include <moveit_setup_srdf_plugins/compute_default_collisions.hpp>
 #include <boost/thread/thread.hpp>
 
 namespace moveit_setup_srdf_plugins
 {
-class DefaultCollisions : public moveit_setup_framework::SetupStep
+class DefaultCollisions : public SRDFStep
 {
 public:
   std::string getName() const override
   {
     return "Self-Collisions";
-  }
-
-  void onInit() override;
-
-  bool isReady() const override
-  {
-    return srdf_config_->isConfigured();
   }
 
   std::vector<std::string> getCollidingLinks();

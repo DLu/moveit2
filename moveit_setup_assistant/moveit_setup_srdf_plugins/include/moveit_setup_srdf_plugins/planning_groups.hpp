@@ -35,15 +35,19 @@
 /* Author: David V. Lu!! */
 #pragma once
 
-#include <moveit_setup_framework/setup_step.hpp>
+#include <moveit_setup_srdf_plugins/srdf_step.hpp>
 #include <moveit_setup_srdf_plugins/group_meta_config.hpp>
-#include <moveit_setup_framework/data/srdf_config.hpp>
-#include <moveit_setup_srdf_plugins/tree_structure.hpp>
 #include <moveit/robot_model/robot_model.h>
+#include <vector>
 
 namespace moveit_setup_srdf_plugins
 {
-using LinkNameTree = GenericTree<std::string>;
+class LinkNameTree
+{
+public:
+  std::string data;
+  std::vector<LinkNameTree> children;
+};
 
 inline LinkNameTree buildLinkNameTree(const moveit::core::LinkModel* link)
 {
@@ -57,7 +61,7 @@ inline LinkNameTree buildLinkNameTree(const moveit::core::LinkModel* link)
   return node;
 }
 
-class PlanningGroups : public moveit_setup_framework::SetupStep
+class PlanningGroups : public SuperSRDFStep<srdf::Model::Group>
 {
 public:
   std::string getName() const override
@@ -65,58 +69,25 @@ public:
     return "Planning Groups";
   }
 
-  void onInit() override;
-
-  bool isReady() const override
+  std::vector<srdf::Model::Group>& getContainer() override
   {
-    return srdf_config_->isConfigured();
+    return srdf_config_->getGroups();
   }
+
+  moveit_setup_framework::InformationFields getInfoField() const override
+  {
+    return moveit_setup_framework::GROUPS;
+  }
+
+  void onInit() override;
 
   std::vector<srdf::Model::Group>& getGroups()
   {
     return srdf_config_->getGroups();
   }
 
-  std::vector<std::string> getGroupNames() const
-  {
-    return srdf_config_->getGroupNames();
-  }
-
-  /**
-   * Find the associated group by name
-   *
-   * @param name - name of data to find in datastructure
-   * @return pointer to data in datastructure
-   */
-  srdf::Model::Group* findGroupByName(const std::string& name);
-
-  std::vector<std::string> getKinematicPlanners() const;
-  std::vector<std::string> getOMPLPlanners() const;
-
-  const std::vector<std::string>& getJointNames() const
-  {
-    return srdf_config_->getRobotModel()->getJointModelNames();
-  }
-
-  const std::vector<std::string>& getLinkNames() const
-  {
-    return srdf_config_->getRobotModel()->getLinkModelNames();
-  }
-
-  std::string getChildOfJoint(const std::string& joint_name) const
-  {
-    return srdf_config_->getChildOfJoint(joint_name);
-  }
-
-  std::string getJointType(const std::string& joint_name) const
-  {
-    const moveit::core::JointModel* joint_model = srdf_config_->getRobotModel()->getJointModel(joint_name);
-    if (!joint_model)
-    {
-      return "";
-    }
-    return joint_model->getTypeName();
-  }
+  void renameGroup(const std::string& old_group_name, const std::string& new_group_name);
+  void deleteGroup(const std::string& group_name);
 
   /**
    * @brief Set the specified group's joint names
@@ -140,12 +111,6 @@ public:
    */
   void setSubgroups(const std::string& selected_group_name, const std::vector<std::string>& subgroups);
 
-  void createGroup(const std::string& group_name);
-
-  void deleteGroup(const std::string& group_name);
-
-  void renameGroup(const std::string& old_group_name, const std::string& new_group_name);
-
   const GroupMetaData& getMetaData(const std::string& group_name) const
   {
     return group_meta_config_->getMetaData(group_name);
@@ -156,40 +121,30 @@ public:
     group_meta_config_->setMetaData(group_name, meta_data);
   }
 
-  LinkNameTree getLinkNameTree() const
+  std::vector<std::string> getGroupNames() const
   {
-    const moveit::core::JointModel* root_joint = srdf_config_->getRobotModel()->getRootJoint();
-    return buildLinkNameTree(root_joint->getChildLinkModel());
+    return srdf_config_->getGroupNames();
   }
 
-  std::vector<std::string> getPosesByGroup(const std::string& group_name) const
+  const std::vector<std::string>& getJointNames() const
   {
-    std::vector<std::string> pose_names;
-    for (const srdf::Model::GroupState& pose : srdf_config_->getGroupStates())
-    {
-      if (pose.group_ == group_name)
-      {
-        pose_names.push_back(pose.name_);
-      }
-    }
-    return pose_names;
+    return srdf_config_->getRobotModel()->getJointModelNames();
   }
 
-  std::vector<std::string> getEndEffectorsByGroup(const std::string& group_name) const
+  const std::vector<std::string>& getLinkNames() const
   {
-    std::vector<std::string> eef_names;
-    for (const srdf::Model::EndEffector& eef : srdf_config_->getEndEffectors())
-    {
-      if (eef.component_group_ == group_name)
-      {
-        eef_names.push_back(eef.name_);
-      }
-    }
-    return eef_names;
+    return srdf_config_->getRobotModel()->getLinkModelNames();
   }
+
+  std::string getChildOfJoint(const std::string& joint_name) const;
+  std::string getJointType(const std::string& joint_name) const;
+  LinkNameTree getLinkNameTree() const;
+  std::vector<std::string> getPosesByGroup(const std::string& group_name) const;
+  std::vector<std::string> getEndEffectorsByGroup(const std::string& group_name) const;
+  std::vector<std::string> getKinematicPlanners() const;
+  std::vector<std::string> getOMPLPlanners() const;
 
 protected:
-  std::shared_ptr<moveit_setup_framework::SRDFConfig> srdf_config_;
   std::shared_ptr<GroupMetaConfig> group_meta_config_;
 };
 }  // namespace moveit_setup_srdf_plugins

@@ -35,13 +35,13 @@
 /* Author: David V. Lu!! */
 #pragma once
 
-#include <moveit_setup_framework/setup_step.hpp>
-#include <moveit_setup_framework/data/srdf_config.hpp>
+#include <moveit_setup_srdf_plugins/srdf_step.hpp>
 #include <moveit_msgs/msg/display_robot_state.hpp>
 
 namespace moveit_setup_srdf_plugins
 {
-class RobotPoses : public moveit_setup_framework::SetupStep
+// Note: Does not derive from SuperSRDFStep because we always need to check the name AND the group name for each pose
+class RobotPoses : public SRDFStep
 {
 public:
   std::string getName() const override
@@ -53,7 +53,7 @@ public:
 
   bool isReady() const override
   {
-    return !srdf_config_->getGroupNames().empty();
+    return hasGroups();
   }
 
   std::vector<std::string> getGroupNames() const
@@ -94,7 +94,7 @@ public:
 
   void removePoseByName(const std::string& pose_name, const std::string& group_name)
   {
-    return srdf_config_->removePoseByName(pose_name, group_name);
+    srdf_config_->removePoseByName(pose_name, group_name);
   }
 
   void setToCurrentValues(srdf::Model::GroupState& group_state);
@@ -113,7 +113,5 @@ protected:
 
   /// Allowed collision matrix for robot poses
   collision_detection::AllowedCollisionMatrix allowed_collision_matrix_;
-
-  std::shared_ptr<moveit_setup_framework::SRDFConfig> srdf_config_;
 };
 }  // namespace moveit_setup_srdf_plugins

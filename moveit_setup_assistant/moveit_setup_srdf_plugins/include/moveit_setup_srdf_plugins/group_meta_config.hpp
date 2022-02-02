@@ -68,19 +68,7 @@ public:
   void deleteGroup(const std::string& group_name);
   void renameGroup(const std::string& old_group_name, const std::string& new_group_name);
 
-  const GroupMetaData& getMetaData(const std::string& group_name) const
-  {
-    const auto& match = group_meta_data_.find(group_name);
-    if (match != group_meta_data_.end())
-    {
-      return match->second;
-    }
-    else
-    {
-      return default_values_;
-    }
-  }
-
+  const GroupMetaData& getMetaData(const std::string& group_name) const;
   void setMetaData(const std::string& group_name, const GroupMetaData& meta_data);
 
   class GeneratedGroupMetaConfig : public moveit_setup_framework::YamlGeneratedFile

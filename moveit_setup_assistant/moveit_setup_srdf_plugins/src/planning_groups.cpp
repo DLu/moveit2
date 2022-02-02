@@ -63,58 +63,143 @@ protected:
 
 void PlanningGroups::onInit()
 {
+  SuperSRDFStep::onInit();
   config_data_->registerType("group_meta", "moveit_setup_srdf_plugins::GroupMetaConfig");
   group_meta_config_ = config_data_->get<GroupMetaConfig>("group_meta");
-  srdf_config_ = config_data_->get<moveit_setup_framework::SRDFConfig>("srdf");
 }
 
-srdf::Model::Group* PlanningGroups::findGroupByName(const std::string& name)
+void PlanningGroups::renameGroup(const std::string& old_group_name, const std::string& new_group_name)
 {
-  // Find the group we are editing based on the group name string
-  srdf::Model::Group* searched_group = nullptr;  // used for holding our search results
+  // Rename the actual group
+  rename(old_group_name, new_group_name);
 
+  long changes = 0L;
+
+  // Change all references to this group name in other subgroups
+  // Loop through every group
   for (srdf::Model::Group& group : srdf_config_->getGroups())
   {
-    if (group.name_ == name)  // string match
+    // Loop through every subgroup
+    for (std::string& subgroup : group.subgroups_)
     {
-      searched_group = &group;  // convert to pointer from iterator
-      break;                    // we are done searching
+      // Check if that subgroup references old group name. if so, update it
+      if (subgroup == old_group_name)  // same name
+      {
+        subgroup.assign(new_group_name);  // updated
+        changes |= moveit_setup_framework::GROUP_CONTENTS;
+      }
     }
   }
 
-  // Check if subgroup was found
-  if (searched_group == nullptr)  // not found
+  // Change all references to this group name in the end effectors screen
+  for (srdf::Model::EndEffector& eef : srdf_config_->getEndEffectors())
   {
-    RCLCPP_ERROR_STREAM((*logger_), "An internal error has occurred while searching for groups. Group '"
-                                        << name << "' was not found  in the SRDF.");
-    throw std::runtime_error(name + " was not found in the SRDF");
+    // Check if this eef's parent group references old group name. if so, update it
+    if (eef.parent_group_ == old_group_name)  // same name
+    {
+      RCLCPP_DEBUG_STREAM((*logger_), "Changed eef '" << eef.name_ << "' to new parent group name " << new_group_name);
+      eef.parent_group_ = new_group_name;  // updated
+      changes |= moveit_setup_framework::END_EFFECTORS;
+    }
+
+    // Check if this eef's group references old group name. if so, update it
+    if (eef.component_group_.compare(old_group_name) == 0)  // same name
+    {
+      RCLCPP_DEBUG_STREAM((*logger_), "Changed eef '" << eef.name_ << "' to new group name " << new_group_name);
+      eef.component_group_ = new_group_name;  // updated
+      changes |= moveit_setup_framework::END_EFFECTORS;
+    }
   }
 
-  return searched_group;
+  // Change all references to this group name in the robot poses screen
+  for (srdf::Model::GroupState& gs : srdf_config_->getGroupStates())
+  {
+    // Check if this eef's parent group references old group name. if so, update it
+    if (gs.group_ == old_group_name)  // same name
+    {
+      RCLCPP_DEBUG_STREAM((*logger_), "Changed group state group '" << gs.group_ << "' to new parent group name "
+                                                                    << new_group_name);
+      gs.group_ = new_group_name;  // updated
+      changes |= moveit_setup_framework::POSES;
+    }
+  }
+
+  group_meta_config_->renameGroup(old_group_name, new_group_name);
+  changes |= moveit_setup_framework::GROUPS;
+
+  // Now update the robot model based on our changed to the SRDF
+  srdf_config_->updateRobotModel(changes);
 }
+
+void PlanningGroups::deleteGroup(const std::string& group_name)
+{
+  long changes = 0L;
+
+  // Remove poses in this group
+  for (const std::string& pose_name : getPosesByGroup(group_name))
+  {
+    srdf_config_->removePoseByName(pose_name, group_name);
+  }
+
+  // Remove end effectors in this group
+  auto& eefs = srdf_config_->getEndEffectors();
+  auto it = eefs.begin();
+  while (it != eefs.end())
+  {
+    if (it->component_group_ == group_name)
+    {
+      it = eefs.erase(it);
+      changes |= moveit_setup_framework::END_EFFECTORS;
+    }
+    else
+    {
+      it++;
+    }
+  }
+
+  // delete actual group
+  remove(group_name);
+
+  // Delete references in subgroups
+  for (srdf::Model::Group& group : srdf_config_->getGroups())
+  {
+    auto& subgroups = group.subgroups_;
+    std::vector<std::string>::iterator subgroup_it = std::find(subgroups.begin(), subgroups.end(), group_name);
+    while (subgroup_it != subgroups.end())
+    {
+      subgroups.erase(subgroup_it);
+      changes |= moveit_setup_framework::GROUP_CONTENTS;
+      subgroup_it = std::find(subgroups.begin(), subgroups.end(), group_name);
+    }
+  }
+
+  group_meta_config_->deleteGroup(group_name);
+
+  srdf_config_->updateRobotModel(changes);
+}  // namespace moveit_setup_srdf_plugins
 
 void PlanningGroups::setJoints(const std::string& group_name, const std::vector<std::string>& joint_names)
 {
   // Find the group we are editing based on the group name string
-  srdf::Model::Group* searched_group = findGroupByName(group_name);
+  srdf::Model::Group* searched_group = find(group_name);
 
   // save the data
   searched_group->joints_ = joint_names;
 
   // Update the kinematic model with changes
-  srdf_config_->updateRobotModel(true);
+  srdf_config_->updateRobotModel(moveit_setup_framework::GROUP_CONTENTS);
 }
 
 void PlanningGroups::setLinks(const std::string& group_name, const std::vector<std::string>& link_names)
 {
   // Find the group we are editing based on the group name string
-  srdf::Model::Group* searched_group = findGroupByName(group_name);
+  srdf::Model::Group* searched_group = find(group_name);
 
   // save the data
   searched_group->links_ = link_names;
 
   // Update the kinematic model with changes
-  srdf_config_->updateRobotModel(true);
+  srdf_config_->updateRobotModel(moveit_setup_framework::GROUP_CONTENTS);
 }
 
 void PlanningGroups::setChain(const std::string& group_name, const std::string& base, const std::string& tip)
@@ -160,7 +245,7 @@ void PlanningGroups::setChain(const std::string& group_name, const std::string& 
   }
 
   // Find the group we are editing based on the group name string
-  srdf::Model::Group* searched_group = findGroupByName(group_name);
+  srdf::Model::Group* searched_group = find(group_name);
 
   // clear the old data
   searched_group->chains_.clear();
@@ -172,15 +257,7 @@ void PlanningGroups::setChain(const std::string& group_name, const std::string& 
   }
 
   // Update the kinematic model with changes
-  srdf_config_->updateRobotModel(true);
-}
-
-void PlanningGroups::createGroup(const std::string& group_name)
-{
-  srdf::Model::Group new_group;
-  new_group.name_ = group_name;
-  srdf_config_->getGroups().push_back(new_group);
-  srdf_config_->updateRobotModel(true);
+  srdf_config_->updateRobotModel(moveit_setup_framework::GROUP_CONTENTS);
 }
 
 void PlanningGroups::setSubgroups(const std::string& selected_group_name, const std::vector<std::string>& subgroups)
@@ -248,108 +325,60 @@ void PlanningGroups::setSubgroups(const std::string& selected_group_name, const 
   }
 
   // Find the group we are editing based on the group name string
-  srdf::Model::Group* searched_group = findGroupByName(selected_group_name);
+  srdf::Model::Group* searched_group = find(selected_group_name);
 
   // save the data
   searched_group->subgroups_ = subgroups;
 
   // Update the kinematic model with changes
-  srdf_config_->updateRobotModel(true);
+  srdf_config_->updateRobotModel(moveit_setup_framework::GROUP_CONTENTS);
 }
 
-void PlanningGroups::deleteGroup(const std::string& group_name)
+std::string PlanningGroups::getChildOfJoint(const std::string& joint_name) const
 {
-  for (const std::string& pose_name : getPosesByGroup(group_name))
-  {
-    srdf_config_->removePoseByName(pose_name, group_name);
-  }
-  for (const std::string& eef_name : getEndEffectorsByGroup(group_name))
-  {
-    srdf_config_->removeEefByName(eef_name);
-  }
-  // delete actual group
-  std::vector<srdf::Model::Group>& groups = srdf_config_->getGroups();
-  std::vector<srdf::Model::Group>::iterator to_delete;
-  for (std::vector<srdf::Model::Group>::iterator group_it = groups.begin(); group_it != groups.end(); ++group_it)
-  {
-    // check if this is the group we want to delete
-    if (group_it->name_ == group_name)  // string match
-    {
-      to_delete = group_it;
-    }
-    else
-    {
-      auto& subgroups = group_it->subgroups_;
-      std::vector<std::string>::iterator subgroup_it = std::find(subgroups.begin(), subgroups.end(), group_name);
-      while (subgroup_it != subgroups.end())
-      {
-        subgroups.erase(subgroup_it);
-        subgroup_it = std::find(subgroups.begin(), subgroups.end(), group_name);
-      }
-    }
-  }
-  groups.erase(to_delete);
-
-  group_meta_config_->deleteGroup(group_name);
-
-  srdf_config_->updateRobotModel(true);
+  return srdf_config_->getChildOfJoint(joint_name);
 }
 
-void PlanningGroups::renameGroup(const std::string& old_group_name, const std::string& new_group_name)
+std::string PlanningGroups::getJointType(const std::string& joint_name) const
 {
-  srdf::Model::Group* searched_group = findGroupByName(old_group_name);
-  // Change group name
-  searched_group->name_ = new_group_name;
-
-  // Change all references to this group name in other subgroups
-  // Loop through every group
-  for (srdf::Model::Group& group : srdf_config_->getGroups())
+  const moveit::core::JointModel* joint_model = srdf_config_->getRobotModel()->getJointModel(joint_name);
+  if (!joint_model)
   {
-    // Loop through every subgroup
-    for (std::string& subgroup : group.subgroups_)
+    return "";
+  }
+  return joint_model->getTypeName();
+}
+
+LinkNameTree PlanningGroups::getLinkNameTree() const
+{
+  const moveit::core::JointModel* root_joint = srdf_config_->getRobotModel()->getRootJoint();
+  return buildLinkNameTree(root_joint->getChildLinkModel());
+}
+
+std::vector<std::string> PlanningGroups::getPosesByGroup(const std::string& group_name) const
+{
+  std::vector<std::string> pose_names;
+  for (const srdf::Model::GroupState& pose : srdf_config_->getGroupStates())
+  {
+    if (pose.group_ == group_name)
     {
-      // Check if that subgroup references old group name. if so, update it
-      if (subgroup.compare(old_group_name) == 0)  // same name
-      {
-        subgroup.assign(new_group_name);  // updated
-      }
+      pose_names.push_back(pose.name_);
     }
   }
+  return pose_names;
+}
 
-  // Change all references to this group name in the end effectors screen
-  for (srdf::Model::EndEffector& eef : srdf_config_->getEndEffectors())
+std::vector<std::string> PlanningGroups::getEndEffectorsByGroup(const std::string& group_name) const
+{
+  std::vector<std::string> eef_names;
+  for (const srdf::Model::EndEffector& eef : srdf_config_->getEndEffectors())
   {
-    // Check if this eef's parent group references old group name. if so, update it
-    if (eef.parent_group_ == old_group_name)  // same name
+    if (eef.component_group_ == group_name)
     {
-      RCLCPP_DEBUG_STREAM((*logger_), "Changed eef '" << eef.name_ << "' to new parent group name " << new_group_name);
-      eef.parent_group_ = new_group_name;  // updated
-    }
-
-    // Check if this eef's group references old group name. if so, update it
-    if (eef.component_group_.compare(old_group_name) == 0)  // same name
-    {
-      RCLCPP_DEBUG_STREAM((*logger_), "Changed eef '" << eef.name_ << "' to new group name " << new_group_name);
-      eef.component_group_ = new_group_name;  // updated
+      eef_names.push_back(eef.name_);
     }
   }
-
-  // Change all references to this group name in the robot poses screen
-  for (srdf::Model::GroupState& gs : srdf_config_->getGroupStates())
-  {
-    // Check if this eef's parent group references old group name. if so, update it
-    if (gs.group_ == old_group_name)  // same name
-    {
-      RCLCPP_DEBUG_STREAM((*logger_), "Changed group state group '" << gs.group_ << "' to new parent group name "
-                                                                    << new_group_name);
-      gs.group_ = new_group_name;  // updated
-    }
-  }
-
-  group_meta_config_->renameGroup(old_group_name, new_group_name);
-
-  // Now update the robot model based on our changed to the SRDF
-  srdf_config_->updateRobotModel(true);
+  return eef_names;
 }
 
 std::vector<std::string> PlanningGroups::getKinematicPlanners() const

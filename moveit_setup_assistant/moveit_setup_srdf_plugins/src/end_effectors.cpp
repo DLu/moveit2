@@ -40,24 +40,24 @@ namespace moveit_setup_srdf_plugins
 {
 void EndEffectors::onInit()
 {
-  srdf_config_ = config_data_->get<moveit_setup_framework::SRDFConfig>("srdf");
+  SuperSRDFStep::onInit();
   urdf_config_ = config_data_->get<moveit_setup_framework::URDFConfig>("urdf");
 }
 
-// ******************************************************************************************
-// Find the associated data by name
-// ******************************************************************************************
-srdf::Model::EndEffector* EndEffectors::findEffectorByName(const std::string& name)
+bool EndEffectors::isLinkInGroup(const std::string& link, const std::string& group) const
 {
-  // Find the group state we are editing based on the effector name
-  for (srdf::Model::EndEffector& end_effector : srdf_config_->getEndEffectors())
-  {
-    if (end_effector.name_ == name)  // string match
-    {
-      return &end_effector;  // convert to pointer from iterator
-    }
-  }
-  return nullptr;
+  const auto rm = srdf_config_->getRobotModel();
+  const moveit::core::JointModelGroup* jmg = rm->getJointModelGroup(group);
+  return jmg->hasLinkModel(link);
+}
+
+void EndEffectors::setProperties(srdf::Model::EndEffector* eef, const std::string& parent_link,
+                                 const std::string& component_group, const std::string& parent_group)
+{
+  eef->parent_link_ = parent_link;
+  eef->component_group_ = component_group;
+  eef->parent_group_ = parent_group;
+  srdf_config_->updateRobotModel(moveit_setup_framework::END_EFFECTORS);
 }
 
 }  // namespace moveit_setup_srdf_plugins

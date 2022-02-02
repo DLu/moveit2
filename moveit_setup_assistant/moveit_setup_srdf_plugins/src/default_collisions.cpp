@@ -38,11 +38,6 @@
 
 namespace moveit_setup_srdf_plugins
 {
-void DefaultCollisions::onInit()
-{
-  srdf_config_ = config_data_->get<moveit_setup_framework::SRDFConfig>("srdf");
-}
-
 std::vector<std::string> DefaultCollisions::getCollidingLinks()
 {
   return srdf_config_->getPlanningScene()->getRobotModel()->getLinkModelNamesWithCollisionGeometry();
@@ -198,7 +193,7 @@ void DefaultCollisions::cancelGenerationThread()
 
 void DefaultCollisions::joinGenerationThread()
 {
-  srdf_config_->updateRobotModel(true);  // mark as changed
+  srdf_config_->updateRobotModel(moveit_setup_framework::COLLISIONS);  // mark as changed
   worker_.join();
 }
 

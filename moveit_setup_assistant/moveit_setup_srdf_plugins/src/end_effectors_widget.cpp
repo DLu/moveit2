@@ -270,7 +270,7 @@ void EndEffectorsWidget::previewClicked(int /*row*/, int /*column*/)
     return;
 
   // Find the selected in datastructure
-  srdf::Model::EndEffector* effector = findEffectorByName(selected[0]->text().toStdString());
+  srdf::Model::EndEffector* effector = getEndEffector(selected[0]->text().toStdString());
 
   // Unhighlight all links
   rviz_panel_->unhighlightAll();
@@ -320,7 +320,7 @@ void EndEffectorsWidget::edit(const std::string& name)
   current_edit_effector_ = name;
 
   // Find the selected in datastruture
-  srdf::Model::EndEffector* effector = findEffectorByName(name);
+  srdf::Model::EndEffector* effector = getEndEffector(name);
 
   // Set effector name
   effector_name_field_->setText(effector->name_.c_str());
@@ -396,9 +396,9 @@ void EndEffectorsWidget::loadParentComboBox()
 // ******************************************************************************************
 // Find the associated data by name
 // ******************************************************************************************
-srdf::Model::EndEffector* EndEffectorsWidget::findEffectorByName(const std::string& name)
+srdf::Model::EndEffector* EndEffectorsWidget::getEndEffector(const std::string& name)
 {
-  srdf::Model::EndEffector* searched_group = setup_step_.findEffectorByName(name);
+  srdf::Model::EndEffector* searched_group = setup_step_.find(name);
 
   // Check if effector was found
   if (searched_group == nullptr)  // not found
@@ -435,7 +435,7 @@ void EndEffectorsWidget::deleteSelected()
     return;
   }
 
-  setup_step_.removeEefByName(current_edit_effector_);
+  setup_step_.remove(current_edit_effector_);
 
   // Reload main screen table
   loadDataTable();
@@ -449,31 +449,11 @@ void EndEffectorsWidget::doneEditing()
   // Get a reference to the supplied strings
   const std::string effector_name = effector_name_field_->text().toStdString();
 
-  // Used for editing existing groups
-  srdf::Model::EndEffector* searched_data = nullptr;
-
   // Check that name field is not empty
   if (effector_name.empty())
   {
     QMessageBox::warning(this, "Error Saving", "A name must be specified for the end effector!");
     return;
-  }
-
-  // Check if this is an existing group
-  if (!current_edit_effector_.empty())
-  {
-    // Find the group we are editing based on the group name string
-    searched_data = findEffectorByName(current_edit_effector_);
-
-    // Check that the effector name is unique
-    srdf::Model::EndEffector* match = setup_step_.findEffectorByName(effector_name);
-    // is this our existing effector? check if effector pointers are same
-    if (match && match != searched_data)
-    {
-      QMessageBox::warning(this, "Error Saving",
-                           QString("An end-effector named '").append(effector_name.c_str()).append("'already exists!"));
-      return;
-    }
   }
 
   // Check that a group was selected
@@ -518,25 +498,19 @@ void EndEffectorsWidget::doneEditing()
   }
 
   // Save the new effector name or create the new effector ----------------------------
-  bool is_new = false;
 
-  if (searched_data == nullptr)  // create new
+  try
   {
-    is_new = true;
-
-    searched_data = new srdf::Model::EndEffector();
+    srdf::Model::EndEffector* searched_data = setup_step_.get(effector_name, current_edit_effector_);
+    // Copy name data ----------------------------------------------------
+    setup_step_.setProperties(searched_data, parent_name_field_->currentText().toStdString(),
+                              group_name_field_->currentText().toStdString(),
+                              parent_group_name_field_->currentText().toStdString());
   }
-
-  // Copy name data ----------------------------------------------------
-  setup_step_.setProperties(searched_data, effector_name, parent_name_field_->currentText().toStdString(),
-                            group_name_field_->currentText().toStdString(),
-                            parent_group_name_field_->currentText().toStdString());
-
-  // Insert new effectors into group state vector --------------------------
-  if (is_new)
+  catch (const std::runtime_error& e)
   {
-    setup_step_.getEndEffectors().push_back(*searched_data);
-    delete searched_data;
+    QMessageBox::warning(this, "Error Saving", e.what());
+    return;
   }
 
   // Finish up ------------------------------------------------------

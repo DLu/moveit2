@@ -43,6 +43,20 @@
 
 namespace moveit_setup_framework
 {
+// bits of information that can be changed in the SRDF
+enum InformationFields
+{
+  NONE = 0,
+  COLLISIONS = 1 << 1,
+  VIRTUAL_JOINTS = 1 << 2,
+  GROUPS = 1 << 3,
+  GROUP_CONTENTS = 1 << 4,
+  POSES = 1 << 5,
+  END_EFFECTORS = 1 << 6,
+  PASSIVE_JOINTS = 1 << 7,
+  OTHER = 1 << 8,
+};
+
 class SRDFConfig : public SetupConfig
 {
 public:
@@ -68,7 +82,9 @@ public:
   /// Provide a shared planning scene
   planning_scene::PlanningScenePtr getPlanningScene();
 
-  void updateRobotModel(bool mark_as_changed = false);
+  /// Update the robot model with the new SRDF, AND mark the changes that have been made to the model
+  /// changed_information should be composed of InformationFields
+  void updateRobotModel(long changed_information = 0L);
 
   std::vector<std::string> getLinkNames() const;
 
@@ -112,42 +128,13 @@ public:
     return srdf_.passive_joints_;
   }
 
-  std::string getChildOfJoint(const std::string& joint_name) const
-  {
-    const moveit::core::JointModel* joint_model = getRobotModel()->getJointModel(joint_name);
-    // Check that a joint model was found
-    if (!joint_model)
-    {
-      return "";
-    }
-    return joint_model->getChildLinkModel()->getName();
-  }
+  /**
+   * @brief Return the name of the child link of a joint
+   * @return empty string if joint is not found
+   */
+  std::string getChildOfJoint(const std::string& joint_name) const;
 
-  void removePoseByName(const std::string& pose_name, const std::string& group_name)
-  {
-    for (std::vector<srdf::Model::GroupState>::iterator pose_it = srdf_.group_states_.begin();
-         pose_it != srdf_.group_states_.end(); ++pose_it)
-    {
-      if (pose_it->name_ == pose_name && pose_it->group_ == group_name)
-      {
-        srdf_.group_states_.erase(pose_it);
-        return;
-      }
-    }
-  }
-
-  void removeEefByName(const std::string& eef_name)
-  {
-    for (std::vector<srdf::Model::EndEffector>::iterator eef_it = srdf_.end_effectors_.begin();
-         eef_it != srdf_.end_effectors_.end(); ++eef_it)
-    {
-      if (eef_it->name_ == eef_name)
-      {
-        srdf_.end_effectors_.erase(eef_it);
-        return;
-      }
-    }
-  }
+  void removePoseByName(const std::string& pose_name, const std::string& group_name);
 
   class GeneratedSRDF : public GeneratedFile
   {
@@ -172,7 +159,7 @@ public:
 
     bool hasChanges() const override
     {
-      return parent_.has_changes_;
+      return parent_.changes_ > 0;
     }
 
     bool write() override
@@ -227,6 +214,7 @@ protected:
   /// Shared planning scene
   planning_scene::PlanningScenePtr planning_scene_;
 
-  bool has_changes_;
+  // bitfield of changes (composed of InformationFields)
+  unsigned long changes_;
 };
 }  // namespace moveit_setup_framework

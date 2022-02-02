@@ -117,7 +117,7 @@ private Q_SLOTS:
 private:
   // ******************************************************************************************
   // Variables
-  // *******************************************************
+  // ******************************************************************************************
   EndEffectors setup_step_;
 
   /// Original name of effector currently being edited. This is used to find the element in the vector
@@ -133,7 +133,7 @@ private:
    * @param name - name of data to find in datastructure
    * @return pointer to data in datastructure
    */
-  srdf::Model::EndEffector* findEffectorByName(const std::string& name);
+  srdf::Model::EndEffector* getEndEffector(const std::string& name);
 
   /**
    * Create the main list view of effectors for robot
