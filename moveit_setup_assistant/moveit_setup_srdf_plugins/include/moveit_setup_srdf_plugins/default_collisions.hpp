@@ -35,26 +35,18 @@
 /* Author: David V. Lu!! */
 #pragma once
 
-#include <moveit_setup_framework/setup_step.hpp>
-#include <moveit_setup_framework/data/srdf_config.hpp>
+#include <moveit_setup_srdf_plugins/srdf_step.hpp>
 #include <moveit_setup_srdf_plugins/compute_default_collisions.hpp>
 #include <boost/thread/thread.hpp>
 
 namespace moveit_setup_srdf_plugins
 {
-class DefaultCollisions : public moveit_setup_framework::SetupStep
+class DefaultCollisions : public SRDFStep
 {
 public:
   std::string getName() const override
   {
     return "Self-Collisions";
-  }
-
-  void onInit() override;
-
-  bool isReady() const override
-  {
-    return srdf_config_->isConfigured();
   }
 
   std::vector<std::string> getCollidingLinks();
@@ -75,9 +67,6 @@ public:
    */
   void linkPairsFromSRDF();
 
-  /// Load the allowed collision matrix from the SRDF's list of link pairs
-  void loadAllowedCollisionMatrix();
-
   LinkPairMap& getLinkPairs()
   {
     return link_pairs_;
@@ -92,13 +81,8 @@ public:
 protected:
   void generateCollisionTable(unsigned int num_trials, double min_frac, bool verbose);
 
-  std::shared_ptr<moveit_setup_framework::SRDFConfig> srdf_config_;
-
   /// main storage of link pair data
   LinkPairMap link_pairs_;
-
-  /// Allowed collision matrix for robot poses
-  collision_detection::AllowedCollisionMatrix allowed_collision_matrix_;
 
   // For threaded operations
   boost::thread worker_;
