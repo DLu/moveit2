@@ -126,3 +126,51 @@ def generate_warehouse_launch(moveit_config):
     ld.add_action(reset_node)
 
     return ld
+
+
+def generate_move_group_launch(moveit_config):
+    ld = LaunchDescription()
+
+    ld.add_action(DeclareBooleanLaunchArg("debug"), default_value=False)
+    ld.add_action(
+        DeclareBooleanLaunchArg("allow_trajectory_execution", default_value=True)
+    )
+    ld.add_action(DeclareBooleanLaunchArg("fake_execution", default_value=False))
+    ld.add_action(DeclareLaunchArgument("max_safe_path_cost", default_value="1"))
+    ld.add_action(DeclareLaunchArgument("jiggle_fraction", default_value="0.05"))
+    ld.add_action(
+        DeclareBooleanLaunchArg("publish_monitored_planning_scene", default_value=True)
+    )
+    # load non-default MoveGroup capabilities (space separated)
+    ld.add_action(DeclareLaunchArgument("capabilities", default_value=""))
+    # inhibit these default MoveGroup capabilities (space separated)
+    ld.add_action(DeclareLaunchArgument("disable_capabilities", default_value=""))
+
+    should_publish = LaunchConfiguration("publish_monitored_planning_scene")
+
+    move_group_configuration = {
+        "publish_robot_description_semantic": True,
+        "allow_trajectory_execution": LaunchConfiguration("allow_trajectory_execution"),
+        "max_safe_path_cost": LaunchConfiguration("max_safe_path_cost"),
+        "jiggle_fraction": LaunchConfiguration("jiggle_fraction"),
+        "capabilities": LaunchConfiguration("capabilities"),
+        "disable_capabilities": LaunchConfiguration("disable_capabilities"),
+        # Publish the planning scene of the physical robot so that rviz plugin can know actual robot
+        "publish_planning_scene": should_publish,
+        "publish_geometry_updates": should_publish,
+        "publish_state_updates": should_publish,
+        "publish_transforms_updates": should_publish,
+    }
+
+    move_group_params = [
+        move_group_configuration,
+        moveit_config.to_dict(),
+    ]
+    add_debuggable_node(
+        ld,
+        package="moveit_ros_move_group",
+        executable="move_group",
+        output="screen",
+        parameters=move_group_params,
+    )
+    return ld
