@@ -59,3 +59,17 @@ def generate_rviz_launch(moveit_config):
     )
 
     return ld
+
+
+def generate_assistant_launch(moveit_config):
+    ld = LaunchDescription()
+
+    ld.add_action(DeclareBooleanLaunchArg("debug", default_value=False))
+    add_debuggable_node(
+        ld,
+        package="moveit_setup_assistant",
+        executable="moveit_setup_assistant",
+        arguments=[["--config_pkg=", str(moveit_config.package_path)]],
+    )
+
+    return ld
