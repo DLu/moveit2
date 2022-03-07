@@ -1,6 +1,7 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.conditions import IfCondition
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.conditions import IfCondition, UnlessCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
@@ -173,5 +174,115 @@ def generate_move_group_launch(moveit_config):
         commands_file=str(moveit_config.package_path / "launch" / "gdb_settings.gdb"),
         output="screen",
         parameters=move_group_params,
+    )
+    return ld
+
+
+def generate_demo_launch(moveit_config, virtual_joints=False):
+    ld = LaunchDescription()
+    ld.add_action(
+        DeclareBooleanLaunchArg(
+            "db",
+            default_value=False,
+            description="By default, we do not start a database (it can be large)",
+        )
+    )
+    ld.add_action(
+        DeclareBooleanLaunchArg(
+            "debug",
+            default_value=False,
+            description="By default, we are not in debug mode",
+        )
+    )
+
+    # MoveIt's "demo" mode replaces the real robot driver with the joint_state_publisher.
+    # The latter one maintains and publishes the current joint configuration of the simulated robot.
+    # It also provides a GUI to move the simulated robot around "manually".
+    # This corresponds to moving around the real robot without the use of MoveIt.
+    ld.add_action(
+        DeclareBooleanLaunchArg(
+            "use_gui",
+            default_value=False,
+            description="By default, hide joint_state_publisher's GUI",
+        )
+    )
+    ld.add_action(DeclareBooleanLaunchArg("use_rviz", default_value=True))
+
+    # If there are virtual joints, broadcast static tf by including virtual_joints launch
+    if virtual_joints:
+        ld.add_action(
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    str(
+                        moveit_config.package_path
+                        / "launch/static_virtual_joint_tfs.launch.py"
+                    )
+                ),
+            )
+        )
+
+    # We do not have a robot connected, so publish fake joint states
+    jsp_params = [("source_list", ["move_group/fake_controller_joint_states"])]
+    ld.add_action(
+        Node(
+            package="joint_state_publisher",
+            executable="joint_state_publisher",
+            parameters=jsp_params,
+            condition=UnlessCondition(LaunchConfiguration("use_gui")),
+        )
+    )
+    ld.add_action(
+        Node(
+            package="joint_state_publisher_gui",
+            executable="joint_state_publisher_gui",
+            parameters=jsp_params,
+            condition=IfCondition(LaunchConfiguration("use_gui")),
+        )
+    )
+
+    # Given the published joint states, publish tf for the robot links
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                str(moveit_config.package_path / "launch/rsp.launch.py")
+            ),
+        )
+    )
+
+    # Run the main MoveIt executable without trajectory execution (we do not have controllers configured by default)
+    move_group_launch_args = {
+        "allow_trajectory_execution": "true",
+        "fake_execution": "true",
+        "info": "true",
+        "debug": LaunchConfiguration("debug"),
+        "pipeline": LaunchConfiguration("pipeline"),
+    }
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                str(moveit_config.package_path / "launch/move_group.launch.py")
+            ),
+            launch_arguments=move_group_launch_args.items(),
+        )
+    )
+
+    # Run Rviz and load the default config to see the state of the move_group node
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                str(moveit_config.package_path / "launch/moveit_rviz.launch.py")
+            ),
+            condition=IfCondition(LaunchConfiguration("use_rviz")),
+        )
+    )
+
+    # If database loading was enabled, start mongodb as well
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                str(moveit_config.package_path / "launch/warehouse_db.launch.py")
+            ),
+            condition=IfCondition(LaunchConfiguration("db")),
+        )
     )
     return ld
