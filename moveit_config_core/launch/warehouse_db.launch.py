@@ -10,7 +10,7 @@ from moveit_config_core import DeclareBooleanLaunchArg
 
 def generate_launch_description():
     ld = LaunchDescription()
-    ld.add_action(DeclareLaunchArgument("moveit_warehouse_database_path")) # Required argument
+    ld.add_action(DeclareLaunchArgument("moveit_warehouse_database_path"))  # Required argument
     ld.add_action(DeclareBooleanLaunchArg("reset", default_value=False))
 
     # The default DB port for moveit (not default MongoDB port to avoid potential conflicts)
