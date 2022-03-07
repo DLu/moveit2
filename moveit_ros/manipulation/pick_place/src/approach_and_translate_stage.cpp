@@ -147,9 +147,9 @@ bool executeAttachObject(const ManipulationPlanSharedDataConstPtr& shared_plan_d
     ok = ps->processAttachedCollisionObjectMsg(msg);
   }
   motion_plan->planning_scene_monitor_->triggerSceneUpdateEvent(
-      (planning_scene_monitor::PlanningSceneMonitor::SceneUpdateType)(
-          planning_scene_monitor::PlanningSceneMonitor::UPDATE_GEOMETRY +
-          planning_scene_monitor::PlanningSceneMonitor::UPDATE_STATE));
+      (planning_scene_monitor::PlanningSceneMonitor::
+           SceneUpdateType)(planning_scene_monitor::PlanningSceneMonitor::UPDATE_GEOMETRY +
+                            planning_scene_monitor::PlanningSceneMonitor::UPDATE_STATE));
   return ok;
 }
 
@@ -233,7 +233,7 @@ bool ApproachAndTranslateStage::evaluate(const ManipulationPlanPtr& plan) const
                   &plan->approach_posture_, _1, _2, _3);
   plan->goal_sampler_->setVerbose(verbose_);
   std::size_t attempted_possible_goal_states = 0;
-  do  // continously sample possible goal states
+  do  // continuously sample possible goal states
   {
     for (std::size_t i = attempted_possible_goal_states; i < plan->possible_goal_states_.size() && !signal_stop_;
          ++i, ++attempted_possible_goal_states)

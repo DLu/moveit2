@@ -49,7 +49,7 @@ static void siginthandler(int /*param*/)
 
 void usage(boost::program_options::options_description& desc, int exit_code)
 {
-  std::cout << desc << std::endl;
+  std::cout << desc << '\n';
   exit(exit_code);
 }
 
@@ -59,10 +59,12 @@ int main(int argc, char** argv)
   namespace po = boost::program_options;
 
   // Declare the supported options
+  // clang-format off
   po::options_description desc("Allowed options");
   desc.add_options()("help,h", "Show help message")("debug,g", "Run in debug/test mode")(
       "urdf_path,u", po::value<std::string>(), "Optional, path to URDF file in ROS package")(
       "config_pkg,c", po::value<std::string>(), "Optional, pass in existing config package to load");
+  // clang-format on
 
   // Process options
   po::variables_map vm;
@@ -76,7 +78,7 @@ int main(int argc, char** argv)
   }
   catch (const std::exception& e)
   {
-    std::cerr << e.what() << std::endl;
+    std::cerr << e.what() << '\n';
     usage(desc, 1);
   }
   // Start ROS Node

@@ -108,7 +108,7 @@ bool setup(moveit_setup_assistant::MoveItConfigData& config_data, bool keep_old,
 moveit_setup_assistant::LinkPairMap compute(moveit_setup_assistant::MoveItConfigData& config_data, uint32_t trials,
                                             double min_collision_fraction, bool verbose)
 {
-  // TODO: spin thread and print progess if verbose
+  // TODO: spin thread and print progress if verbose
   unsigned int collision_progress;
   return moveit_setup_assistant::computeDefaultCollisions(config_data.getPlanningScene(), &collision_progress,
                                                           trials > 0, trials, min_collision_fraction, verbose);
@@ -127,6 +127,7 @@ int main(int argc, char* argv[])
 
   uint32_t never_trials = 0;
 
+  // clang-format off
   po::options_description desc("Allowed options");
   desc.add_options()("help", "show help")("config-pkg", po::value(&config_pkg_path), "path to MoveIt config package")(
       "urdf", po::value(&urdf_path), "path to URDF ( or xacro)")("srdf", po::value(&srdf_path),
@@ -141,6 +142,7 @@ int main(int argc, char* argv[])
                                                               "number of trials for searching never colliding pairs")(
       "min-collision-fraction", po::value(&min_collision_fraction),
       "fraction of small sample size to determine links that are always colliding");
+  // clang-format on
 
   po::positional_options_description pos_desc;
   pos_desc.add("xacro-args", -1);
@@ -151,7 +153,7 @@ int main(int argc, char* argv[])
 
   if (vm.count("help"))
   {
-    std::cout << desc << std::endl;
+    std::cout << desc << '\n';
     return 1;
   }
 

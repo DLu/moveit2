@@ -52,8 +52,8 @@ const boost::unordered_map<DisabledReason, std::string> REASONS_TO_STRING = boos
     DEFAULT, "Default")(ADJACENT, "Adjacent")(ALWAYS, "Always")(USER, "User")(NOT_DISABLED, "Not Disabled");
 
 const boost::unordered_map<std::string, DisabledReason> REASONS_FROM_STRING =
-    boost::assign::map_list_of("Never", NEVER)("Default", DEFAULT)("Adjacent", ADJACENT)("Always", ALWAYS)(
-        "User", USER)("Not Disabled", NOT_DISABLED);
+    boost::assign::map_list_of("Never", NEVER)("Default", DEFAULT)(
+        "Adjacent", ADJACENT)("Always", ALWAYS)("User", USER)("Not Disabled", NOT_DISABLED);
 
 // Used for logging
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("collision_updater");
@@ -345,7 +345,7 @@ void computeConnectionGraph(const moveit::core::LinkModel* start_link, LinkGraph
 {
   link_graph.clear();  // make sure the edges structure is clear
 
-  // Recurively build adj list of link connections
+  // Recursively build adj list of link connections
   computeConnectionGraphRec(start_link, link_graph);
 
   // Repeatidly check for links with no geometry and remove them, then re-check until no more removals are detected
@@ -368,7 +368,7 @@ void computeConnectionGraph(const moveit::core::LinkModel* start_link, LinkGraph
           temp_list.push_back(adj_it);
         }
 
-        // Make all preceeding and succeeding links to the no-shape link fully connected
+        // Make all preceding and succeeding links to the no-shape link fully connected
         // so that they don't collision check with themselves
         for (std::size_t i = 0; i < temp_list.size(); ++i)
         {
@@ -439,7 +439,7 @@ unsigned int disableAdjacentLinks(planning_scene::PlanningScene& scene, LinkGrap
       }
     }
   }
-  // RCLCPP_INFO_STREAM(LOGGER, "Disabled %d adjancent link pairs from collision checking", num_disabled);
+  // RCLCPP_INFO_STREAM(LOGGER, "Disabled %d adjacent link pairs from collision checking", num_disabled);
 
   return num_disabled;
 }
