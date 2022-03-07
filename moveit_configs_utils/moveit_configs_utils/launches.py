@@ -170,6 +170,7 @@ def generate_move_group_launch(moveit_config):
         ld,
         package="moveit_ros_move_group",
         executable="move_group",
+        commands_file=str(moveit_config.package_path / "launch" / "gdb_settings.gdb"),
         output="screen",
         parameters=move_group_params,
     )
