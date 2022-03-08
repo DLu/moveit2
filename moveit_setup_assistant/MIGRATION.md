@@ -24,7 +24,6 @@ This file should be deleted once all tasks are complete.
       * TODO: Load default configuration
    * [ ] Bonus Content - Need to create a NEW setup step screen that allows users to configure what bonus launch files they want to be created, i.e. `demo.launch` and the like.
  * `moveit_setup_assistant`
-   * BUG: Command line argument parsing FAILS if ROS-y arguments are loaded in (i.e. launched from launch file)
    * TODO: Maybe add explicit SIGINT handler
    * TODO: Maybe add explicit ASyncSpinner equivalent / any spinning is needed (see SetupAssistantWidget::updateTimer)
 
