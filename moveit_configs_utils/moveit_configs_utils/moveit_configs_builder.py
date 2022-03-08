@@ -383,9 +383,16 @@ class MoveItConfigsBuilder(ParameterBuilder):
         :param pipelines: List of the planning pipelines to be loaded.
         :return: Instance of MoveItConfigsBuilder with planning_pipelines loaded.
         """
+        config_folder = self._package_path / self.__config_dir_path
         if pipelines is None:
-            pipelines = ["ompl"]
-            default_planning_pipeline = pipelines[0]
+            pipelines = [
+                p.stem.replace("_planning", "")
+                for p in config_folder.glob("*_planning.yaml")
+            ]
+            if "ompl" in pipelines:
+                default_planning_pipeline = "ompl"
+            else:
+                default_planning_pipeline = pipelines[0]
         if default_planning_pipeline not in pipelines:
             raise RuntimeError(
                 f"default_planning_pipeline: `{default_planning_pipeline}` doesn't name any of the input pipelines "
@@ -397,9 +404,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
         }
         for pipeline in pipelines:
             self.__moveit_configs.planning_pipelines[pipeline] = load_yaml(
-                self._package_path
-                / self.__config_dir_path
-                / (pipeline + "_planning.yaml")
+                config_folder / (pipeline + "_planning.yaml")
             )
         return self
 
