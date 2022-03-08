@@ -51,7 +51,7 @@ Example:
 """
 
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Dict
 import logging
 from ament_index_python.packages import get_package_share_directory
 
@@ -375,12 +375,16 @@ class MoveItConfigsBuilder(ParameterBuilder):
         return self
 
     def planning_pipelines(
-        self, default_planning_pipeline: str = None, pipelines: List[str] = None
+        self,
+        default_planning_pipeline: str = None,
+        pipelines: List[str] = None,
+        additional_pipeline_params: Dict[str, Path] = {},
     ):
         """Load planning pipelines parameters.
 
         :param default_planning_pipeline: Name of the default planning pipeline.
         :param pipelines: List of the planning pipelines to be loaded.
+        :param additional_pipeline_params: mapping from pipeline names to the Path of an additional parameter file
         :return: Instance of MoveItConfigsBuilder with planning_pipelines loaded.
         """
         config_folder = self._package_path / self.__config_dir_path
@@ -403,9 +407,13 @@ class MoveItConfigsBuilder(ParameterBuilder):
             "default_planning_pipeline": default_planning_pipeline,
         }
         for pipeline in pipelines:
-            self.__moveit_configs.planning_pipelines[pipeline] = load_yaml(
-                config_folder / (pipeline + "_planning.yaml")
-            )
+            params = load_yaml(config_folder / (pipeline + "_planning.yaml"))
+
+            if pipeline in additional_pipeline_params:
+                params.update(load_yaml(additional_pipeline_params[pipeline]))
+
+            self.__moveit_configs.planning_pipelines[pipeline] = params
+
         return self
 
     def cartesian_limits(self, file_path: Optional[str] = None):
