@@ -5,6 +5,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import Parameter, ParameterValue
 
 from moveit_configs_utils.launch_utils import (
     add_debuggable_node,
@@ -132,7 +133,7 @@ def generate_warehouse_launch(moveit_config):
 def generate_move_group_launch(moveit_config):
     ld = LaunchDescription()
 
-    ld.add_action(DeclareBooleanLaunchArg("debug"), default_value=False)
+    ld.add_action(DeclareBooleanLaunchArg("debug", default_value=False))
     ld.add_action(
         DeclareBooleanLaunchArg("allow_trajectory_execution", default_value=True)
     )
@@ -154,8 +155,13 @@ def generate_move_group_launch(moveit_config):
         "allow_trajectory_execution": LaunchConfiguration("allow_trajectory_execution"),
         "max_safe_path_cost": LaunchConfiguration("max_safe_path_cost"),
         "jiggle_fraction": LaunchConfiguration("jiggle_fraction"),
-        "capabilities": LaunchConfiguration("capabilities"),
-        "disable_capabilities": LaunchConfiguration("disable_capabilities"),
+        # Note: Wrapping the following values is necessary so that the parameter value can be the empty string
+        "capabilities": ParameterValue(
+            LaunchConfiguration("capabilities"), value_type=str
+        ),
+        "disable_capabilities": ParameterValue(
+            LaunchConfiguration("disable_capabilities"), value_type=str
+        ),
         # Publish the planning scene of the physical robot so that rviz plugin can know actual robot
         "publish_planning_scene": should_publish,
         "publish_geometry_updates": should_publish,
@@ -222,7 +228,7 @@ def generate_demo_launch(moveit_config, virtual_joints=False):
         )
 
     # We do not have a robot connected, so publish fake joint states
-    jsp_params = [("source_list", ["move_group/fake_controller_joint_states"])]
+    jsp_params = [Parameter("source_list", ["move_group/fake_controller_joint_states"])]
     ld.add_action(
         Node(
             package="joint_state_publisher",
