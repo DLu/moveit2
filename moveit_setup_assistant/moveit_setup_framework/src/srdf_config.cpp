@@ -201,6 +201,7 @@ void SRDFConfig::collectVariables(std::vector<TemplateVariable>& variables)
 
   std::stringstream vjb;
   unsigned int counter = 0;
+  // TODO: Generate to static_virtual_joint_tfs.launch.py
   for (const auto& vj : srdf_.virtual_joints_)
   {
     if (vj.type_ == "fixed")
