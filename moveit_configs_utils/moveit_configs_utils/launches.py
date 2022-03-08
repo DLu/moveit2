@@ -138,6 +138,13 @@ def generate_move_group_launch(moveit_config):
         DeclareBooleanLaunchArg("allow_trajectory_execution", default_value=True)
     )
     ld.add_action(DeclareBooleanLaunchArg("fake_execution", default_value=False))
+    ld.add_action(
+        DeclareLaunchArgument(
+            "execution_type",
+            default_value="interpolate",
+            description="Set to last point to skip intermediate trajectory in fake execution",
+        )
+    )
     ld.add_action(DeclareLaunchArgument("max_safe_path_cost", default_value="1"))
     ld.add_action(DeclareLaunchArgument("jiggle_fraction", default_value="0.05"))
     ld.add_action(
@@ -147,6 +154,8 @@ def generate_move_group_launch(moveit_config):
     ld.add_action(DeclareLaunchArgument("capabilities", default_value=""))
     # inhibit these default MoveGroup capabilities (space separated)
     ld.add_action(DeclareLaunchArgument("disable_capabilities", default_value=""))
+
+    # sensors_config = [moveit_config_path, "/config/sensors_3d.yaml"]
 
     should_publish = LaunchConfiguration("publish_monitored_planning_scene")
 
@@ -170,9 +179,14 @@ def generate_move_group_launch(moveit_config):
     }
 
     move_group_params = [
+        # sensors_config,
         move_group_configuration,
         moveit_config.to_dict(),
     ]
+
+    # Set the display variable, in case OpenGL code is used internally
+    #    <env name="DISPLAY" value="$(optenv DISPLAY :0)" />
+
     add_debuggable_node(
         ld,
         package="moveit_ros_move_group",
@@ -180,6 +194,10 @@ def generate_move_group_launch(moveit_config):
         commands_file=str(moveit_config.package_path / "launch" / "gdb_settings.gdb"),
         output="screen",
         parameters=move_group_params,
+        # <arg name="info" default="$(arg debug)" />
+        # <arg unless="$(arg info)" name="command_args" value="" />
+        # <arg     if="$(arg info)" name="command_args" value="--debug" />
+        # args="$(arg command_args)">
     )
     return ld
 
@@ -261,7 +279,6 @@ def generate_demo_launch(moveit_config, virtual_joints=False):
         "fake_execution": "true",
         "info": "true",
         "debug": LaunchConfiguration("debug"),
-        "pipeline": LaunchConfiguration("pipeline"),
     }
     ld.add_action(
         IncludeLaunchDescription(
@@ -291,4 +308,32 @@ def generate_demo_launch(moveit_config, virtual_joints=False):
             condition=IfCondition(LaunchConfiguration("db")),
         )
     )
+
+    """
+    # Fake joint driver
+    fake_joint_driver_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[
+            moveit_config.robot_description,
+            str(moveit_config_path / "config/ros_controllers.yaml"),
+        ],
+    )
+    ld.add_action(fake_joint_driver_node)
+
+    spawner_node = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["stretch_controller"],
+    )
+    ld.add_action(spawner_node)
+
+    spawner_node2 = Node(
+        package="controller_manager",
+        executable="spawner",
+        output="screen",
+        arguments=["joint_state_broadcaster"],
+    )
+    ld.add_action(spawner_node2)"""
+
     return ld

@@ -436,9 +436,8 @@ class MoveItConfigsBuilder(ParameterBuilder):
             self.robot_description_kinematics()
         if not self.__moveit_configs.planning_pipelines:
             self.planning_pipelines()
-        # TODO(JafarAbdi): Not sure if the default value for file_path makes sense
-        # if not self.__moveit_configs.trajectory_execution:
-        #     self.trajectory_execution()
+        if not self.__moveit_configs.trajectory_execution:
+            self.trajectory_execution()
         if not self.__moveit_configs.planning_scene_monitor:
             self.planning_scene_monitor()
         if not self.__moveit_configs.joint_limits:
