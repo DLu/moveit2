@@ -150,16 +150,19 @@ public:
 
   /**
    * \brief Adds a ROS controller to ros_controllers_config_ vector
+   * \param name Name of the controller
+   * \param type type of the controller
+   * \param joint_names vector of the joint names
+   * \return true if inserted correctly
+   */
+  bool addROSController(const std::string& name, const std::string& type, const std::vector<std::string>& joint_names);
+
+  /**
+   * \brief Adds a ROS controller to ros_controllers_config_ vector
    * \param new_controller a new ROS Controller to add
    * \return true if inserted correctly
    */
   bool addROSController(const ROSControlConfig& new_controller);
-
-  /**
-   * \brief Add a Follow Joint Trajectory action Controller for each Planning Group
-   * \return true if controllers were added to the ros_controllers_config_ data structure
-   */
-  bool addDefaultControllers();
 
   /**
    * Find the associated ROS controller by name

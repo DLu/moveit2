@@ -44,4 +44,33 @@ void ROSControllers::onInit()
   srdf_config_ = config_data_->get<moveit_setup_framework::SRDFConfig>("srdf");
   controller_config_ = config_data_->get<moveit_setup_app_plugins::ControllerConfig>("controllers");
 }
+
+// ******************************************************************************************
+// Add a Follow Joint Trajectory action Controller for each Planning Group
+// ******************************************************************************************
+bool ROSControllers::addDefaultControllers()
+{
+  std::vector<std::string> group_names = getGroupNames();
+  if (group_names.empty())
+  {
+    return false;
+  }
+
+  // Loop through groups
+  bool success = true;
+  for (const std::string& group_name : group_names)
+  {
+    // Get list of associated joints
+    std::vector<std::string> joint_names = srdf_config_->getJointNames(group_name, true, false);  // exclude passive
+    if (joint_names.empty())
+    {
+      continue;
+    }
+    bool ret = controller_config_->addROSController(group_name + "_controller", "FollowJointTrajectory", joint_names);
+    success &= ret;
+  }
+
+  return success;
+}
+
 }  // namespace moveit_setup_app_plugins

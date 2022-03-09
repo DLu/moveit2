@@ -91,10 +91,7 @@ public:
     return controller_config_->deleteROSController(controller_name);
   }
 
-  bool addDefaultControllers()
-  {
-    return controller_config_->addDefaultControllers();
-  }
+  bool addDefaultControllers();
 
 protected:
   std::shared_ptr<moveit_setup_framework::SRDFConfig> srdf_config_;
