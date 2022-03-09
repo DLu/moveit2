@@ -97,7 +97,7 @@ void ROSControllersWidget::onInit()
           SLOT(previewSelectedGroup(std::vector<std::string>)));
 
   // Controller Edit Widget
-  controller_edit_widget_ = new ControllerEditWidget(this, config_data_);
+  controller_edit_widget_ = new ControllerEditWidget(this, setup_step_);
   connect(controller_edit_widget_, SIGNAL(cancelEditing()), this, SLOT(cancelEditing()));
   connect(controller_edit_widget_, SIGNAL(deleteController()), this, SLOT(deleteController()));
   connect(controller_edit_widget_, SIGNAL(save()), this, SLOT(saveControllerScreenEdit()));

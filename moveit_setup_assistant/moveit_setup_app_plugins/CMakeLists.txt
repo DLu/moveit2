@@ -18,7 +18,7 @@ set(CMAKE_AUTOMOC ON)
 add_definitions(-DQT_NO_KEYWORDS)
 
 qt5_wrap_cpp(MOC_FILES
-   # include/moveit_setup_app_plugins/controller_edit_widget.hpp
+    include/moveit_setup_app_plugins/controller_edit_widget.hpp
     include/moveit_setup_app_plugins/perception_widget.hpp
     include/moveit_setup_app_plugins/ros_controllers_widget.hpp
    # include/moveit_setup_app_plugins/simulation_widget.hpp
