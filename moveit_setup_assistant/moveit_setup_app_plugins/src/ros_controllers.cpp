@@ -40,5 +40,8 @@ namespace moveit_setup_app_plugins
 {
 void ROSControllers::onInit()
 {
+  config_data_->registerType("controllers", "moveit_setup_app_plugins::ControllerConfig");
+  srdf_config_ = config_data_->get<moveit_setup_framework::SRDFConfig>("srdf");
+  controller_config_ = config_data_->get<moveit_setup_app_plugins::ControllerConfig>("controllers");
 }
 }  // namespace moveit_setup_app_plugins

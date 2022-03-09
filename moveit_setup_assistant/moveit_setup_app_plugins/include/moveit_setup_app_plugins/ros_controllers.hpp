@@ -36,6 +36,8 @@
 #pragma once
 
 #include <moveit_setup_framework/setup_step.hpp>
+#include <moveit_setup_framework/data/srdf_config.hpp>
+#include <moveit_setup_app_plugins/controller_config.hpp>
 
 namespace moveit_setup_app_plugins
 {
@@ -53,5 +55,49 @@ public:
   {
     return false;
   }
+
+  const std::vector<std::string>& getJointNames() const
+  {
+    return srdf_config_->getRobotModel()->getJointModelNames();
+  }
+
+  std::vector<std::string> getGroupNames() const
+  {
+    return srdf_config_->getGroupNames();
+  }
+
+  std::string getChildOfJoint(const std::string& joint_name) const
+  {
+    return srdf_config_->getChildOfJoint(joint_name);
+  }
+
+  std::vector<ROSControlConfig>& getROSControllers() const
+  {
+    return controller_config_->getROSControllers();
+  }
+
+  bool addROSController(const ROSControlConfig& new_controller)
+  {
+    return controller_config_->addROSController(new_controller);
+  }
+
+  ROSControlConfig* findROSControllerByName(const std::string& controller_name)
+  {
+    return controller_config_->findROSControllerByName(controller_name);
+  }
+
+  bool deleteROSController(const std::string& controller_name)
+  {
+    return controller_config_->deleteROSController(controller_name);
+  }
+
+  bool addDefaultControllers()
+  {
+    return controller_config_->addDefaultControllers();
+  }
+
+protected:
+  std::shared_ptr<moveit_setup_framework::SRDFConfig> srdf_config_;
+  std::shared_ptr<ControllerConfig> controller_config_;
 };
 }  // namespace moveit_setup_app_plugins

@@ -132,8 +132,8 @@ private:
   QPushButton* btn_add_;
   QPushButton* btn_edit_;
   QHBoxLayout* controls_layout_;
-  moveit_setup_assistant::DoubleListWidget* joints_widget_;
-  moveit_setup_assistant::DoubleListWidget* joint_groups_widget_;
+  moveit_setup_framework::DoubleListWidget* joints_widget_;
+  moveit_setup_framework::DoubleListWidget* joint_groups_widget_;
 
   /// Remember what controller we are editing when an edit screen is being shown
   std::string current_edit_controller_;
@@ -147,11 +147,11 @@ private:
   QWidget* createContentsWidget();
 
   void loadControllersTree();
-  void loadToControllersTree(const moveit_setup_assistant::ROSControlConfig& controller_it);
+  void loadToControllersTree(const ROSControlConfig& controller_it);
   void showMainScreen();
-  void loadJointsScreen(moveit_setup_assistant::ROSControlConfig* this_controller);
-  void loadGroupsScreen(moveit_setup_assistant::ROSControlConfig* this_controller);
-  void loadControllerScreen(moveit_setup_assistant::ROSControlConfig* this_controller);
+  void loadJointsScreen(ROSControlConfig* this_controller);
+  void loadGroupsScreen(ROSControlConfig* this_controller);
+  void loadControllerScreen(ROSControlConfig* this_controller);
 };
 
 }  // namespace moveit_setup_app_plugins
