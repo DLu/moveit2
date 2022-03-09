@@ -73,4 +73,17 @@ bool ROSControllers::addDefaultControllers()
   return success;
 }
 
+std::vector<std::string> ROSControllers::getJointsFromGroups(const std::vector<std::string>& group_names) const
+{
+  std::vector<std::string> joint_names;
+  for (const std::string& group_name : group_names)
+  {
+    for (const std::string& joint_name : srdf_config_->getJointNames(group_name, true, false))  // exclude passive
+    {
+      joint_names.push_back(joint_name);
+    }
+  }
+  return joint_names;
+}
+
 }  // namespace moveit_setup_app_plugins

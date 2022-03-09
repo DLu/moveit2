@@ -577,22 +577,7 @@ void ROSControllersWidget::saveJointsGroupsScreen()
   ROSControlConfig* searched_controller = setup_step_.findROSControllerByName(current_edit_controller_);
 
   // Clear the old data
-  searched_controller->joints_.clear();
-
-  for (const std::string& selected : joint_groups_widget_->getSelectedValues())
-  {
-    // Get list of associated joints
-    const moveit::core::JointModelGroup* joint_model_group = setup_step_.getRobotModel()->getJointModelGroup(selected);
-    const std::vector<const moveit::core::JointModel*>& joint_models = joint_model_group->getActiveJointModels();
-
-    // Iterate through the joints
-    for (const moveit::core::JointModel* joint : joint_models)
-    {
-      if (joint->isPassive() || joint->getMimic() != nullptr || joint->getType() == moveit::core::JointModel::FIXED)
-        continue;
-      searched_controller->joints_.push_back(joint->getName());
-    }
-  }
+  searched_controller->joints_ = setup_step_.getJointsFromGroups(joint_groups_widget_->getSelectedValues());
 
   // Switch to main screen
   showMainScreen();

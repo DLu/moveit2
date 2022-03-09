@@ -93,6 +93,8 @@ public:
 
   bool addDefaultControllers();
 
+  std::vector<std::string> getJointsFromGroups(const std::vector<std::string>& group_names) const;
+
 protected:
   std::shared_ptr<moveit_setup_framework::SRDFConfig> srdf_config_;
   std::shared_ptr<ControllerConfig> controller_config_;
