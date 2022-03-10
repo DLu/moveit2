@@ -18,7 +18,8 @@ This file should be deleted once all tasks are complete.
    * [x] End Effectors
    * [x] Passive Joints
  * `moveit_setup_app_plugins`
-   * [ ] ROS Control
+   * [x] ROS Control
+    * TODO: Need to rework the generated files and controllers to match ros2_control (writeYaml has not been refactored)
    * [ ] Simulation
    * [x] Perception
       * TODO: Load default configuration

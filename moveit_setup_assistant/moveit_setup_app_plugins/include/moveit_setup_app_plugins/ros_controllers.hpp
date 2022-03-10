@@ -53,7 +53,7 @@ public:
 
   bool isReady() const override
   {
-    return false;
+    return !srdf_config_->getGroups().empty();
   }
 
   const std::vector<std::string>& getJointNames() const

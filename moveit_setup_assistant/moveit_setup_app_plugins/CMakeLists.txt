@@ -28,7 +28,7 @@ add_library(${PROJECT_NAME}
     src/perception_config.cpp
     src/perception.cpp
     src/perception_widget.cpp
-   # src/controller_edit_widget.cpp
+    src/controller_edit_widget.cpp
     src/ros_controllers.cpp
     src/ros_controllers_widget.cpp
     src/controller_config.cpp

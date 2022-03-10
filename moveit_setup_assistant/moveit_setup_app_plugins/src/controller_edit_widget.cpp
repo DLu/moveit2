@@ -43,7 +43,7 @@
 #include <QPushButton>
 #include <QString>
 #include <QVBoxLayout>
-#include "controller_edit_widget.h"
+#include <moveit_setup_app_plugins/controller_edit_widget.hpp>
 
 namespace moveit_setup_app_plugins
 {
@@ -161,7 +161,7 @@ ControllerEditWidget::ControllerEditWidget(QWidget* parent, ROSControllers& setu
 void ControllerEditWidget::setSelected(const std::string& controller_name)
 {
   controller_name_field_->setText(QString(controller_name.c_str()));
-  ROSControlConfig* searched_controller = setup_step.findROSControllerByName(controller_name);
+  ROSControlConfig* searched_controller = setup_step_.findROSControllerByName(controller_name);
   if (searched_controller != nullptr)
   {
     const std::string controller_type = searched_controller->type_;
