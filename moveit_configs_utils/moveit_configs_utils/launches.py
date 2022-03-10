@@ -316,7 +316,7 @@ def generate_demo_launch(moveit_config, virtual_joints=False):
         executable="ros2_control_node",
         parameters=[
             moveit_config.robot_description,
-            str(moveit_config_path / "config/ros_controllers.yaml"),
+            str(moveit_config.package_path / "config/ros_controllers.yaml"),
         ],
     )
     ld.add_action(fake_joint_driver_node)
@@ -324,7 +324,7 @@ def generate_demo_launch(moveit_config, virtual_joints=False):
     spawner_node = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["stretch_controller"],
+        arguments=["manipulator_controller"],
     )
     ld.add_action(spawner_node)
 
