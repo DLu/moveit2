@@ -34,7 +34,7 @@
 /* Author: Mohamad Ayman */
 
 // SA
-#include <moveit_setup_app_plugins/ros_controllers_widget.hpp>
+#include <moveit_setup_app_plugins/controllers_widget.hpp>
 #include <moveit_setup_framework/qt/helper_widgets.hpp>
 #include <moveit_msgs/msg/joint_limits.hpp>
 // Qt
@@ -63,7 +63,7 @@ namespace moveit_setup_app_plugins
 // ******************************************************************************************
 // Outer User Interface for MoveIt Configuration Assistant
 // ******************************************************************************************
-void ROSControllersWidget::onInit()
+void ControllersWidget::onInit()
 {
   // Basic widget container
   QVBoxLayout* layout = new QVBoxLayout();
@@ -71,11 +71,12 @@ void ROSControllersWidget::onInit()
   layout->setAlignment(Qt::AlignTop);
 
   // Title
-  this->setWindowTitle("ROS Control Controllers");  // title of window
+  this->setWindowTitle("Controller Configuration");  // title of window
 
   // Top Header Area ------------------------------------------------
   auto header = new moveit_setup_framework::HeaderWidget(
-      "Setup ROS Controllers", "Configure MoveIt to work with ROS Control to control the robot's physical hardware",
+      "Setup Controllers",
+      "Configure controllers to be used by MoveIt's controller manager(s) to operate the robot's physical hardware",
       this);
   layout->addWidget(header);
 
@@ -118,7 +119,7 @@ void ROSControllersWidget::onInit()
 // ******************************************************************************************
 // Create the main tree view widget
 // ******************************************************************************************
-QWidget* ROSControllersWidget::createContentsWidget()
+QWidget* ControllersWidget::createContentsWidget()
 {
   // Main widget
   QWidget* content_widget = new QWidget(this);
@@ -199,9 +200,9 @@ QWidget* ROSControllersWidget::createContentsWidget()
 }
 
 // ******************************************************************************************
-// Displays data in the ros_controllers_config_ data structure into a QtTableWidget
+// Displays data in the controller_configs_ data structure into a QtTableWidget
 // ******************************************************************************************
-void ROSControllersWidget::loadControllersTree()
+void ControllersWidget::loadControllersTree()
 {
   // Disable Tree
   controllers_tree_->setUpdatesEnabled(false);  // prevent table from updating until we are completely done
@@ -209,7 +210,7 @@ void ROSControllersWidget::loadControllersTree()
   controllers_tree_->clear();                   // reset the tree
 
   // Display all controllers by looping through them
-  for (ROSControlConfig& controller : setup_step_.getROSControllers())
+  for (ControllerInfo& controller : setup_step_.getControllers())
   {
     loadToControllersTree(controller);
   }
@@ -224,7 +225,7 @@ void ROSControllersWidget::loadControllersTree()
 // ******************************************************************************************
 //  Displays data in the controller_config_ data structure into a QtTableWidget
 // ******************************************************************************************
-void ROSControllersWidget::loadToControllersTree(const ROSControlConfig& controller_it)
+void ControllersWidget::loadToControllersTree(const ControllerInfo& controller_it)
 {
   // Fonts for tree
   const QFont top_level_font(QFont().defaultFamily(), 11, QFont::Bold);
@@ -270,7 +271,7 @@ void ROSControllersWidget::loadToControllersTree(const ROSControlConfig& control
 // ******************************************************************************************
 // Called when setup assistant navigation switches to this screen
 // ******************************************************************************************
-void ROSControllersWidget::focusGiven()
+void ControllersWidget::focusGiven()
 {
   // load controllers tree
   btn_edit_->setEnabled(false);
@@ -281,7 +282,7 @@ void ROSControllersWidget::focusGiven()
 // ******************************************************************************************
 // Load the popup screen with correct data for joints
 // ******************************************************************************************
-void ROSControllersWidget::loadJointsScreen(ROSControlConfig* this_controller)
+void ControllersWidget::loadJointsScreen(ControllerInfo* this_controller)
 {
   // Get the names of the all joints
   const std::vector<std::string>& joints = setup_step_.getJointNames();
@@ -309,7 +310,7 @@ void ROSControllersWidget::loadJointsScreen(ROSControlConfig* this_controller)
 // ******************************************************************************************
 // Load the popup screen with correct data for gcroups
 // ******************************************************************************************
-void ROSControllersWidget::loadGroupsScreen(ROSControlConfig* this_controller)
+void ControllersWidget::loadGroupsScreen(ControllerInfo* this_controller)
 {
   // Set the available groups (left box)
   joint_groups_widget_->setAvailable(setup_step_.getGroupNames());
@@ -328,7 +329,7 @@ void ROSControllersWidget::loadGroupsScreen(ROSControlConfig* this_controller)
 // ******************************************************************************************
 // Delete a controller
 // ******************************************************************************************
-void ROSControllersWidget::deleteController()
+void ControllersWidget::deleteController()
 {
   std::string controller_name = current_edit_controller_;
 
@@ -354,7 +355,7 @@ void ROSControllersWidget::deleteController()
     return;
   }
   // Delete actual controller
-  if (setup_step_.deleteROSController(controller_name))
+  if (setup_step_.deleteController(controller_name))
   {
     RCLCPP_INFO_STREAM(setup_step_.getLogger(), "Controller " << controller_name << " deleted succefully");
   }
@@ -375,7 +376,7 @@ void ROSControllersWidget::deleteController()
 // ******************************************************************************************
 // Create a new controller
 // ******************************************************************************************
-void ROSControllersWidget::addController()
+void ControllersWidget::addController()
 {
   // New Controller
   adding_new_controller_ = true;
@@ -388,7 +389,7 @@ void ROSControllersWidget::addController()
 // ******************************************************************************************
 // Add a Follow Joint Trajectory action Controller for each Planning Group
 // ******************************************************************************************
-void ROSControllersWidget::addDefaultControllers()
+void ControllersWidget::addDefaultControllers()
 {
   if (!setup_step_.addDefaultControllers())
     QMessageBox::warning(this, "Error adding controllers", "No Planning Groups configured!");
@@ -398,7 +399,7 @@ void ROSControllersWidget::addDefaultControllers()
 // ******************************************************************************************
 // Load the popup screen with correct data for controllers
 // ******************************************************************************************
-void ROSControllersWidget::loadControllerScreen(ROSControlConfig* this_controller)
+void ControllersWidget::loadControllerScreen(ControllerInfo* this_controller)
 {
   // Load the avail controllers. This function only runs once
   controller_edit_widget_->loadControllersTypesComboBox();
@@ -427,14 +428,14 @@ void ROSControllersWidget::loadControllerScreen(ROSControlConfig* this_controlle
 // ******************************************************************************************
 // Call when edit screen is canceled
 // ******************************************************************************************
-void ROSControllersWidget::cancelEditing()
+void ControllersWidget::cancelEditing()
 {
   if (!current_edit_controller_.empty() && adding_new_controller_)
   {
-    ROSControlConfig* editing = setup_step_.findROSControllerByName(current_edit_controller_);
+    ControllerInfo* editing = setup_step_.findControllerByName(current_edit_controller_);
     if (editing && editing->joints_.empty())
     {
-      setup_step_.deleteROSController(current_edit_controller_);
+      setup_step_.deleteController(current_edit_controller_);
       current_edit_controller_.clear();
 
       // Load the data to the tree
@@ -453,7 +454,7 @@ void ROSControllersWidget::cancelEditing()
 // ******************************************************************************************
 // Called from Double List widget to highlight joints
 // ******************************************************************************************
-void ROSControllersWidget::previewSelectedJoints(const std::vector<std::string>& joints)
+void ControllersWidget::previewSelectedJoints(const std::vector<std::string>& joints)
 {
   // Unhighlight all links
   rviz_panel_->unhighlightAll();
@@ -476,7 +477,7 @@ void ROSControllersWidget::previewSelectedJoints(const std::vector<std::string>&
 // ******************************************************************************************
 // Called from Double List widget to highlight a group
 // ******************************************************************************************
-void ROSControllersWidget::previewSelectedGroup(const std::vector<std::string>& groups)
+void ControllersWidget::previewSelectedGroup(const std::vector<std::string>& groups)
 {
   // Unhighlight all links
   rviz_panel_->unhighlightAll();
@@ -491,7 +492,7 @@ void ROSControllersWidget::previewSelectedGroup(const std::vector<std::string>& 
 // ******************************************************************************************
 // Called when an item is seleceted from the controllers tree
 // ******************************************************************************************
-void ROSControllersWidget::previewSelected(QTreeWidgetItem* selected_item, int /*column*/)
+void ControllersWidget::previewSelected(QTreeWidgetItem* selected_item, int /*column*/)
 {
   // Get the user custom properties of the currently selected row
   int type = selected_item->data(0, Qt::UserRole).value<int>();
@@ -511,14 +512,14 @@ void ROSControllersWidget::previewSelected(QTreeWidgetItem* selected_item, int /
 // ******************************************************************************************
 // Call when a new controller is created and ready to progress to next screen
 // ******************************************************************************************
-void ROSControllersWidget::saveControllerScreenJoints()
+void ControllersWidget::saveControllerScreenJoints()
 {
   // Save the controller
   if (!saveControllerScreen())
     return;
 
   // Find the controller we are editing based on the controller name string
-  ROSControlConfig* editing_controller = setup_step_.findROSControllerByName(current_edit_controller_);
+  ControllerInfo* editing_controller = setup_step_.findControllerByName(current_edit_controller_);
 
   loadJointsScreen(editing_controller);
 
@@ -529,14 +530,14 @@ void ROSControllersWidget::saveControllerScreenJoints()
 // ******************************************************************************************
 // Call when a new controller is created and ready to progress to next screen
 // ******************************************************************************************
-void ROSControllersWidget::saveControllerScreenGroups()
+void ControllersWidget::saveControllerScreenGroups()
 {
   // Save the controller
   if (!saveControllerScreen())
     return;
 
   // Find the controller we are editing based on the controller name string
-  ROSControlConfig* editing_controller = setup_step_.findROSControllerByName(current_edit_controller_);
+  ControllerInfo* editing_controller = setup_step_.findControllerByName(current_edit_controller_);
 
   loadGroupsScreen(editing_controller);
 
@@ -547,10 +548,10 @@ void ROSControllersWidget::saveControllerScreenGroups()
 // ******************************************************************************************
 // Call when joints edit screen is done and needs to be saved
 // ******************************************************************************************
-void ROSControllersWidget::saveJointsScreen()
+void ControllersWidget::saveJointsScreen()
 {
   // Find the controller we are editing based on the controller name string
-  ROSControlConfig* searched_controller = setup_step_.findROSControllerByName(current_edit_controller_);
+  ControllerInfo* searched_controller = setup_step_.findControllerByName(current_edit_controller_);
 
   // Clear the old data
   searched_controller->joints_.clear();
@@ -571,10 +572,10 @@ void ROSControllersWidget::saveJointsScreen()
 // ******************************************************************************************
 // Call when joints edit screen is done and needs to be saved
 // ******************************************************************************************
-void ROSControllersWidget::saveJointsGroupsScreen()
+void ControllersWidget::saveJointsGroupsScreen()
 {
   // Find the controller we are editing based on the controller name string
-  ROSControlConfig* searched_controller = setup_step_.findROSControllerByName(current_edit_controller_);
+  ControllerInfo* searched_controller = setup_step_.findControllerByName(current_edit_controller_);
 
   // Clear the old data
   searched_controller->joints_ = setup_step_.getJointsFromGroups(joint_groups_widget_->getSelectedValues());
@@ -589,7 +590,7 @@ void ROSControllersWidget::saveJointsGroupsScreen()
 // ******************************************************************************************
 // Call when joints edit screen is done and needs to be saved
 // ******************************************************************************************
-void ROSControllersWidget::saveControllerScreenEdit()
+void ControllersWidget::saveControllerScreenEdit()
 {
   // Save the controller
   if (!saveControllerScreen())
@@ -602,14 +603,14 @@ void ROSControllersWidget::saveControllerScreenEdit()
 // ******************************************************************************************
 // Call when controller edit screen is done and needs to be saved
 // ******************************************************************************************
-bool ROSControllersWidget::saveControllerScreen()
+bool ControllersWidget::saveControllerScreen()
 {
   // Get a reference to the supplied strings
   const std::string& controller_name = controller_edit_widget_->getControllerName();
   const std::string& controller_type = controller_edit_widget_->getControllerType();
 
   // Used for editing existing controllers
-  ROSControlConfig* searched_controller = nullptr;
+  ControllerInfo* searched_controller = nullptr;
 
   std::smatch invalid_name_match;
   std::regex invalid_reg_ex("[^a-z|^1-9|^_]");
@@ -617,7 +618,7 @@ bool ROSControllersWidget::saveControllerScreen()
   // Check that a valid controller name has been given
   if (controller_name.empty() || std::regex_search(controller_name, invalid_name_match, invalid_reg_ex))
   {
-    QMessageBox::warning(this, "Error Saving", "Invalid ROS controller name");
+    QMessageBox::warning(this, "Error Saving", "Invalid controller name");
     return false;
   }
 
@@ -625,11 +626,11 @@ bool ROSControllersWidget::saveControllerScreen()
   if (!current_edit_controller_.empty())
   {
     // Find the controller we are editing based on the group name string
-    searched_controller = setup_step_.findROSControllerByName(current_edit_controller_);
+    searched_controller = setup_step_.findControllerByName(current_edit_controller_);
   }
 
   // Check that the controller name is unique
-  for (const auto& controller : setup_step_.getROSControllers())
+  for (const auto& controller : setup_step_.getControllers())
   {
     if (controller.name_.compare(controller_name) == 0)  // the names are the same
     {
@@ -647,10 +648,10 @@ bool ROSControllersWidget::saveControllerScreen()
   // Save the new controller name or create the new controller
   if (searched_controller == nullptr)  // create new
   {
-    ROSControlConfig new_controller;
+    ControllerInfo new_controller;
     new_controller.name_ = controller_name;
     new_controller.type_ = controller_type;
-    setup_step_.addROSController(new_controller);
+    setup_step_.addController(new_controller);
 
     adding_new_controller_ = true;  // remember this controller is new
   }
@@ -676,7 +677,7 @@ bool ROSControllersWidget::saveControllerScreen()
 // ******************************************************************************************
 // Edit whenever element is selected in the controllers tree view
 // ******************************************************************************************
-void ROSControllersWidget::editSelected()
+void ControllersWidget::editSelected()
 {
   QTreeWidgetItem* item = controllers_tree_->currentItem();
   QTreeWidgetItem* controller_item;
@@ -695,7 +696,7 @@ void ROSControllersWidget::editSelected()
     // The controller this joint belong to
     controller_item = item->parent()->parent();
     current_edit_controller_ = controller_item->text(0).toUtf8().constData();
-    ROSControlConfig* this_controller = setup_step_.findROSControllerByName(current_edit_controller_);
+    ControllerInfo* this_controller = setup_step_.findControllerByName(current_edit_controller_);
 
     // Load the data
     loadJointsScreen(this_controller);
@@ -707,7 +708,7 @@ void ROSControllersWidget::editSelected()
   {
     controller_item = item->parent();
     current_edit_controller_ = controller_item->text(0).toUtf8().constData();
-    ROSControlConfig* this_controller = setup_step_.findROSControllerByName(current_edit_controller_);
+    ControllerInfo* this_controller = setup_step_.findControllerByName(current_edit_controller_);
 
     // Load the data
     loadJointsScreen(this_controller);
@@ -719,7 +720,7 @@ void ROSControllersWidget::editSelected()
   {
     // Load the data
     current_edit_controller_ = item->text(0).toUtf8().constData();
-    ROSControlConfig* this_controller = setup_step_.findROSControllerByName(current_edit_controller_);
+    ControllerInfo* this_controller = setup_step_.findControllerByName(current_edit_controller_);
     loadControllerScreen(this_controller);
 
     // Switch to screen
@@ -734,7 +735,7 @@ void ROSControllersWidget::editSelected()
 // ******************************************************************************************
 // Edit a controller
 // ******************************************************************************************
-void ROSControllersWidget::editController()
+void ControllersWidget::editController()
 {
   QTreeWidgetItem* item = controllers_tree_->currentItem();
 
@@ -744,7 +745,7 @@ void ROSControllersWidget::editController()
 
   adding_new_controller_ = false;
 
-  loadControllerScreen(setup_step_.findROSControllerByName(current_edit_controller_));
+  loadControllerScreen(setup_step_.findControllerByName(current_edit_controller_));
 
   // Switch to screen
   changeScreen(2);  // 1 is index of controller edit
@@ -753,7 +754,7 @@ void ROSControllersWidget::editController()
 // ******************************************************************************************
 // Switch to current controllers view
 // ******************************************************************************************
-void ROSControllersWidget::showMainScreen()
+void ControllersWidget::showMainScreen()
 {
   stacked_widget_->setCurrentIndex(0);
 
@@ -764,7 +765,7 @@ void ROSControllersWidget::showMainScreen()
 // ******************************************************************************************
 // Switch which screen is being shown
 // ******************************************************************************************
-void ROSControllersWidget::changeScreen(int index)
+void ControllersWidget::changeScreen(int index)
 {
   stacked_widget_->setCurrentIndex(index);
 
@@ -775,7 +776,7 @@ void ROSControllersWidget::changeScreen(int index)
 // ******************************************************************************************
 // Expand/Collapse Tree
 // ******************************************************************************************
-void ROSControllersWidget::alterTree(const QString& link)
+void ControllersWidget::alterTree(const QString& link)
 {
   if (link.contains("expand"))
     controllers_tree_->expandAll();
@@ -783,7 +784,7 @@ void ROSControllersWidget::alterTree(const QString& link)
     controllers_tree_->collapseAll();
 }
 
-void ROSControllersWidget::itemSelectionChanged()
+void ControllersWidget::itemSelectionChanged()
 {
   QList<QTreeWidgetItem*> selected_items = controllers_tree_->selectedItems();
   if (selected_items.empty())
@@ -796,4 +797,4 @@ void ROSControllersWidget::itemSelectionChanged()
 }  // namespace moveit_setup_app_plugins
 
 #include <pluginlib/class_list_macros.hpp>  // NOLINT
-PLUGINLIB_EXPORT_CLASS(moveit_setup_app_plugins::ROSControllersWidget, moveit_setup_framework::SetupStepWidget)
+PLUGINLIB_EXPORT_CLASS(moveit_setup_app_plugins::ControllersWidget, moveit_setup_framework::SetupStepWidget)

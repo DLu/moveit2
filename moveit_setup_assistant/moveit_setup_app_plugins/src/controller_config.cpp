@@ -42,7 +42,7 @@ namespace moveit_setup_app_plugins
 {
 using moveit_setup_framework::getYamlProperty;
 
-void ControllerConfig::loadPrevious(const std::string& package_path, const YAML::Node& /*node*/)
+void ControllersConfig::loadPrevious(const std::string& package_path, const YAML::Node& /*node*/)
 {
   changed_ = false;
   // Load ros controllers yaml file if available-----------------------------------------------
@@ -57,8 +57,8 @@ void ControllerConfig::loadPrevious(const std::string& package_path, const YAML:
   // Begin parsing
   try
   {
-    // Used in parsing ROS controllers
-    ROSControlConfig control_setting;
+    // Used in parsing controllers
+    ControllerInfo control_setting;
     YAML::Node controllers = YAML::Load(input_stream);
 
     // Loop through all controllers
@@ -67,7 +67,7 @@ void ControllerConfig::loadPrevious(const std::string& package_path, const YAML:
       // Follow Joint Trajectory action controllers
       if (controller_it->first.as<std::string>() == "controller_list")
       {
-        if (!parseROSController(controller_it->second))
+        if (!parseController(controller_it->second))
           return;
       }
       // Other settings found in the ros_controllers file
@@ -113,12 +113,12 @@ void ControllerConfig::loadPrevious(const std::string& package_path, const YAML:
 }
 
 // ******************************************************************************************
-// Helper function for parsing an individual ROSController from ros_controllers yaml file
+// Helper function for parsing an individual Controller from ros_controllers yaml file
 // ******************************************************************************************
-bool ControllerConfig::parseROSController(const YAML::Node& controller)
+bool ControllersConfig::parseController(const YAML::Node& controller)
 {
-  // Used in parsing ROS controllers
-  ROSControlConfig control_setting;
+  // Used in parsing controllers
+  ControllerInfo control_setting;
 
   if (const YAML::Node& trajectory_controllers = controller)
   {
@@ -159,28 +159,28 @@ bool ControllerConfig::parseROSController(const YAML::Node& controller)
 }
 
 // ******************************************************************************************
-// Adds a ROS controller to ros_controllers_config_ vector
+// Adds a controller to ros_controllers_config_ vector
 // ******************************************************************************************
-bool ControllerConfig::addROSController(const std::string& name, const std::string& type,
-                                        const std::vector<std::string>& joint_names)
+bool ControllersConfig::addController(const std::string& name, const std::string& type,
+                                      const std::vector<std::string>& joint_names)
 {
-  ROSControlConfig controller;
+  ControllerInfo controller;
   controller.name_ = name;
   controller.type_ = type;
   controller.joints_ = joint_names;
-  return addROSController(controller);
+  return addController(controller);
 }
 
 // ******************************************************************************************
-// Adds a ROS controller to ros_controllers_config_ vector
+// Adds a controller to ros_controllers_config_ vector
 // ******************************************************************************************
-bool ControllerConfig::addROSController(const ROSControlConfig& new_controller)
+bool ControllersConfig::addController(const ControllerInfo& new_controller)
 {
   // Used for holding our search results
-  ROSControlConfig* searched_ros_controller = nullptr;
+  ControllerInfo* searched_ros_controller = nullptr;
 
   // Find if there is an existing controller with the same name
-  searched_ros_controller = findROSControllerByName(new_controller.name_);
+  searched_ros_controller = findControllerByName(new_controller.name_);
 
   if (searched_ros_controller && searched_ros_controller->type_ == new_controller.type_)
     return false;
@@ -190,14 +190,14 @@ bool ControllerConfig::addROSController(const ROSControlConfig& new_controller)
 }
 
 // ******************************************************************************************
-// Find ROS controller by name
+// Find controller by name
 // ******************************************************************************************
-ROSControlConfig* ControllerConfig::findROSControllerByName(const std::string& controller_name)
+ControllerInfo* ControllersConfig::findControllerByName(const std::string& controller_name)
 {
-  // Find the ROSController we are editing based on the ROSController name string
-  ROSControlConfig* searched_ros_controller = nullptr;  // used for holding our search results
+  // Find the Controller we are editing based on the Controller name string
+  ControllerInfo* searched_ros_controller = nullptr;  // used for holding our search results
 
-  for (ROSControlConfig& ros_control_config : ros_controllers_config_)
+  for (ControllerInfo& ros_control_config : ros_controllers_config_)
   {
     if (ros_control_config.name_ == controller_name)  // string match
     {
@@ -210,11 +210,11 @@ ROSControlConfig* ControllerConfig::findROSControllerByName(const std::string& c
 }
 
 // ******************************************************************************************
-// Deletes a ROS controller by name
+// Deletes a controller by name
 // ******************************************************************************************
-bool ControllerConfig::deleteROSController(const std::string& controller_name)
+bool ControllersConfig::deleteController(const std::string& controller_name)
 {
-  for (std::vector<ROSControlConfig>::iterator controller_it = ros_controllers_config_.begin();
+  for (std::vector<ControllerInfo>::iterator controller_it = ros_controllers_config_.begin();
        controller_it != ros_controllers_config_.end(); ++controller_it)
   {
     if (controller_it->name_ == controller_name)  // string match
@@ -232,14 +232,13 @@ bool ControllerConfig::deleteROSController(const std::string& controller_name)
 // and erases the controller that have been written, to avoid mixing between FollowJointTrajectory
 // which are published under the namespace of 'controller_list' and other types of controllers.
 // ******************************************************************************************
-void outputFollowJointTrajectoryYAML(YAML::Emitter& emitter,
-                                     std::vector<ROSControlConfig>& ros_controllers_config_output)
+void outputFollowJointTrajectoryYAML(YAML::Emitter& emitter, std::vector<ControllerInfo>& ros_controllers_config_output)
 {
   // Write default controllers
   emitter << YAML::Key << "controller_list";
   emitter << YAML::Value << YAML::BeginSeq;
   {
-    for (std::vector<ROSControlConfig>::iterator controller_it = ros_controllers_config_output.begin();
+    for (std::vector<ControllerInfo>::iterator controller_it = ros_controllers_config_output.begin();
          controller_it != ros_controllers_config_output.end();)
     {
       // Depending on the controller type, fill the required data
@@ -290,10 +289,10 @@ void outputFollowJointTrajectoryYAML(YAML::Emitter& emitter,
 // ******************************************************************************************
 // Output controllers config files
 // ******************************************************************************************
-bool ControllerConfig::GeneratedControllerConfig::writeYaml(YAML::Emitter& emitter)
+bool ControllersConfig::GeneratedControllersConfig::writeYaml(YAML::Emitter& emitter)
 {
   // Copy ros_control_config_ to a new vector to avoid modifying it
-  std::vector<ROSControlConfig> ros_controllers_config_output(parent_.ros_controllers_config_);
+  std::vector<ControllerInfo> ros_controllers_config_output(parent_.ros_controllers_config_);
 
   // Cache the joints' names.
   std::vector<std::vector<std::string>> planning_groups;
@@ -402,7 +401,7 @@ bool ControllerConfig::GeneratedControllerConfig::writeYaml(YAML::Emitter& emitt
       emitter << YAML::EndMap;
     }
 
-    // Writes Follow Joint Trajectory ROS controllers to ros_controller.yaml
+    // Writes Follow Joint Trajectory controllers to ros_controller.yaml
     outputFollowJointTrajectoryYAML(emitter, ros_controllers_config_output);
 
     for (const auto& controller : ros_controllers_config_output)
@@ -459,11 +458,11 @@ bool ControllerConfig::GeneratedControllerConfig::writeYaml(YAML::Emitter& emitt
   return true;
 }
 
-void ControllerConfig::collectVariables(std::vector<moveit_setup_framework::TemplateVariable>& variables)
+void ControllersConfig::collectVariables(std::vector<moveit_setup_framework::TemplateVariable>& variables)
 {
-  // Add ROS Controllers variable for ros_controllers.launch file
+  // Add Controllers variable for ros_controllers.launch file
   std::stringstream controllers;
-  for (ROSControlConfig& controller : ros_controllers_config_)
+  for (ControllerInfo& controller : ros_controllers_config_)
   {
     // Check if the controller belongs to controller_list namespace
     if (controller.type_ != "FollowJointTrajectory")
@@ -476,4 +475,4 @@ void ControllerConfig::collectVariables(std::vector<moveit_setup_framework::Temp
 }  // namespace moveit_setup_app_plugins
 
 #include <pluginlib/class_list_macros.hpp>  // NOLINT
-PLUGINLIB_EXPORT_CLASS(moveit_setup_app_plugins::ControllerConfig, moveit_setup_framework::SetupConfig)
+PLUGINLIB_EXPORT_CLASS(moveit_setup_app_plugins::ControllersConfig, moveit_setup_framework::SetupConfig)

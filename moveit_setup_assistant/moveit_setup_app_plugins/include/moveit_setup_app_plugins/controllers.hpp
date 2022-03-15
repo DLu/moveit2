@@ -41,12 +41,12 @@
 
 namespace moveit_setup_app_plugins
 {
-class ROSControllers : public moveit_setup_framework::SetupStep
+class Controllers : public moveit_setup_framework::SetupStep
 {
 public:
   std::string getName() const override
   {
-    return "ROS Control";
+    return "Controllers";
   }
 
   void onInit() override;
@@ -71,24 +71,24 @@ public:
     return srdf_config_->getChildOfJoint(joint_name);
   }
 
-  std::vector<ROSControlConfig>& getROSControllers() const
+  std::vector<ControllerInfo>& getControllers() const
   {
-    return controller_config_->getROSControllers();
+    return controllers_config_->getControllers();
   }
 
-  bool addROSController(const ROSControlConfig& new_controller)
+  bool addController(const ControllerInfo& new_controller)
   {
-    return controller_config_->addROSController(new_controller);
+    return controllers_config_->addController(new_controller);
   }
 
-  ROSControlConfig* findROSControllerByName(const std::string& controller_name)
+  ControllerInfo* findControllerByName(const std::string& controller_name)
   {
-    return controller_config_->findROSControllerByName(controller_name);
+    return controllers_config_->findControllerByName(controller_name);
   }
 
-  bool deleteROSController(const std::string& controller_name)
+  bool deleteController(const std::string& controller_name)
   {
-    return controller_config_->deleteROSController(controller_name);
+    return controllers_config_->deleteController(controller_name);
   }
 
   bool addDefaultControllers();
@@ -97,6 +97,6 @@ public:
 
 protected:
   std::shared_ptr<moveit_setup_framework::SRDFConfig> srdf_config_;
-  std::shared_ptr<ControllerConfig> controller_config_;
+  std::shared_ptr<ControllersConfig> controllers_config_;
 };
 }  // namespace moveit_setup_app_plugins

@@ -50,7 +50,7 @@ namespace moveit_setup_app_plugins
 // ******************************************************************************************
 //  ControllerEditWidget constructor, create controller edit screen GUI
 // ******************************************************************************************
-ControllerEditWidget::ControllerEditWidget(QWidget* parent, ROSControllers& setup_step)
+ControllerEditWidget::ControllerEditWidget(QWidget* parent, Controllers& setup_step)
   : QWidget(parent), setup_step_(setup_step)
 {
   // Basic widget container
@@ -161,7 +161,7 @@ ControllerEditWidget::ControllerEditWidget(QWidget* parent, ROSControllers& setu
 void ControllerEditWidget::setSelected(const std::string& controller_name)
 {
   controller_name_field_->setText(QString(controller_name.c_str()));
-  ROSControlConfig* searched_controller = setup_step_.findROSControllerByName(controller_name);
+  ControllerInfo* searched_controller = setup_step_.findControllerByName(controller_name);
   if (searched_controller != nullptr)
   {
     const std::string controller_type = searched_controller->type_;
@@ -194,19 +194,13 @@ void ControllerEditWidget::loadControllersTypesComboBox()
     return;
   has_loaded_ = true;
 
-  const std::array<std::string, 10> default_types = {
-    "effort_controllers/JointTrajectoryController",   "effort_controllers/JointPositionController",
-    "effort_controllers/JointVelocityController",     "effort_controllers/JointEffortController",
-    "position_controllers/JointPositionController",   "position_controllers/JointTrajectoryController",
-    "velocity_controllers/JointTrajectoryController", "velocity_controllers/JointVelocityController",
-    "pos_vel_controllers/JointTrajectoryController",  "pos_vel_acc_controllers/JointTrajectoryController"
-  };
+  const std::vector<std::string> default_types = { "effort_controllers/JointTrajectoryController",
+                                                   "velocity_controllers/JointTrajectoryController",
+                                                   "position_controllers/JointTrajectoryController",
+                                                   "FollowJointTrajectory", "GripperCommand" };
 
   // Remove all old items
   controller_type_field_->clear();
-
-  // Add FollowJointTrajectory option, the default
-  controller_type_field_->addItem("FollowJointTrajectory");
 
   // Loop through all controller default_types and add to combo box
   for (const std::string& type : default_types)

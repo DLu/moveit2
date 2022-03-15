@@ -411,7 +411,7 @@ bool StartScreenWidget::loadNewFiles()
   }
 
   // Progress Indicator
-  progress_bar_->setValue(60);
+  progress_bar_->setValue(50);
   QApplication::processEvents();
 
   // DONE LOADING --------------------------------------------------------------------------

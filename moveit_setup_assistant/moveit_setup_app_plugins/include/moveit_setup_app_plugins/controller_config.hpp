@@ -43,18 +43,21 @@
 namespace moveit_setup_app_plugins
 {
 /**
- * ROS Controllers settings which may be set in the config files
+ * Single controller "instance" configuration
  */
-struct ROSControlConfig
+struct ControllerInfo
 {
   std::string name_;                 // controller name
   std::string type_;                 // controller type
-  std::vector<std::string> joints_;  // joints controller by this controller
+  std::vector<std::string> joints_;  // joints controlled by this controller
 };
 
 static const std::string CONTROLLERS_YAML = "config/ros_controllers.yaml";
 
-class ControllerConfig : public moveit_setup_framework::SetupConfig
+/**
+ * @brief All the controller configurations
+ */
+class ControllersConfig : public moveit_setup_framework::SetupConfig
 {
 public:
   void loadPrevious(const std::string& package_path, const YAML::Node& node) override;
@@ -68,16 +71,16 @@ public:
    * \brief Gets ros_controllers_config_ vector
    * \return pointer to ros_controllers_config_
    */
-  std::vector<ROSControlConfig>& getROSControllers()
+  std::vector<ControllerInfo>& getControllers()
   {
     return ros_controllers_config_;
   }
 
-  class GeneratedControllerConfig : public moveit_setup_framework::YamlGeneratedFile
+  class GeneratedControllersConfig : public moveit_setup_framework::YamlGeneratedFile
   {
   public:
-    GeneratedControllerConfig(const std::string& package_path, const std::time_t& last_gen_time,
-                              ControllerConfig& parent)
+    GeneratedControllersConfig(const std::string& package_path, const std::time_t& last_gen_time,
+                               ControllersConfig& parent)
       : YamlGeneratedFile(package_path, last_gen_time), parent_(parent)
     {
     }
@@ -101,13 +104,14 @@ public:
     bool writeYaml(YAML::Emitter& emitter) override;
 
   protected:
-    ControllerConfig& parent_;
+    ControllersConfig& parent_;
   };
 
   class GeneratedContollerLaunch : public moveit_setup_framework::TemplatedGeneratedFile
   {
   public:
-    GeneratedContollerLaunch(const std::string& package_path, const std::time_t& last_gen_time, ControllerConfig& parent)
+    GeneratedContollerLaunch(const std::string& package_path, const std::time_t& last_gen_time,
+                             ControllersConfig& parent)
       : TemplatedGeneratedFile(package_path, last_gen_time), parent_(parent)
     {
     }
@@ -136,49 +140,49 @@ public:
     }
 
   protected:
-    ControllerConfig& parent_;
+    ControllersConfig& parent_;
   };
 
   void collectFiles(const std::string& package_path, const std::time_t& last_gen_time,
                     std::vector<moveit_setup_framework::GeneratedFilePtr>& files) override
   {
-    files.push_back(std::make_shared<GeneratedControllerConfig>(package_path, last_gen_time, *this));
+    files.push_back(std::make_shared<GeneratedControllersConfig>(package_path, last_gen_time, *this));
     files.push_back(std::make_shared<GeneratedContollerLaunch>(package_path, last_gen_time, *this));
   }
 
   void collectVariables(std::vector<moveit_setup_framework::TemplateVariable>& variables) override;
 
   /**
-   * \brief Adds a ROS controller to ros_controllers_config_ vector
+   * \brief Adds a controller to ros_controllers_config_ vector
    * \param name Name of the controller
    * \param type type of the controller
    * \param joint_names vector of the joint names
    * \return true if inserted correctly
    */
-  bool addROSController(const std::string& name, const std::string& type, const std::vector<std::string>& joint_names);
+  bool addController(const std::string& name, const std::string& type, const std::vector<std::string>& joint_names);
 
   /**
-   * \brief Adds a ROS controller to ros_controllers_config_ vector
-   * \param new_controller a new ROS Controller to add
+   * \brief Adds a controller to ros_controllers_config_ vector
+   * \param new_controller a new Controller to add
    * \return true if inserted correctly
    */
-  bool addROSController(const ROSControlConfig& new_controller);
+  bool addController(const ControllerInfo& new_controller);
 
   /**
-   * Find the associated ROS controller by name
+   * Find the associated controller by name
    *
-   * @param controller_name - name of ROS controller to find in datastructure
+   * @param controller_name - name of controller to find in datastructure
    * @return pointer to data in datastructure
    */
-  ROSControlConfig* findROSControllerByName(const std::string& controller_name);
+  ControllerInfo* findControllerByName(const std::string& controller_name);
 
   /**
-   * Delete ROS controller by name
+   * Delete controller by name
    *
-   * @param controller_name - name of ROS controller to delete
+   * @param controller_name - name of controller to delete
    * @return true if deleted, false if not found
    */
-  bool deleteROSController(const std::string& controller_name);
+  bool deleteController(const std::string& controller_name);
 
 protected:
   /**
@@ -186,10 +190,10 @@ protected:
    * @param YAML::Node - individual controller to be parsed
    * @return true if the file was read correctly
    */
-  bool parseROSController(const YAML::Node& controller);
+  bool parseController(const YAML::Node& controller);
 
-  /// ROS Controllers config data
-  std::vector<ROSControlConfig> ros_controllers_config_;
+  /// Controllers config data
+  std::vector<ControllerInfo> ros_controllers_config_;
   bool changed_;
 };
 }  // namespace moveit_setup_app_plugins

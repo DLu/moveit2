@@ -45,12 +45,12 @@
 // SA
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>
 #include <moveit_setup_framework/qt/double_list_widget.hpp>
-#include <moveit_setup_app_plugins/ros_controllers.hpp>
+#include <moveit_setup_app_plugins/controllers.hpp>
 #include <moveit_setup_app_plugins/controller_edit_widget.hpp>
 
 namespace moveit_setup_app_plugins
 {
-class ROSControllersWidget : public moveit_setup_framework::SetupStepWidget
+class ControllersWidget : public moveit_setup_framework::SetupStepWidget
 {
   Q_OBJECT
 
@@ -141,17 +141,17 @@ private:
   /// Remember whethere we're editing a controller or adding a new one
   bool adding_new_controller_;
 
-  ROSControllers setup_step_;
+  Controllers setup_step_;
 
   /// Builds the main screen list widget
   QWidget* createContentsWidget();
 
   void loadControllersTree();
-  void loadToControllersTree(const ROSControlConfig& controller_it);
+  void loadToControllersTree(const ControllerInfo& controller_it);
   void showMainScreen();
-  void loadJointsScreen(ROSControlConfig* this_controller);
-  void loadGroupsScreen(ROSControlConfig* this_controller);
-  void loadControllerScreen(ROSControlConfig* this_controller);
+  void loadJointsScreen(ControllerInfo* this_controller);
+  void loadGroupsScreen(ControllerInfo* this_controller);
+  void loadControllerScreen(ControllerInfo* this_controller);
 };
 
 }  // namespace moveit_setup_app_plugins

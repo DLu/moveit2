@@ -34,21 +34,21 @@
 
 /* Author: David V. Lu!! */
 
-#include <moveit_setup_app_plugins/ros_controllers.hpp>
+#include <moveit_setup_app_plugins/controllers.hpp>
 
 namespace moveit_setup_app_plugins
 {
-void ROSControllers::onInit()
+void Controllers::onInit()
 {
-  config_data_->registerType("controllers", "moveit_setup_app_plugins::ControllerConfig");
+  config_data_->registerType("controllers", "moveit_setup_app_plugins::ControllersConfig");
   srdf_config_ = config_data_->get<moveit_setup_framework::SRDFConfig>("srdf");
-  controller_config_ = config_data_->get<moveit_setup_app_plugins::ControllerConfig>("controllers");
+  controllers_config_ = config_data_->get<moveit_setup_app_plugins::ControllersConfig>("controllers");
 }
 
 // ******************************************************************************************
 // Add a Follow Joint Trajectory action Controller for each Planning Group
 // ******************************************************************************************
-bool ROSControllers::addDefaultControllers()
+bool Controllers::addDefaultControllers()
 {
   std::vector<std::string> group_names = getGroupNames();
   if (group_names.empty())
@@ -66,14 +66,14 @@ bool ROSControllers::addDefaultControllers()
     {
       continue;
     }
-    bool ret = controller_config_->addROSController(group_name + "_controller", "FollowJointTrajectory", joint_names);
+    bool ret = controllers_config_->addController(group_name + "_controller", "FollowJointTrajectory", joint_names);
     success &= ret;
   }
 
   return success;
 }
 
-std::vector<std::string> ROSControllers::getJointsFromGroups(const std::vector<std::string>& group_names) const
+std::vector<std::string> Controllers::getJointsFromGroups(const std::vector<std::string>& group_names) const
 {
   std::vector<std::string> joint_names;
   for (const std::string& group_name : group_names)

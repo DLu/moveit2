@@ -41,6 +41,7 @@
 #include <boost/filesystem/path.hpp>        // for creating folders/files
 #include <boost/filesystem/operations.hpp>  // is_regular_file, is_directory, etc.
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 // ROS
 #include <rclcpp/rclcpp.hpp>
@@ -201,7 +202,7 @@ bool MoveItConfigData::outputCHOMPPlanningYAML(const std::string& file_path)
 // ******************************************************************************************
 std::string MoveItConfigData::getJointHardwareInterface(const std::string& joint_name)
 {
-  for (ROSControlConfig& ros_control_config : ros_controllers_config_)
+  for (ControllerConfig& ros_control_config : controller_configs_)
   {
     std::vector<std::string>::iterator joint_it =
         std::find(ros_control_config.joints_.begin(), ros_control_config.joints_.end(), joint_name);
@@ -344,7 +345,7 @@ bool MoveItConfigData::outputFakeControllersYAML(const std::string& file_path)
     emitter << YAML::Key << "name";
     emitter << YAML::Value << "fake_" + group.name_ + "_controller";
     emitter << YAML::Key << "type";
-    emitter << YAML::Value << "$(arg execution_type)";
+    emitter << YAML::Value << "$(arg fake_execution_type)";
     emitter << YAML::Key << "joints";
     emitter << YAML::Value << YAML::BeginSeq;
 
@@ -362,7 +363,7 @@ bool MoveItConfigData::outputFakeControllersYAML(const std::string& file_path)
   emitter << YAML::EndSeq;
 
   // Add an initial pose for each group
-  emitter << YAML::Key << "initial" << YAML::Comment("Define initial robot poses.");
+  emitter << YAML::Key << "initial" << YAML::Comment("Define initial robot poses per group");
 
   bool poses_found = false;
   std::string default_group_name;
@@ -420,7 +421,29 @@ bool MoveItConfigData::outputFakeControllersYAML(const std::string& file_path)
   return true;  // file created successfully
 }
 
-std::vector<OMPLPlannerDescription> MoveItConfigData::getOMPLPlanners()
+std::map<std::string, double> MoveItConfigData::getInitialJoints() const
+{
+  std::map<std::string, double> joints;
+  for (const srdf::Model::Group& group : srdf_->groups_)
+  {
+    // use first pose of each group as initial pose
+    for (const srdf::Model::GroupState& group_state : srdf_->group_states_)
+    {
+      if (group.name_ != group_state.group_)
+        continue;
+      for (const auto& pair : group_state.joint_values_)
+      {
+        if (pair.second.size() != 1)
+          continue;  // only handle simple joints here
+        joints[pair.first] = pair.second.front();
+      }
+      break;
+    }
+  }
+  return joints;
+}
+
+std::vector<OMPLPlannerDescription> MoveItConfigData::getOMPLPlanners() const
 {
   std::vector<OMPLPlannerDescription> planner_des;
 
