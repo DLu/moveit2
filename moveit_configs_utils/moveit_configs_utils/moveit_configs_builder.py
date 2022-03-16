@@ -21,7 +21,7 @@ robot_name_moveit_config/
 Example:
     moveit_configs = MoveItConfigsBuilder("robot_name").to_moveit_configs()
     ...
-    moveit_configs.config_dir_path
+    moveit_configs.package_path
     moveit_configs.robot_description
     moveit_configs.robot_description_semantic
     moveit_configs.robot_description_kinematics

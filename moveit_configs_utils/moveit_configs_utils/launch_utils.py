@@ -6,6 +6,8 @@ from launch_ros.actions import Node
 
 
 class DeclareBooleanLaunchArg(DeclareLaunchArgument):
+    """This launch action declares a launch argument with true and false as the only valid values"""
+
     def __init__(self, name, *, default_value=False, description=None, **kwargs):
         super().__init__(
             name,
@@ -19,6 +21,7 @@ class DeclareBooleanLaunchArg(DeclareLaunchArgument):
 def add_debuggable_node(
     ld, package, executable, condition_name="debug", commands_file=None, **kwargs
 ):
+    """Adds two versions of a Node to the launch description, one with gdb debugging, controlled by a launch config"""
     standard_node = Node(
         package=package,
         executable=executable,
@@ -28,10 +31,10 @@ def add_debuggable_node(
     ld.add_action(standard_node)
 
     if commands_file:
-        dash_x_arg = f"-x {commands_file}"
+        dash_x_arg = f"-x {commands_file} "
     else:
         dash_x_arg = ""
-    prefix = [f"gdb {dash_x_arg} --ex run --args"]
+    prefix = [f"gdb {dash_x_arg}--ex run --args"]
 
     debug_node = Node(
         package=package,

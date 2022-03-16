@@ -14,6 +14,8 @@ from moveit_configs_utils.launch_utils import (
 
 
 def generate_rsp_launch(moveit_config):
+    """Launch file for robot state publisher (rsp)"""
+
     ld = LaunchDescription()
     ld.add_action(DeclareLaunchArgument("publish_frequency", default_value="15.0"))
 
@@ -36,6 +38,7 @@ def generate_rsp_launch(moveit_config):
 
 
 def generate_rviz_launch(moveit_config):
+    """Launch file for rviz"""
     ld = LaunchDescription()
 
     ld.add_action(DeclareBooleanLaunchArg("debug", default_value=False))
@@ -65,6 +68,7 @@ def generate_rviz_launch(moveit_config):
 
 
 def generate_assistant_launch(moveit_config):
+    """Launch file for MoveIt Setup Assistant"""
     ld = LaunchDescription()
 
     ld.add_action(DeclareBooleanLaunchArg("debug", default_value=False))
@@ -79,6 +83,7 @@ def generate_assistant_launch(moveit_config):
 
 
 def generate_warehouse_launch(moveit_config):
+    """Launch file for warehouse database"""
     ld = LaunchDescription()
     ld.add_action(
         DeclareLaunchArgument(
@@ -113,7 +118,8 @@ def generate_warehouse_launch(moveit_config):
     db_node = Node(
         package="warehouse_ros_mongo",
         executable="mongo_wrapper_ros.py",
-        # cwd="ROS_HOME",
+        # TODO(dlu): Figure out if this needs to be run in a specific directory
+        # (ROS 1 version set cwd="ROS_HOME")
         parameters=db_parameters,
     )
     ld.add_action(db_node)
