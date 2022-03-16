@@ -14,7 +14,7 @@
   <class type="moveit_setup_app_plugins::PerceptionConfig" base_class_type="moveit_setup_framework::SetupConfig">
     <description>Data for perception step</description>
   </class>
-  <class type="moveit_setup_app_plugins::ControllerConfig" base_class_type="moveit_setup_framework::SetupConfig">
+  <class type="moveit_setup_app_plugins::ControllersConfig" base_class_type="moveit_setup_framework::SetupConfig">
     <description>Data for Controllers</description>
   </class>
 </library>
