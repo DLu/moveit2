@@ -36,7 +36,7 @@
 #pragma once
 
 #include <moveit_setup_framework/setup_step.hpp>
-#include <moveit_setup_app_plugins/launch_bundle.hpp>
+#include <moveit_setup_app_plugins/launches_config.hpp>
 
 namespace moveit_setup_app_plugins
 {
@@ -69,5 +69,6 @@ public:
 
 protected:
   std::vector<LaunchBundle> launch_bundles_;
+  std::shared_ptr<LaunchesConfig> launches_config_;
 };
 }  // namespace moveit_setup_app_plugins

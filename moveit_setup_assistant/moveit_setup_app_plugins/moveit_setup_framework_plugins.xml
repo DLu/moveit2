@@ -17,4 +17,7 @@
   <class type="moveit_setup_app_plugins::ControllersConfig" base_class_type="moveit_setup_framework::SetupConfig">
     <description>Data for Controllers</description>
   </class>
+  <class type="moveit_setup_app_plugins::LaunchesConfig" base_class_type="moveit_setup_framework::SetupConfig">
+    <description>Data for Launch Files</description>
+  </class>
 </library>

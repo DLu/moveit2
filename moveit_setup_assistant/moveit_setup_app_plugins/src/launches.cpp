@@ -39,6 +39,9 @@ namespace moveit_setup_app_plugins
 {
 void Launches::onInit()
 {
+  config_data_->registerType("launches", "moveit_setup_app_plugins::LaunchesConfig");
+  launches_config_ = config_data_->get<moveit_setup_app_plugins::LaunchesConfig>("launches");
+
   launch_bundles_.push_back(LaunchBundle("RViz Launch and Config", "Visualize in Rviz the robot's planning groups "
                                                                    "running with interactive markers that allow goal "
                                                                    "states to be set."));
@@ -54,8 +57,18 @@ void Launches::onInit()
 
 bool Launches::getState(unsigned int id) const
 {
+  return launches_config_->isIncluded(launch_bundles_[id]);
 }
 void Launches::setState(unsigned int id, bool state)
 {
+  const LaunchBundle& bundle = launch_bundles_[id];
+  if (state)
+  {
+    launches_config_->include(bundle);
+  }
+  else
+  {
+    launches_config_->remove(bundle);
+  }
 }
 }  // namespace moveit_setup_app_plugins

@@ -66,6 +66,11 @@ public:
     id_ = id;
   }
 
+  bool operator<(const LaunchBundle& other) const
+  {
+    return title_ < other.title_;
+  }
+
 protected:
   std::string title_, description_;
   unsigned int id_;
