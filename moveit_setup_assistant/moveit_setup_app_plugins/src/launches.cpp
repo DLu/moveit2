@@ -51,4 +51,11 @@ void Launches::onInit()
     launch_bundles_[i].setID(i);
   }
 }
+
+bool Launches::getState(unsigned int id) const
+{
+}
+void Launches::setState(unsigned int id, bool state)
+{
+}
 }  // namespace moveit_setup_app_plugins

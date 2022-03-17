@@ -64,8 +64,7 @@ void LaunchesWidget::onInit()
 
   for (const LaunchBundle& lb : setup_step_.getLaunchBundles())
   {
-    QListWidgetItem* item = new QListWidgetItem(QString(lb.getTitle().c_str()), list_widget_, 0);
-
+    QListWidgetItem* item = new QListWidgetItem(QString(lb.getTitle().c_str()), list_widget_);
     item->setData(Qt::UserRole, QVariant(lb.getID()));
 
     list_widget_->addItem(item);
@@ -87,15 +86,37 @@ void LaunchesWidget::onInit()
   this->setLayout(layout);
 }
 
+unsigned int getID(QListWidgetItem* item)
+{
+  QVariant data = item->data(Qt::UserRole);
+  return data.toUInt();
+}
+
 void LaunchesWidget::focusGiven()
 {
+  disconnect(list_widget_, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(changeCheckedState(QListWidgetItem*)));
+  for (int i = 0; i < list_widget_->count(); ++i)
+  {
+    QListWidgetItem* item = list_widget_->item(i);
+
+    unsigned int id = getID(item);
+
+    item->setCheckState(setup_step_.getState(id) ? Qt::Checked : Qt::Unchecked);
+  }
+  connect(list_widget_, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(changeCheckedState(QListWidgetItem*)));
 }
 
 void LaunchesWidget::onNewSelectedItem(QListWidgetItem* current, QListWidgetItem* previous)
 {
-  QVariant data = current->data(Qt::UserRole);
-  unsigned int id = data.toUInt();
+  unsigned int id = getID(current);
   text_widget_->setText(setup_step_.getDescription(id).c_str());
+}
+
+void LaunchesWidget::changeCheckedState(QListWidgetItem* item)
+{
+  unsigned int id = getID(item);
+  bool state = (item->checkState() == Qt::Checked);
+  setup_step_.setState(id, state);
 }
 
 }  // namespace moveit_setup_app_plugins

@@ -68,6 +68,9 @@ private Q_SLOTS:
   // ******************************************************************************************
   void onNewSelectedItem(QListWidgetItem* current, QListWidgetItem* previous);
 
+  /// Disable or enable item in list
+  void changeCheckedState(QListWidgetItem* item);
+
 private:
   // ******************************************************************************************
   // Variables

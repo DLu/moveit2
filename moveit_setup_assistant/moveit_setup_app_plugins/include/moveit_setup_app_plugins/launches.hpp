@@ -64,6 +64,9 @@ public:
     return launch_bundles_[id].getDescription();
   }
 
+  bool getState(unsigned int id) const;
+  void setState(unsigned int id, bool state);
+
 protected:
   std::vector<LaunchBundle> launch_bundles_;
 };
