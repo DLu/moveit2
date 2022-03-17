@@ -39,5 +39,16 @@ namespace moveit_setup_app_plugins
 {
 void Launches::onInit()
 {
+  launch_bundles_.push_back(LaunchBundle("RViz Launch and Config", "Visualize in Rviz the robot's planning groups "
+                                                                   "running with interactive markers that allow goal "
+                                                                   "states to be set."));
+  launch_bundles_.push_back(LaunchBundle("Setup Assistant Launch", "Launch file for easily re-starting the MoveIt "
+                                                                   "Setup Assistant to edit this robot's generated "
+                                                                   "configuration package."));
+
+  for (unsigned int i = 0; i < launch_bundles_.size(); i++)
+  {
+    launch_bundles_[i].setID(i);
+  }
 }
 }  // namespace moveit_setup_app_plugins

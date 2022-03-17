@@ -63,11 +63,10 @@ public:
   void focusGiven() override;
 
 private Q_SLOTS:
-
   // ******************************************************************************************
   // Slot Event Functions
   // ******************************************************************************************
-  void onNewSelectedRow(int id);
+  void onNewSelectedItem(QListWidgetItem* current, QListWidgetItem* previous);
 
 private:
   // ******************************************************************************************

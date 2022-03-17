@@ -36,6 +36,7 @@
 #pragma once
 
 #include <moveit_setup_framework/setup_step.hpp>
+#include <moveit_setup_app_plugins/launch_bundle.hpp>
 
 namespace moveit_setup_app_plugins
 {
@@ -53,6 +54,17 @@ public:
     return true;  // no generic dependencies
   }
 
+  const std::vector<LaunchBundle>& getLaunchBundles() const
+  {
+    return launch_bundles_;
+  }
+
+  const std::string& getDescription(unsigned int id) const
+  {
+    return launch_bundles_[id].getDescription();
+  }
+
 protected:
+  std::vector<LaunchBundle> launch_bundles_;
 };
 }  // namespace moveit_setup_app_plugins

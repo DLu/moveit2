@@ -96,8 +96,6 @@
   file.file_name_ = "moveit_rviz.launch";
   file.rel_path_ = config_data_->appendPaths(launch_path, file.file_name_);
   template_path = config_data_->appendPaths(template_launch_path, file.file_name_);
-  file.description_ = "Visualize in Rviz the robot's planning groups running with interactive markers that allow goal "
-                      "states to be set.";
   file.gen_func_ = std::bind(&ConfigurationFilesWidget::copyTemplate, this, template_path, std::placeholders::_1);
 
   // ompl_planning_pipeline.launch
@@ -240,8 +238,6 @@
   template_path = config_data_->appendPaths(
       template_launch_path, "edit_configuration_package.launch");  // named this so that this launch file is not mixed
                                                                    // up with the SA's real launch file
-  file.description_ = "Launch file for easily re-starting the MoveIt Setup Assistant to edit this robot's generated "
-                      "configuration package.";
   file.gen_func_ = std::bind(&ConfigurationFilesWidget::copyTemplate, this, template_path, std::placeholders::_1);
 
   // ros_controllers.launch ------------------------------------------------------------------

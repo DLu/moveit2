@@ -57,9 +57,19 @@ void LaunchesWidget::onInit()
   list_widget_ = new QListWidget(this);
   list_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   list_widget_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-  connect(list_widget_, SIGNAL(currentRowChanged(int)), this, SLOT(onNewSelectedRow(int)));
+  connect(list_widget_, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this,
+          SLOT(onNewSelectedItem(QListWidgetItem*, QListWidgetItem*)));
 
   splitter->addWidget(list_widget_);
+
+  for (const LaunchBundle& lb : setup_step_.getLaunchBundles())
+  {
+    QListWidgetItem* item = new QListWidgetItem(QString(lb.getTitle().c_str()), list_widget_, 0);
+
+    item->setData(Qt::UserRole, QVariant(lb.getID()));
+
+    list_widget_->addItem(item);
+  }
 
   text_widget_ = new QLabel(this);
   text_widget_->setFrameShape(QFrame::StyledPanel);
@@ -79,6 +89,13 @@ void LaunchesWidget::onInit()
 
 void LaunchesWidget::focusGiven()
 {
+}
+
+void LaunchesWidget::onNewSelectedItem(QListWidgetItem* current, QListWidgetItem* previous)
+{
+  QVariant data = current->data(Qt::UserRole);
+  unsigned int id = data.toUInt();
+  text_widget_->setText(setup_step_.getDescription(id).c_str());
 }
 
 }  // namespace moveit_setup_app_plugins
