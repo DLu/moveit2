@@ -36,6 +36,8 @@
 #include <moveit_setup_app_plugins/launches_widget.hpp>
 #include <moveit_setup_framework/qt/helper_widgets.hpp>
 
+#include <QSplitter>
+
 namespace moveit_setup_app_plugins
 {
 void LaunchesWidget::onInit()
@@ -48,6 +50,28 @@ void LaunchesWidget::onInit()
   auto header = new moveit_setup_framework::HeaderWidget(
       "Configure Desired Launch Files", "Figure out which launch files you want to be generated.", this);
   layout->addWidget(header);
+
+  QSplitter* splitter = new QSplitter(Qt::Horizontal, this);
+  splitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+  list_widget_ = new QListWidget(this);
+  list_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  list_widget_->setSelectionMode(QAbstractItemView::ExtendedSelection);
+  connect(list_widget_, SIGNAL(currentRowChanged(int)), this, SLOT(onNewSelectedRow(int)));
+
+  splitter->addWidget(list_widget_);
+
+  text_widget_ = new QLabel(this);
+  text_widget_->setFrameShape(QFrame::StyledPanel);
+  text_widget_->setFrameShadow(QFrame::Raised);
+  text_widget_->setLineWidth(1);
+  text_widget_->setMidLineWidth(0);
+  text_widget_->setWordWrap(true);
+  text_widget_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+  text_widget_->setMinimumWidth(100);
+  text_widget_->setAlignment(Qt::AlignTop);
+  splitter->addWidget(text_widget_);
+  layout->addWidget(splitter);
 
   // Finish Layout --------------------------------------------------
   this->setLayout(layout);

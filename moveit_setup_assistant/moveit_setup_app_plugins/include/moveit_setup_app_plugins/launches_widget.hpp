@@ -38,6 +38,9 @@
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>
 #include <moveit_setup_app_plugins/launches.hpp>
 
+#include <QLabel>
+#include <QListWidget>
+
 namespace moveit_setup_app_plugins
 {
 class LaunchesWidget : public moveit_setup_framework::SetupStepWidget
@@ -59,11 +62,21 @@ public:
   /// Received when this widget is chosen from the navigation menu
   void focusGiven() override;
 
+private Q_SLOTS:
+
+  // ******************************************************************************************
+  // Slot Event Functions
+  // ******************************************************************************************
+  void onNewSelectedRow(int id);
+
 private:
   // ******************************************************************************************
   // Variables
   // ******************************************************************************************
 
   Launches setup_step_;
+
+  QListWidget* list_widget_;
+  QLabel* text_widget_;
 };
 }  // namespace moveit_setup_app_plugins
