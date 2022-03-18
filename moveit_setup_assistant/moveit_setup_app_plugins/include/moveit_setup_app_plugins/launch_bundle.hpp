@@ -44,9 +44,8 @@ namespace moveit_setup_app_plugins
 class LaunchBundle
 {
 public:
-  LaunchBundle(const std::string& title, const std::string& description, const std::string& launch_name,
-               const std::string& function_name)
-    : title_(title), description_(description), launch_name_(launch_name), function_name_(function_name)
+  LaunchBundle(const std::string& title, const std::string& description, const std::string& launch_name)
+    : title_(title), description_(description), launch_name_(launch_name)
   {
   }
 
@@ -79,10 +78,11 @@ public:
     GenericLaunchTemplate(const std::string& package_path, const std::time_t& last_gen_time, const LaunchBundle& parent)
       : TemplatedGeneratedFile(package_path, last_gen_time), parent_(parent)
     {
+      function_name_ = "generate_" + parent_.launch_name_ + "_launch";
       relative_path_ = moveit_setup_framework::appendPaths("launch", parent_.launch_name_ + ".launch.py");
       template_path_ =
           moveit_setup_framework::appendPaths(ament_index_cpp::get_package_share_directory("moveit_setup_app_plugins"),
-                                              "templates/launch/generic.launch.py");
+                                              "templates/launch/generic.launch.py.template");
     }
 
     std::string getRelativePath() const override
@@ -108,7 +108,7 @@ public:
     bool write() override
     {
       // Add function name as a TemplateVariable, then remove it
-      variables_.push_back(moveit_setup_framework::TemplateVariable("FUNCTION_NAME", parent_.function_name_));
+      variables_.push_back(moveit_setup_framework::TemplateVariable("FUNCTION_NAME", function_name_));
       bool ret = TemplatedGeneratedFile::write();
       variables_.pop_back();
       return ret;
@@ -116,7 +116,7 @@ public:
 
   protected:
     const LaunchBundle& parent_;
-    std::string relative_path_, template_path_;
+    std::string function_name_, relative_path_, template_path_;
   };
 
   void collectFiles(const std::string& package_path, const std::time_t& last_gen_time,
@@ -126,7 +126,7 @@ public:
   }
 
 protected:
-  std::string title_, description_, launch_name_, function_name_;
+  std::string title_, description_, launch_name_;
   unsigned int id_;
 };
 }  // namespace moveit_setup_app_plugins
