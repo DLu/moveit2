@@ -49,6 +49,9 @@ void Launches::onInit()
                                          "Visualize in Rviz the robot's planning groups running with interactive "
                                          "markers that allow goal states to be set.",
                                          "moveit_rviz"));
+  launch_bundles_.back().addFile("config/moveit.rviz",
+                                 "Configuration file for Rviz with the Motion Planning Plugin already setup.");
+
   launch_bundles_.push_back(LaunchBundle("Setup Assistant Launch",
                                          "Launch file for easily re-starting the MoveIt "
                                          "Setup Assistant to edit this robot's generated "

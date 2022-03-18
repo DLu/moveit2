@@ -41,6 +41,8 @@
 
 namespace moveit_setup_app_plugins
 {
+using moveit_setup_framework::appendPaths;
+
 class LaunchBundle
 {
 public:
@@ -67,6 +69,11 @@ public:
     id_ = id;
   }
 
+  void addFile(const std::string& relative_path, const std::string& description)
+  {
+    bonus_files_.push_back(BonusFile(relative_path, description));
+  }
+
   bool operator<(const LaunchBundle& other) const
   {
     return title_ < other.title_;
@@ -79,10 +86,9 @@ public:
       : TemplatedGeneratedFile(package_path, last_gen_time), parent_(parent)
     {
       function_name_ = "generate_" + parent_.launch_name_ + "_launch";
-      relative_path_ = moveit_setup_framework::appendPaths("launch", parent_.launch_name_ + ".launch.py");
-      template_path_ =
-          moveit_setup_framework::appendPaths(ament_index_cpp::get_package_share_directory("moveit_setup_app_plugins"),
-                                              "templates/launch/generic.launch.py.template");
+      relative_path_ = appendPaths("launch", parent_.launch_name_ + ".launch.py");
+      template_path_ = appendPaths(ament_index_cpp::get_package_share_directory("moveit_setup_app_plugins"),
+                                   "templates/launch/generic.launch.py.template");
     }
 
     std::string getRelativePath() const override
@@ -119,14 +125,66 @@ public:
     std::string function_name_, relative_path_, template_path_;
   };
 
+  struct BonusFile  // basically a std::pair<std::string, std::string>
+  {
+    BonusFile(const std::string& path, const std::string& description) : path(path), description(description)
+    {
+    }
+    std::string path;
+    std::string description;
+  };
+
+  class BonusTemplatedFile : public moveit_setup_framework::TemplatedGeneratedFile
+  {
+  public:
+    BonusTemplatedFile(const std::string& package_path, const std::time_t& last_gen_time,
+                       const std::string& relative_path, const std::string& description)
+      : TemplatedGeneratedFile(package_path, last_gen_time), relative_path_(relative_path), description_(description)
+    {
+    }
+
+    std::string getRelativePath() const override
+    {
+      return relative_path_;
+    }
+
+    std::string getDescription() const override
+    {
+      return description_;
+    }
+
+    std::string getTemplatePath() const override
+    {
+      return appendPaths(appendPaths(ament_index_cpp::get_package_share_directory("moveit_setup_app_plugins"),
+                                     "templates"),
+                         relative_path_);
+    }
+
+    bool hasChanges() const override
+    {
+      return false;
+    }
+
+  protected:
+    std::string relative_path_, description_;
+  };
+
   void collectFiles(const std::string& package_path, const std::time_t& last_gen_time,
                     std::vector<moveit_setup_framework::GeneratedFilePtr>& files) const
   {
     files.push_back(std::make_shared<GenericLaunchTemplate>(package_path, last_gen_time, *this));
+
+    for (const BonusFile& bonus_file : bonus_files_)
+    {
+      files.push_back(
+          std::make_shared<BonusTemplatedFile>(package_path, last_gen_time, bonus_file.path, bonus_file.description));
+    }
   }
 
 protected:
   std::string title_, description_, launch_name_;
   unsigned int id_;
+
+  std::vector<BonusFile> bonus_files_;
 };
 }  // namespace moveit_setup_app_plugins
