@@ -50,8 +50,8 @@ public:
   void include(const LaunchBundle& bundle);
   void remove(const LaunchBundle& bundle);
 
-  void collectFiles(const std::string& /*package_path*/, const std::time_t& /*last_gen_time*/,
-                    std::vector<moveit_setup_framework::GeneratedFilePtr>& /*files*/) override;
+  void collectFiles(const std::string& package_path, const std::time_t& last_gen_time,
+                    std::vector<moveit_setup_framework::GeneratedFilePtr>& files) override;
 
 protected:
   std::set<LaunchBundle> bundles_;

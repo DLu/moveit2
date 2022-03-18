@@ -42,12 +42,26 @@ bool LaunchesConfig::isIncluded(const LaunchBundle& bundle) const
 {
   return bundles_.count(bundle);
 }
+
 void LaunchesConfig::include(const LaunchBundle& bundle)
 {
   bundles_.insert(bundle);
 }
+
 void LaunchesConfig::remove(const LaunchBundle& bundle)
 {
   bundles_.erase(bundle);
 }
+
+void LaunchesConfig::collectFiles(const std::string& package_path, const std::time_t& last_gen_time,
+                                  std::vector<moveit_setup_framework::GeneratedFilePtr>& files)
+{
+  for (const LaunchBundle& bundle : bundles_)
+  {
+    bundle.collectFiles(package_path, last_gen_time, files);
+  }
+}
 }  // namespace moveit_setup_app_plugins
+
+#include <pluginlib/class_list_macros.hpp>  // NOLINT
+PLUGINLIB_EXPORT_CLASS(moveit_setup_app_plugins::LaunchesConfig, moveit_setup_framework::SetupConfig)
