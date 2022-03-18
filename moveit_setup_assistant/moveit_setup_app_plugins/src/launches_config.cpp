@@ -53,6 +53,17 @@ void LaunchesConfig::remove(const LaunchBundle& bundle)
   bundles_.erase(bundle);
 }
 
+void LaunchesConfig::collectDependencies(std::set<std::string>& packages) const
+{
+  for (const LaunchBundle& bundle : bundles_)
+  {
+    for (const std::string& dependency : bundle.getDependencies())
+    {
+      packages.insert(dependency);
+    }
+  }
+}
+
 void LaunchesConfig::collectFiles(const std::string& package_path, const std::time_t& last_gen_time,
                                   std::vector<moveit_setup_framework::GeneratedFilePtr>& files)
 {

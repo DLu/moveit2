@@ -119,7 +119,6 @@ void URDFConfig::loadFromPackage(const std::string& package_name, const std::str
                                  const std::string& xacro_args)
 {
   urdf_pkg_name_ = package_name;
-  config_data_->get<PackageSettingsConfig>("package_settings")->addDependency(urdf_pkg_name_);
   urdf_pkg_relative_path_ = relative_path;
   xacro_args_ = xacro_args;
 
@@ -164,6 +163,11 @@ bool URDFConfig::isXacroFile() const
 bool URDFConfig::isConfigured() const
 {
   return urdf_model_->getRoot() != nullptr;
+}
+
+void URDFConfig::collectDependencies(std::set<std::string>& packages) const
+{
+  packages.insert(urdf_pkg_name_);
 }
 
 void URDFConfig::collectVariables(std::vector<TemplateVariable>& variables)

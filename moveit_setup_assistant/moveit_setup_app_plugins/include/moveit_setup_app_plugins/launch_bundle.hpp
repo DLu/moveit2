@@ -46,8 +46,9 @@ using moveit_setup_framework::appendPaths;
 class LaunchBundle
 {
 public:
-  LaunchBundle(const std::string& title, const std::string& description, const std::string& launch_name)
-    : title_(title), description_(description), launch_name_(launch_name)
+  LaunchBundle(const std::string& title, const std::string& description, const std::string& launch_name,
+               const std::set<std::string>& dependencies = {})
+    : title_(title), description_(description), launch_name_(launch_name), dependencies_(dependencies)
   {
   }
 
@@ -55,10 +56,12 @@ public:
   {
     return title_;
   }
+
   const std::string& getDescription() const
   {
     return description_;
   }
+
   unsigned int getID() const
   {
     return id_;
@@ -72,6 +75,11 @@ public:
   void addFile(const std::string& relative_path, const std::string& description)
   {
     bonus_files_.push_back(BonusFile(relative_path, description));
+  }
+
+  const std::set<std::string> getDependencies() const
+  {
+    return dependencies_;
   }
 
   bool operator<(const LaunchBundle& other) const
@@ -184,6 +192,7 @@ public:
 protected:
   std::string title_, description_, launch_name_;
   unsigned int id_;
+  std::set<std::string> dependencies_;
 
   std::vector<BonusFile> bonus_files_;
 };
