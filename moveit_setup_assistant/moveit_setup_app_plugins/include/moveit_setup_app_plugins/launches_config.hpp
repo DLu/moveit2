@@ -46,6 +46,10 @@ namespace moveit_setup_app_plugins
 class LaunchesConfig : public moveit_setup_framework::SetupConfig
 {
 public:
+  bool isConfigured() const override
+  {
+    return !bundles_.empty();
+  }
   bool isIncluded(const LaunchBundle& bundle) const;
   void include(const LaunchBundle& bundle);
   void remove(const LaunchBundle& bundle);

@@ -63,6 +63,9 @@ void Launches::onInit()
   for (unsigned int i = 0; i < launch_bundles_.size(); i++)
   {
     launch_bundles_[i].setID(i);
+
+    // By default, we start with all the launch bundles included
+    launches_config_->include(launch_bundles_[i]);
   }
 }
 
