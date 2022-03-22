@@ -135,6 +135,7 @@ SetupAssistantWidget::SetupAssistantWidget(rviz_common::ros_integration::RosNode
   }
   if (args.count("config_pkg"))
   {
+    // TODO: Possibly alter if from source package
     std::string config_pkg = args["config_pkg"].as<std::string>();
     auto package_settings = config_data_->get<moveit_setup_framework::PackageSettingsConfig>("package_settings");
     package_settings->loadExisting(config_pkg);

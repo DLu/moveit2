@@ -63,6 +63,8 @@ void PackageSettingsConfig::setPackagePath(const std::string& package_path)
 {
   config_pkg_path_ = package_path;
 
+  // TODO: Determine new package name by reading package.xml
+
   // Determine new package name
   boost::filesystem::path fs_package_path;
   // Remove end slash if there is one
@@ -183,6 +185,9 @@ void PackageSettingsConfig::loadDependencies()
 void PackageSettingsConfig::collectVariables(std::vector<TemplateVariable>& variables)
 {
   variables.push_back(TemplateVariable("GENERATED_PACKAGE_NAME", new_package_name_));
+
+  // TODO: Add new variables for other fields existing in the package.xml
+  //       i.e. read the version so that the version is not overwritten
   variables.push_back(TemplateVariable("AUTHOR_NAME", author_name_));
   variables.push_back(TemplateVariable("AUTHOR_EMAIL", author_email_));
 
