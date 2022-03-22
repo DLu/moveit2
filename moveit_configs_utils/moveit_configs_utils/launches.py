@@ -1,6 +1,5 @@
 from launch import LaunchDescription
 from launch.actions import (
-    AppendEnvironmentVariable,
     DeclareLaunchArgument,
     IncludeLaunchDescription,
 )
@@ -49,7 +48,7 @@ def generate_moveit_rviz_launch(moveit_config):
     ld.add_action(
         DeclareLaunchArgument(
             "rviz_config",
-            default_value=str(moveit_config.package_path / "launch/moveit.rviz"),
+            default_value=str(moveit_config.package_path / "config/moveit.rviz"),
         )
     )
 
@@ -182,9 +181,6 @@ def generate_move_group_launch(moveit_config):
         moveit_config.to_dict(),
     ]
 
-    # Set the display variable, in case OpenGL code is used internally
-    ld.add_action(AppendEnvironmentVariable("DISPLAY", ":0"))
-
     add_debuggable_node(
         ld,
         package="moveit_ros_move_group",
@@ -193,11 +189,45 @@ def generate_move_group_launch(moveit_config):
         output="screen",
         parameters=move_group_params,
         extra_debug_args=["--debug"],
+        # Set the display variable, in case OpenGL code is used internally
+        additional_env={"DISPLAY": ":0"},
     )
     return ld
 
 
-def generate_demo_launch(moveit_config, virtual_joints=False):
+def generate_static_virtual_joint_tfs_launch(frame_pairs=[]):
+    ld = LaunchDescription()
+
+    # The pose that will be broadcast (xyz, rpy)
+    six_zeroes = ["0.0"] * 6
+    for i, frame_pair in enumerate(frame_pairs):
+        ld.add_action(
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                name=f"static_transform_publisher{i}",
+                output="log",
+                arguments=six_zeroes + list(frame_pair),
+            )
+        )
+    return ld
+
+
+def generate_spawn_controllers_launch(controller_names=[]):
+    ld = LaunchDescription()
+    for controller in controller_names:
+        ld.add_action(
+            Node(
+                package="controller_manager",
+                executable="spawner",
+                arguments=[controller],
+                output="screen",
+            )
+        )
+    return ld
+
+
+def generate_demo_launch(moveit_config):
     ld = LaunchDescription()
     ld.add_action(
         DeclareBooleanLaunchArg(
@@ -228,15 +258,13 @@ def generate_demo_launch(moveit_config, virtual_joints=False):
     ld.add_action(DeclareBooleanLaunchArg("use_rviz", default_value=True))
 
     # If there are virtual joints, broadcast static tf by including virtual_joints launch
-    if virtual_joints:
+    virtual_joints_launch = (
+        moveit_config.package_path / "launch/static_virtual_joint_tfs.launch.py"
+    )
+    if virtual_joints_launch.exists():
         ld.add_action(
             IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    str(
-                        moveit_config.package_path
-                        / "launch/static_virtual_joint_tfs.launch.py"
-                    )
-                ),
+                PythonLaunchDescriptionSource(str(virtual_joints_launch)),
             )
         )
 
@@ -304,31 +332,24 @@ def generate_demo_launch(moveit_config, virtual_joints=False):
         )
     )
 
-    """
     # Fake joint driver
-    fake_joint_driver_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        parameters=[
-            moveit_config.robot_description,
-            str(moveit_config.package_path / "config/ros_controllers.yaml"),
-        ],
+    ld.add_action(
+        Node(
+            package="controller_manager",
+            executable="ros2_control_node",
+            parameters=[
+                moveit_config.robot_description,
+                str(moveit_config.package_path / "config/ros_controllers.yaml"),
+            ],
+        )
     )
-    ld.add_action(fake_joint_driver_node)
 
-    spawner_node = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["manipulator_controller"],
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                str(moveit_config.package_path / "launch/spawn_controllers.launch.py")
+            ),
+        )
     )
-    ld.add_action(spawner_node)
-
-    spawner_node2 = Node(
-        package="controller_manager",
-        executable="spawner",
-        output="screen",
-        arguments=["joint_state_broadcaster"],
-    )
-    ld.add_action(spawner_node2)"""
 
     return ld
