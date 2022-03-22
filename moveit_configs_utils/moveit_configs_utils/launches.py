@@ -1,5 +1,9 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import (
+    AppendEnvironmentVariable,
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+)
 from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
@@ -143,16 +147,6 @@ def generate_move_group_launch(moveit_config):
     ld.add_action(
         DeclareBooleanLaunchArg("allow_trajectory_execution", default_value=True)
     )
-    ld.add_action(DeclareBooleanLaunchArg("fake_execution", default_value=False))
-    ld.add_action(
-        DeclareLaunchArgument(
-            "execution_type",
-            default_value="interpolate",
-            description="Set to last point to skip intermediate trajectory in fake execution",
-        )
-    )
-    ld.add_action(DeclareLaunchArgument("max_safe_path_cost", default_value="1"))
-    ld.add_action(DeclareLaunchArgument("jiggle_fraction", default_value="0.05"))
     ld.add_action(
         DeclareBooleanLaunchArg("publish_monitored_planning_scene", default_value=True)
     )
@@ -168,8 +162,6 @@ def generate_move_group_launch(moveit_config):
     move_group_configuration = {
         "publish_robot_description_semantic": True,
         "allow_trajectory_execution": LaunchConfiguration("allow_trajectory_execution"),
-        "max_safe_path_cost": LaunchConfiguration("max_safe_path_cost"),
-        "jiggle_fraction": LaunchConfiguration("jiggle_fraction"),
         # Note: Wrapping the following values is necessary so that the parameter value can be the empty string
         "capabilities": ParameterValue(
             LaunchConfiguration("capabilities"), value_type=str
@@ -191,7 +183,7 @@ def generate_move_group_launch(moveit_config):
     ]
 
     # Set the display variable, in case OpenGL code is used internally
-    #    <env name="DISPLAY" value="$(optenv DISPLAY :0)" />
+    ld.add_action(AppendEnvironmentVariable("DISPLAY", ":0"))
 
     add_debuggable_node(
         ld,
@@ -200,10 +192,7 @@ def generate_move_group_launch(moveit_config):
         commands_file=str(moveit_config.package_path / "launch" / "gdb_settings.gdb"),
         output="screen",
         parameters=move_group_params,
-        # <arg name="info" default="$(arg debug)" />
-        # <arg unless="$(arg info)" name="command_args" value="" />
-        # <arg     if="$(arg info)" name="command_args" value="--debug" />
-        # args="$(arg command_args)">
+        extra_debug_args=["--debug"],
     )
     return ld
 
