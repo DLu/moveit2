@@ -33,7 +33,6 @@
  *********************************************************************/
 
 #include <moveit_setup_framework/data/urdf_config.hpp>
-#include <moveit_setup_framework/data/package_settings_config.hpp>
 #include <moveit_setup_framework/utilities.hpp>
 #include <moveit/rdf_loader/rdf_loader.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>

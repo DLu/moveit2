@@ -55,6 +55,7 @@ void LaunchesConfig::remove(const LaunchBundle& bundle)
 
 void LaunchesConfig::collectDependencies(std::set<std::string>& packages) const
 {
+  packages.insert("moveit_configs_utils");
   for (const LaunchBundle& bundle : bundles_)
   {
     for (const std::string& dependency : bundle.getDependencies())
