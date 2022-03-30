@@ -277,7 +277,6 @@ def generate_demo_launch(moveit_config):
         )
     )
 
-    # Run the main MoveIt executable without trajectory execution (we do not have controllers configured by default)
     move_group_launch_args = {
         "allow_trajectory_execution": "true",
         "fake_execution": "true",
@@ -320,7 +319,7 @@ def generate_demo_launch(moveit_config):
             executable="ros2_control_node",
             parameters=[
                 moveit_config.robot_description,
-                str(moveit_config.package_path / "config/ros_controllers.yaml"),
+                str(moveit_config.package_path / "config/ros2_controllers.yaml"),
             ],
         )
     )
