@@ -3,12 +3,12 @@ from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
 )
-from launch.conditions import IfCondition, UnlessCondition
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
-from launch_ros.parameter_descriptions import Parameter, ParameterValue
+from launch_ros.parameter_descriptions import ParameterValue
 
 from moveit_configs_utils.launch_utils import (
     add_debuggable_node,
@@ -267,25 +267,6 @@ def generate_demo_launch(moveit_config):
                 PythonLaunchDescriptionSource(str(virtual_joints_launch)),
             )
         )
-
-    # We do not have a robot connected, so publish fake joint states
-    jsp_params = [Parameter("source_list", ["move_group/fake_controller_joint_states"])]
-    ld.add_action(
-        Node(
-            package="joint_state_publisher",
-            executable="joint_state_publisher",
-            parameters=jsp_params,
-            condition=UnlessCondition(LaunchConfiguration("use_gui")),
-        )
-    )
-    ld.add_action(
-        Node(
-            package="joint_state_publisher_gui",
-            executable="joint_state_publisher_gui",
-            parameters=jsp_params,
-            condition=IfCondition(LaunchConfiguration("use_gui")),
-        )
-    )
 
     # Given the published joint states, publish tf for the robot links
     ld.add_action(
