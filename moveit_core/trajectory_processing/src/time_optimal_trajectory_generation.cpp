@@ -112,8 +112,10 @@ public:
 
     const Eigen::VectorXd start_direction = (intersection - start).normalized();
     const Eigen::VectorXd end_direction = (end - intersection).normalized();
+    const double start_dot_end = start_direction.dot(end_direction);
 
-    if ((start_direction - end_direction).norm() < 0.000001)
+    // catch division by 0 in computations below
+    if (start_dot_end > 0.999999 || start_dot_end < -0.999999)
     {
       length_ = 0.0;
       radius = 1.0;
@@ -123,8 +125,7 @@ public:
       return;
     }
 
-    // directions must be different at this point so angle is always non-zero
-    const double angle = acos(std::max(-1.0, start_direction.dot(end_direction)));
+    const double angle = acos(start_dot_end);
     const double start_distance = (start - intersection).norm();
     const double end_distance = (end - intersection).norm();
 
@@ -860,10 +861,6 @@ Eigen::VectorXd Trajectory::getAcceleration(double time) const
 TimeOptimalTrajectoryGeneration::TimeOptimalTrajectoryGeneration(const double path_tolerance, const double resample_dt,
                                                                  const double min_angle_change)
   : path_tolerance_(path_tolerance), resample_dt_(resample_dt), min_angle_change_(min_angle_change)
-{
-}
-
-TimeOptimalTrajectoryGeneration::~TimeOptimalTrajectoryGeneration()
 {
 }
 
