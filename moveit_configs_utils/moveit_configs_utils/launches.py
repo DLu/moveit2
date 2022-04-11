@@ -10,6 +10,8 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
+from srdfdom.srdf import SRDF
+
 from moveit_configs_utils.launch_utils import (
     add_debuggable_node,
     DeclareBooleanLaunchArg,
@@ -195,21 +197,29 @@ def generate_move_group_launch(moveit_config):
     return ld
 
 
-def generate_static_virtual_joint_tfs_launch(frame_pairs=[]):
+def generate_static_virtual_joint_tfs_launch(moveit_config):
     ld = LaunchDescription()
 
-    # The pose that will be broadcast (xyz, rpy)
-    six_zeroes = ["0.0"] * 6
-    for i, frame_pair in enumerate(frame_pairs):
-        ld.add_action(
-            Node(
-                package="tf2_ros",
-                executable="static_transform_publisher",
-                name=f"static_transform_publisher{i}",
-                output="log",
-                arguments=six_zeroes + list(frame_pair),
+    name_counter = 0
+
+    for key, xml_contents in moveit_config.robot_description_semantic.items():
+        srdf = SRDF.from_xml_string(xml_contents)
+        for vj in srdf.virtual_joints:
+            ld.add_action(
+                Node(
+                    package="tf2_ros",
+                    executable="static_transform_publisher",
+                    name=f"static_transform_publisher{name_counter}",
+                    output="log",
+                    arguments=[
+                        "--frame-id",
+                        vj.parent_frame,
+                        "--child-frame-id",
+                        vj.child_link,
+                    ],
+                )
             )
-        )
+            name_counter += 1
     return ld
 
 
