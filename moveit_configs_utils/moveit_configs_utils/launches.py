@@ -223,9 +223,12 @@ def generate_static_virtual_joint_tfs_launch(moveit_config):
     return ld
 
 
-def generate_spawn_controllers_launch(controller_names=[]):
+def generate_spawn_controllers_launch(moveit_config):
+    controller_names = moveit_config.trajectory_execution.get(
+        "moveit_simple_controller_manager", {}
+    ).get("controller_names", [])
     ld = LaunchDescription()
-    for controller in controller_names:
+    for controller in controller_names + ["joint_state_broadcaster"]:
         ld.add_action(
             Node(
                 package="controller_manager",
