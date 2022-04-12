@@ -387,7 +387,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
                     chosen_name = possible_names[0]
                 else:
                     # Try a couple other common names, in order of precedence
-                    for name in [self.__robot_name, "ros", "ros2"]:
+                    for name in ["moveit", "moveit2", self.__robot_name]:
                         if name in possible_names:
                             chosen_name = name
                             break
@@ -402,9 +402,7 @@ class MoveItConfigsBuilder(ParameterBuilder):
                 file_path = config_folder / (chosen_name + "_controllers.yaml")
 
         else:
-            file_path = Path(file_path)
-            if not file_path.is_absolute():
-                file_path = self._package_path / file_path
+            file_path = self._package_path / file_path
 
         self.__moveit_configs.trajectory_execution.update(load_yaml(file_path))
         return self
