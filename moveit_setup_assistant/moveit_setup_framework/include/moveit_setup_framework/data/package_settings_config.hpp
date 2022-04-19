@@ -47,7 +47,7 @@ public:
   void loadPrevious(const std::string& package_path, const YAML::Node& node) override;
   YAML::Node saveToYaml() const override;
 
-  void loadExisting(const std::string& package_path);
+  void loadExisting(const std::string& package_path_or_name);
 
   const std::string& getPackagePath() const
   {

@@ -69,23 +69,29 @@ void PackageSettingsConfig::setPackageName(const std::string& package_name)
   new_package_name_ = package_name;
 }
 
-void PackageSettingsConfig::loadExisting(const std::string& package_path)
+void PackageSettingsConfig::loadExisting(const std::string& package_path_or_name)
 {
-  if (package_path.empty())
+  if (package_path_or_name.empty())
   {
     throw std::runtime_error("Please specify a configuration package path to load.");
   }
-  // check that the folder exists
-  if (boost::filesystem::is_directory(package_path))
+  // Check if it is a path that exists
+  if (boost::filesystem::is_directory(package_path_or_name))
   {
     // they inputted a full path
-    setPackagePath(package_path);
+    setPackagePath(package_path_or_name);
   }
   else
   {
-    // TODO: It may make more sense to use the files directly from source, not necessarily the share path
-
-    // does not exist, check if its a package
+    // Determine the path from a name
+    /* TODO(dlu): Ideally, the package path is in source so that when we write back to it,
+     *            the changes will be reflected and then we can check them into git.
+     *            However, there's no easy way to determine the source folder from C++.
+     *            You could run colcon list -p --packages-select $PACKAGE_NAME but the
+     *            results are dependent on what folder you are in and opening an external
+     *            process is messy. For now, we just use the share path and rely on the user
+     *            to write back to the proper directory in the ConfigurationFiles step
+     */
     std::string share_dir = ament_index_cpp::get_package_share_directory(package_path);
 
     // check that the folder exists
@@ -175,6 +181,8 @@ void PackageSettingsConfig::loadDependencies()
 void PackageSettingsConfig::collectVariables(std::vector<TemplateVariable>& variables)
 {
   variables.push_back(TemplateVariable("GENERATED_PACKAGE_NAME", new_package_name_));
+  // TODO: Add new variable here derived from new_package_name_ for use in launches templates
+  // variables.push_back(TemplateVariable("ROBOT_NAME", srdf_.robot_name_));
 
   // TODO: Add new variables for other fields existing in the package.xml
   //       i.e. read the version so that the version is not overwritten
