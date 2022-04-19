@@ -87,6 +87,49 @@ def generate_setup_assistant_launch(moveit_config):
     return ld
 
 
+def generate_static_virtual_joint_tfs_launch(moveit_config):
+    ld = LaunchDescription()
+
+    name_counter = 0
+
+    for key, xml_contents in moveit_config.robot_description_semantic.items():
+        srdf = SRDF.from_xml_string(xml_contents)
+        for vj in srdf.virtual_joints:
+            ld.add_action(
+                Node(
+                    package="tf2_ros",
+                    executable="static_transform_publisher",
+                    name=f"static_transform_publisher{name_counter}",
+                    output="log",
+                    arguments=[
+                        "--frame-id",
+                        vj.parent_frame,
+                        "--child-frame-id",
+                        vj.child_link,
+                    ],
+                )
+            )
+            name_counter += 1
+    return ld
+
+
+def generate_spawn_controllers_launch(moveit_config):
+    controller_names = moveit_config.trajectory_execution.get(
+        "moveit_simple_controller_manager", {}
+    ).get("controller_names", [])
+    ld = LaunchDescription()
+    for controller in controller_names + ["joint_state_broadcaster"]:
+        ld.add_action(
+            Node(
+                package="controller_manager",
+                executable="spawner",
+                arguments=[controller],
+                output="screen",
+            )
+        )
+    return ld
+
+
 def generate_warehouse_db_launch(moveit_config):
     """Launch file for warehouse database"""
     ld = LaunchDescription()
@@ -194,49 +237,6 @@ def generate_move_group_launch(moveit_config):
         # Set the display variable, in case OpenGL code is used internally
         additional_env={"DISPLAY": ":0"},
     )
-    return ld
-
-
-def generate_static_virtual_joint_tfs_launch(moveit_config):
-    ld = LaunchDescription()
-
-    name_counter = 0
-
-    for key, xml_contents in moveit_config.robot_description_semantic.items():
-        srdf = SRDF.from_xml_string(xml_contents)
-        for vj in srdf.virtual_joints:
-            ld.add_action(
-                Node(
-                    package="tf2_ros",
-                    executable="static_transform_publisher",
-                    name=f"static_transform_publisher{name_counter}",
-                    output="log",
-                    arguments=[
-                        "--frame-id",
-                        vj.parent_frame,
-                        "--child-frame-id",
-                        vj.child_link,
-                    ],
-                )
-            )
-            name_counter += 1
-    return ld
-
-
-def generate_spawn_controllers_launch(moveit_config):
-    controller_names = moveit_config.trajectory_execution.get(
-        "moveit_simple_controller_manager", {}
-    ).get("controller_names", [])
-    ld = LaunchDescription()
-    for controller in controller_names + ["joint_state_broadcaster"]:
-        ld.add_action(
-            Node(
-                package="controller_manager",
-                executable="spawner",
-                arguments=[controller],
-                output="screen",
-            )
-        )
     return ld
 
 
