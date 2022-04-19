@@ -62,7 +62,10 @@ void Launches::onInit()
   available_launch_bundles_.push_back(LaunchBundle("Spawn Controllers Launch",
                                                    "Launch file to spawn the necessary controllers",
                                                    "spawn_controllers", { "controller_manager" }));
-  available_launch_bundles_.push_back(LaunchBundle("Demo Launch", "Launch file to run a demo of MoveGroup", "demo"));
+  available_launch_bundles_.push_back(LaunchBundle("Demo Launch",
+                                                   "Launch file to run a demo of MoveGroup. Warning that it requires "
+                                                   "the above launch files to all be generated as well.",
+                                                   "demo"));
 
   available_launch_bundles_.push_back(LaunchBundle("Setup Assistant Launch",
                                                    "Launch file for easily re-starting the MoveIt "
