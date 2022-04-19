@@ -62,27 +62,11 @@ YAML::Node PackageSettingsConfig::saveToYaml() const
 void PackageSettingsConfig::setPackagePath(const std::string& package_path)
 {
   config_pkg_path_ = package_path;
+}
 
-  // TODO: Determine new package name by reading package.xml
-
-  // Determine new package name
-  boost::filesystem::path fs_package_path;
-  // Remove end slash if there is one
-  if (!package_path.compare(package_path.size() - 1, 1, "/"))
-  {
-    fs_package_path = boost::filesystem::path(package_path.substr(0, package_path.size() - 1));
-  }
-  else
-  {
-    fs_package_path = boost::filesystem::path(package_path);
-  }
-
-  // Get the last directory name
-  new_package_name_ = fs_package_path.filename().string();
-
-  // check for empty
-  if (new_package_name_.empty())
-    new_package_name_ = "unknown";
+void PackageSettingsConfig::setPackageName(const std::string& package_name)
+{
+  new_package_name_ = package_name;
 }
 
 void PackageSettingsConfig::loadExisting(const std::string& package_path)
@@ -113,6 +97,10 @@ void PackageSettingsConfig::loadExisting(const std::string& package_path)
     setPackagePath(share_dir);
   }
 
+  // Load the package name from the package.xml
+  std::string relative_path;  // we don't use this output value
+  extractPackageNameFromPath(config_pkg_path_, new_package_name_, relative_path);
+
   // Load Config Yaml
   std::string config_path = appendPaths(config_pkg_path_, ".setup_assistant");
   if (!boost::filesystem::is_regular_file(config_path))
@@ -140,7 +128,7 @@ void PackageSettingsConfig::loadExisting(const std::string& package_path)
       // Replace old keys with new ones
       std::string yaml_key = name;
       auto backwards_match = BACKWARDS_KEY_LOOKUP.find(name);
-      if (backwards_match != BACKWARDS_KEY_LOOKUP.end())
+      if (backwards_match != BACKWARDS_KEY_LOOKUP.end() && title_node[backwards_match->second].IsDefined())
       {
         yaml_key = backwards_match->second;
       }

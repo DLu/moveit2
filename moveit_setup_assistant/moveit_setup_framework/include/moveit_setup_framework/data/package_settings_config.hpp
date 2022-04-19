@@ -54,7 +54,14 @@ public:
     return config_pkg_path_;
   }
 
+  const std::string& getPackageName() const
+  {
+    return new_package_name_;
+  }
+
   void setPackagePath(const std::string& package_path);
+
+  void setPackageName(const std::string& package_name);
 
   const std::time_t& getGenerationTime() const
   {
@@ -199,7 +206,7 @@ protected:
   std::string config_pkg_path_;
 
   /// Name of the new package that is being (or going) to be generated, based on user specified save path
-  std::string new_package_name_;
+  std::string new_package_name_{ "unnamed_moveit_config" };
 
   /// Name of the author of this config
   std::string author_name_;
