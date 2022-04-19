@@ -99,6 +99,8 @@ void PackageSettingsConfig::loadExisting(const std::string& package_path)
   }
   else
   {
+    // TODO: It may make more sense to use the files directly from source, not necessarily the share path
+
     // does not exist, check if its a package
     std::string share_dir = ament_index_cpp::get_package_share_directory(package_path);
 
