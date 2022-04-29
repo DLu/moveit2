@@ -64,7 +64,7 @@ def generate_moveit_rviz_launch(moveit_config):
         package="rviz2",
         executable="rviz2",
         output="log",
-        respawn=True,
+        respawn=False,
         arguments=["-d", LaunchConfiguration("rviz_config")],
         parameters=rviz_parameters,
     )
@@ -241,6 +241,17 @@ def generate_move_group_launch(moveit_config):
 
 
 def generate_demo_launch(moveit_config):
+    """
+    Launches a self contained demo
+
+    Includes
+     * static_virtual_joint_tfs
+     * robot_state_publisher
+     * move_group
+     * moveit_rviz
+     * warehouse_db (optional)
+     * ros2_control_node + controller spawners
+    """
     ld = LaunchDescription()
     ld.add_action(
         DeclareBooleanLaunchArg(
@@ -254,18 +265,6 @@ def generate_demo_launch(moveit_config):
             "debug",
             default_value=False,
             description="By default, we are not in debug mode",
-        )
-    )
-
-    # MoveIt's "demo" mode replaces the real robot driver with the joint_state_publisher.
-    # The latter one maintains and publishes the current joint configuration of the simulated robot.
-    # It also provides a GUI to move the simulated robot around "manually".
-    # This corresponds to moving around the real robot without the use of MoveIt.
-    ld.add_action(
-        DeclareBooleanLaunchArg(
-            "use_gui",
-            default_value=False,
-            description="By default, hide joint_state_publisher's GUI",
         )
     )
     ld.add_action(DeclareBooleanLaunchArg("use_rviz", default_value=True))
@@ -290,18 +289,11 @@ def generate_demo_launch(moveit_config):
         )
     )
 
-    move_group_launch_args = {
-        "allow_trajectory_execution": "true",
-        "fake_execution": "true",
-        "info": "true",
-        "debug": LaunchConfiguration("debug"),
-    }
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 str(moveit_config.package_path / "launch/move_group.launch.py")
             ),
-            launch_arguments=move_group_launch_args.items(),
         )
     )
 
