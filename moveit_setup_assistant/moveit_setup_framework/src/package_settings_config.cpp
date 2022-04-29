@@ -92,7 +92,7 @@ void PackageSettingsConfig::loadExisting(const std::string& package_path_or_name
      *            process is messy. For now, we just use the share path and rely on the user
      *            to write back to the proper directory in the ConfigurationFiles step
      */
-    std::string share_dir = ament_index_cpp::get_package_share_directory(package_path);
+    std::string share_dir = ament_index_cpp::get_package_share_directory(package_path_or_name);
 
     // check that the folder exists
     if (!boost::filesystem::is_directory(share_dir))
