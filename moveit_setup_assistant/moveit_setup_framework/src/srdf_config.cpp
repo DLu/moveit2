@@ -50,6 +50,7 @@ void SRDFConfig::loadPrevious(const std::string& package_path, const YAML::Node&
   {
     throw std::runtime_error("cannot find relative_path property in SRDF");
   }
+  // TODO: Read xacro_args
   loadSRDFFile(package_path, srdf_pkg_relative_path_);
 }
 
@@ -57,6 +58,7 @@ YAML::Node SRDFConfig::saveToYaml() const
 {
   YAML::Node node;
   node["relative_path"] = srdf_pkg_relative_path_;
+  // TODO: Write xacro args
   return node;
 }
 
@@ -75,6 +77,7 @@ void SRDFConfig::loadURDFModel()
 
 void SRDFConfig::loadSRDFFile(const std::string& package_path, const std::string& relative_path)
 {
+  // TODO: add xacro args
   srdf_pkg_relative_path_ = relative_path;
   loadSRDFFile(appendPaths(package_path, relative_path));
 }
