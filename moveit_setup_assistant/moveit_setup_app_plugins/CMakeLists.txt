@@ -38,9 +38,6 @@ add_library(${PROJECT_NAME}
     src/controller_config.cpp
    # src/simulation.cpp
    # src/simulation_widget.cpp
-    src/launches.cpp
-    src/launches_widget.cpp
-    src/launches_config.cpp
     ${MOC_FILES}
 )
 target_include_directories(${PROJECT_NAME} PUBLIC

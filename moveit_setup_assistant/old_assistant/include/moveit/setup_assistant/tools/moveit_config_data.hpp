@@ -35,10 +35,7 @@
 /* Author: Dave Coleman */
 
 #pragma once
-
-#include <moveit/setup_assistant/tools/compute_default_collisions.h>  // for LinkPairMap
-#include <yaml-cpp/yaml.h>                                            // outputting yaml config files
-
+#include <string>
 #include <utility>
 
 namespace moveit_setup_assistant
@@ -120,8 +117,6 @@ public:
   bool outputSetupAssistantFile(const std::string& file_path);
   bool outputOMPLPlanningYAML(const std::string& file_path);
   bool outputCHOMPPlanningYAML(const std::string& file_path);
-  bool outputKinematicsYAML(const std::string& file_path);
-  bool outputJointLimitsYAML(const std::string& file_path);
   bool outputFakeControllersYAML(const std::string& file_path);
 
   /**
@@ -152,13 +147,6 @@ public:
   bool inputOMPLYAML(const std::string& file_path);
 
   /**
-   * Input kinematics.yaml file for editing its values
-   * @param file_path path to kinematics.yaml in the input package
-   * @return true if the file was read correctly
-   */
-  bool inputKinematicsYAML(const std::string& file_path);
-
-  /**
    * Input planning_context.launch for editing its values
    * @param file_path path to planning_context.launch in the input package
    * @return true if the file was read correctly
@@ -169,20 +157,6 @@ public:
    * \brief Helper function to get the default start pose for moveit_sim_hw_interface
    */
   srdf::Model::GroupState getDefaultStartPose();
-
-  /**
-   * \brief Custom std::set comparator, used for sorting the joint_limits.yaml file into alphabetical order
-   * \param jm1 - a pointer to the first joint model to compare
-   * \param jm2 - a pointer to the second joint model to compare
-   * \return bool of alphabetical sorting comparison
-   */
-  struct JointModelCompare
-  {
-    bool operator()(const moveit::core::JointModel* jm1, const moveit::core::JointModel* jm2) const
-    {
-      return jm1->getName() < jm2->getName();
-    }
-  };
 };
 
 }  // namespace moveit_setup_assistant

@@ -146,8 +146,8 @@ void DefaultCollisions::startGenerationThread(unsigned int num_trials, double mi
   progress_ = 0;
 
   // start worker thread
-  // TODO: Remove std::bind to conform with standard set in https://github.com/ros-planning/moveit2/pull/1204
-  worker_ = boost::thread(std::bind(&DefaultCollisions::generateCollisionTable, this, num_trials, min_frac, verbose));
+  worker_ =
+      boost::thread([this, num_trials, min_frac, verbose] { generateCollisionTable(num_trials, min_frac, verbose); });
 }
 
 // ******************************************************************************************
