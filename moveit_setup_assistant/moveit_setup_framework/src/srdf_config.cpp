@@ -81,14 +81,11 @@ void SRDFConfig::loadSRDFFile(const std::string& package_path, const std::string
 // ******************************************************************************************
 // Load SRDF File to Parameter Server
 // ******************************************************************************************
-void SRDFConfig::loadSRDFFile(const std::string& srdf_file_path)
+void SRDFConfig::loadSRDFFile(const std::string& srdf_file_path, const std::vector<std::string>& xacro_args)
 {
   srdf_path_ = srdf_file_path;
 
   loadURDFModel();
-
-  // empty
-  const std::vector<std::string> xacro_args;
 
   std::string srdf_string;
   if (!rdf_loader::RDFLoader::loadXmlFileToString(srdf_string, srdf_path_, xacro_args))
@@ -220,17 +217,6 @@ void SRDFConfig::collectVariables(std::vector<TemplateVariable>& variables)
   variables.push_back(TemplateVariable("ROBOT_NAME", srdf_.robot_name_));
   variables.push_back(TemplateVariable("ROBOT_ROOT_LINK", robot_model_->getRootLinkName()));
   variables.push_back(TemplateVariable("PLANNING_FRAME", robot_model_->getModelFrame()));
-
-  std::stringstream vjb;
-  unsigned int counter = 0;
-  // TODO: Generate to static_virtual_joint_tfs.launch.py
-  for (const auto& vj : srdf_.virtual_joints_)
-  {
-    vjb << "  <node pkg=\"tf2_ros\" type=\"static_transform_publisher\" name=\"virtual_joint_broadcaster_" << counter
-        << "\" args=\"0 0 0 0 0 0 " << vj.parent_frame_ << " " << vj.child_link_ << "\" />" << std::endl;
-    counter++;
-  }
-  variables.push_back(TemplateVariable("VIRTUAL_JOINT_BROADCASTER", vjb.str()));
 }
 
 }  // namespace moveit_setup_framework
