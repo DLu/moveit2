@@ -44,9 +44,20 @@ const std::string SETUP_ASSISTANT_FILE = ".setup_assistant";
 class PackageSettingsConfig : public SetupConfig
 {
 public:
+  /**
+   * @brief Overridden method to load THIS config's data variables.
+   *
+   * Not to be confused with loadExisting which is a PackageSettingsConfig-specific
+   * method for loading ALL configs and their data.
+   */
   void loadPrevious(const std::string& package_path, const YAML::Node& node) override;
   YAML::Node saveToYaml() const override;
 
+  /**
+   * @brief Method for loading the contents of the .setup_assistant file into all the configs
+   *
+   * @param package_path_or_name Either the path to the MoveIt config package folder OR the name of the package.
+   */
   void loadExisting(const std::string& package_path_or_name);
 
   const std::string& getPackagePath() const

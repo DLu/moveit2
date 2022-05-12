@@ -41,7 +41,7 @@ namespace moveit_setup_framework
 const std::unordered_map<std::string, std::string>
     BACKWARDS_KEY_LOOKUP({ { "urdf", "URDF" }, { "srdf", "SRDF" }, { "package_settings", "CONFIG" } });
 
-const std::regex MAIL_REGEX("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", std::regex::icase);
+const std::regex MAIL_REGEX("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,63}\\b", std::regex::icase);
 
 void PackageSettingsConfig::loadPrevious(const std::string& /*config_package_path*/, const YAML::Node& node)
 {
@@ -134,12 +134,15 @@ void PackageSettingsConfig::loadExisting(const std::string& package_path_or_name
       // Replace old keys with new ones
       std::string yaml_key = name;
       auto backwards_match = BACKWARDS_KEY_LOOKUP.find(name);
-      if (backwards_match != BACKWARDS_KEY_LOOKUP.end() && title_node[backwards_match->second].IsDefined())
+      if (backwards_match != BACKWARDS_KEY_LOOKUP.end())
       {
         yaml_key = backwards_match->second;
       }
 
-      config_data_->get(name)->loadPrevious(config_pkg_path_, title_node[yaml_key]);
+      if (title_node[yaml_key].IsDefined())
+      {
+        config_data_->get(name)->loadPrevious(config_pkg_path_, title_node[yaml_key]);
+      }
     }
   }
   catch (YAML::ParserException& e)  // Catch errors, translate to runtime_error
