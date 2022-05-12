@@ -36,6 +36,7 @@
 #pragma once
 
 #include <moveit_setup_framework/config.hpp>
+#include <moveit_setup_framework/templates.hpp>
 #include <moveit_setup_framework/data/urdf_config.hpp>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/planning_scene/planning_scene.h>  // for getting kinematic model
@@ -58,6 +59,7 @@ enum InformationFields
 };
 
 static const std::string JOINT_LIMITS_FILE = "config/joint_limits.yaml";
+static const std::string CARTESIAN_LIMITS_FILE = "config/cartesian_limits.yaml";
 
 class SRDFConfig : public SetupConfig
 {
@@ -219,11 +221,41 @@ public:
     SRDFConfig& parent_;
   };
 
+  class GeneratedCartesianLimits : public TemplatedGeneratedFile
+  {
+  public:
+    using TemplatedGeneratedFile::TemplatedGeneratedFile;
+
+    std::string getRelativePath() const override
+    {
+      return CARTESIAN_LIMITS_FILE;
+    }
+
+    std::string getTemplatePath() const override
+    {
+      return appendPaths(ament_index_cpp::get_package_share_directory("moveit_setup_framework"),
+                         appendPaths("templates", CARTESIAN_LIMITS_FILE));
+    }
+
+    std::string getDescription() const override
+    {
+      return "Cartesian velocity for planning in the workspace."
+             "The velocity is used by pilz industrial motion planner as maximum velocity for cartesian "
+             "planning requests scaled by the velocity scaling factor of an individual planning request.";
+    }
+
+    bool hasChanges() const override
+    {
+      return false;
+    }
+  };
+
   void collectFiles(const std::string& package_path, const std::time_t& last_gen_time,
                     std::vector<GeneratedFilePtr>& files) override
   {
     files.push_back(std::make_shared<GeneratedSRDF>(package_path, last_gen_time, *this));
     files.push_back(std::make_shared<GeneratedJointLimits>(package_path, last_gen_time, *this));
+    files.push_back(std::make_shared<GeneratedCartesianLimits>(package_path, last_gen_time));
   }
 
   void collectVariables(std::vector<TemplateVariable>& variables) override;
