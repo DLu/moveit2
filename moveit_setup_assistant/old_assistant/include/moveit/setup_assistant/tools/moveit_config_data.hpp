@@ -35,10 +35,7 @@
 /* Author: Dave Coleman */
 
 #pragma once
-
-#include <moveit/setup_assistant/tools/compute_default_collisions.h>  // for LinkPairMap
-#include <yaml-cpp/yaml.h>                                            // outputting yaml config files
-
+#include <string>
 #include <utility>
 
 namespace moveit_setup_assistant
