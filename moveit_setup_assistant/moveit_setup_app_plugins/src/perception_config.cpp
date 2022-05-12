@@ -89,8 +89,10 @@ std::vector<SensorParameters> PerceptionConfig::load3DSensorsYAML(const std::str
     if (sensors_node && sensors_node.IsSequence())
     {
       // Loop over the sensors available in the file
-      for (const YAML::Node& sensor : sensors_node)
+      // for (const auto& sensor : sensors_node) <-- this loop sets each sensor to null for some reason
+      for (std::size_t i = 0; i < sensors_node.size(); ++i)
       {
+        const auto& sensor = sensors_node[i];
         SensorParameters sensor_map;
         bool empty_node = true;
 
