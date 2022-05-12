@@ -57,6 +57,8 @@ enum InformationFields
   OTHER = 1 << 8,
 };
 
+static const std::string JOINT_LIMITS_FILE = "config/joint_limits.yaml";
+
 class SRDFConfig : public SetupConfig
 {
 public:
@@ -184,10 +186,44 @@ public:
     SRDFConfig& parent_;
   };
 
+  class GeneratedJointLimits : public YamlGeneratedFile
+  {
+  public:
+    GeneratedJointLimits(const std::string& package_path, const std::time_t& last_gen_time, SRDFConfig& parent)
+      : YamlGeneratedFile(package_path, last_gen_time), parent_(parent)
+    {
+    }
+
+    std::string getRelativePath() const override
+    {
+      return JOINT_LIMITS_FILE;
+    }
+
+    std::string getDescription() const override
+    {
+      return "Contains additional information about joints that appear in your planning groups that is not "
+             "contained in the URDF, as well as allowing you to set maximum and minimum limits for velocity "
+             "and acceleration than those contained in your URDF. This information is used by our trajectory "
+             "filtering system to assign reasonable velocities and timing for the trajectory before it is "
+             "passed to the robot's controllers.";
+    }
+
+    bool hasChanges() const override
+    {
+      return false;  // Can't be changed just yet
+    }
+
+    bool writeYaml(YAML::Emitter& emitter) override;
+
+  protected:
+    SRDFConfig& parent_;
+  };
+
   void collectFiles(const std::string& package_path, const std::time_t& last_gen_time,
                     std::vector<GeneratedFilePtr>& files) override
   {
     files.push_back(std::make_shared<GeneratedSRDF>(package_path, last_gen_time, *this));
+    files.push_back(std::make_shared<GeneratedJointLimits>(package_path, last_gen_time, *this));
   }
 
   void collectVariables(std::vector<TemplateVariable>& variables) override;
