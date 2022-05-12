@@ -25,8 +25,6 @@ This file should be deleted once all tasks are complete.
       * TODO: Load default configuration
    * [ ] Bonus Content - Need to create a NEW setup step screen that allows users to configure what bonus launch files they want to be created, i.e. `demo.launch` and the like.
  * `moveit_setup_assistant`
-   * TODO: Maybe add explicit SIGINT handler
-   * TODO: Maybe add explicit ASyncSpinner equivalent / any spinning is needed (see SetupAssistantWidget::updateTimer)
 
 ### Instructions for migrating steps
  1. Move "Business Logic" out of `SETUP_STEP_widget.xpp` This is a more involved process, but a good place to start is to find all references to `config_data_` and move to `SETUP_STEP.xpp`
