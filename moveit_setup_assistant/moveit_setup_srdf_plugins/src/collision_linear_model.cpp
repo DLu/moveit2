@@ -252,7 +252,7 @@ bool SortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex& s
 }
 
 // define a fallback comparison operator for QVariants
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0) || QT_VERSION > QT_VERSION_CHECK(5, 14, 0))
 namespace
 {
 bool operator<(const QVariant& left, const QVariant& right)
