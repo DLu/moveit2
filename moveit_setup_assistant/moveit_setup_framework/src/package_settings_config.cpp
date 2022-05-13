@@ -187,8 +187,6 @@ void PackageSettingsConfig::loadDependencies()
 void PackageSettingsConfig::collectVariables(std::vector<TemplateVariable>& variables)
 {
   variables.push_back(TemplateVariable("GENERATED_PACKAGE_NAME", new_package_name_));
-  // TODO: Add new variable here derived from new_package_name_ for use in launches templates
-  // variables.push_back(TemplateVariable("ROBOT_NAME", srdf_.robot_name_));
 
   // TODO: Add new variables for other fields existing in the package.xml
   //       i.e. read the version so that the version is not overwritten

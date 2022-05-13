@@ -65,6 +65,7 @@ public:
 
   /// Received when this widget is chosen from the navigation menu
   void focusGiven() override;
+
   moveit_setup_framework::SetupStep& getSetupStep() override
   {
     return setup_step_;
