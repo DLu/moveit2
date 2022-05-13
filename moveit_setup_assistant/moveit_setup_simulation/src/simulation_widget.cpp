@@ -34,7 +34,7 @@
 /* Author: Mohamad Ayman */
 
 // SA
-#include <moveit_setup_app_plugins/simulation_widget.hpp>
+#include <moveit_setup_simulation/simulation_widget.hpp>
 #include <moveit_setup_framework/qt/helper_widgets.hpp>
 
 // Qt
@@ -50,7 +50,7 @@
 
 #include <regex>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup_simulation
 {
 // ******************************************************************************************
 // Constructor
@@ -227,7 +227,7 @@ void SimulationWidget::copyURDF(const QString& /*link*/)
   simulation_text_->copy();
 }
 
-}  // namespace moveit_setup_app_plugins
+}  // namespace moveit_setup_simulation
 
 #include <pluginlib/class_list_macros.hpp>  // NOLINT
-PLUGINLIB_EXPORT_CLASS(moveit_setup_app_plugins::SimulationWidget, moveit_setup_framework::SetupStepWidget)
+PLUGINLIB_EXPORT_CLASS(moveit_setup_simulation::SimulationWidget, moveit_setup_framework::SetupStepWidget)

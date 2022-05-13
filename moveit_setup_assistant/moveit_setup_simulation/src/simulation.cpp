@@ -34,11 +34,11 @@
 
 /* Author: David V. Lu!! */
 
-#include <moveit_setup_app_plugins/simulation.hpp>
+#include <moveit_setup_simulation/simulation.hpp>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup_simulation
 {
 void Simulation::onInit()
 {
 }
-}  // namespace moveit_setup_app_plugins
+}  // namespace moveit_setup_simulation

@@ -41,9 +41,9 @@ class QTextEdit;
 
 // SA
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>
-#include <moveit_setup_app_plugins/simulation.hpp>
+#include <moveit_setup_simulation/simulation.hpp>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup_simulation
 {
 // ******************************************************************************************
 // ******************************************************************************************
@@ -90,4 +90,4 @@ private:
   Simulation setup_step_;
 };
 
-}  // namespace moveit_setup_app_plugins
+}  // namespace moveit_setup_simulation

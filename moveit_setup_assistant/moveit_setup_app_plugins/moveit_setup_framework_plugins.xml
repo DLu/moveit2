@@ -11,7 +11,4 @@
   <class type="moveit_setup_app_plugins::PerceptionConfig" base_class_type="moveit_setup_framework::SetupConfig">
     <description>Data for perception step</description>
   </class>
-  <class type="moveit_setup_app_plugins::SimulationWidget" base_class_type="moveit_setup_framework::SetupStepWidget">
-    <description>Configures the simulation</description>
-  </class>
 </library>

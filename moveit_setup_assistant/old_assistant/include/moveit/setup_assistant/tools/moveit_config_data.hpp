@@ -120,19 +120,6 @@ public:
   bool outputFakeControllersYAML(const std::string& file_path);
 
   /**
-   * \brief Helper function to get the controller that is controlling the joint
-   * \return controller type
-   */
-  std::string getJointHardwareInterface(const std::string& joint_name);
-
-  /**
-   * \brief Parses the existing urdf and constructs a string from it with the elements required by gazebo simulator
-   * added
-   * \return gazebo compatible urdf or empty if error encountered
-   */
-  std::string getGazeboCompatibleURDF();
-
-  /**
    * \brief Decide the best two joints to be used for the projection evaluator
    * \param planning_group name of group to use
    * \return string - value to insert into yaml file

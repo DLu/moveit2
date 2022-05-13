@@ -37,7 +37,7 @@
 
 #include <moveit_setup_framework/setup_step.hpp>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup_simulation
 {
 class Simulation : public moveit_setup_framework::SetupStep
 {
@@ -54,4 +54,4 @@ public:
     return false;
   }
 };
-}  // namespace moveit_setup_app_plugins
+}  // namespace moveit_setup_simulation

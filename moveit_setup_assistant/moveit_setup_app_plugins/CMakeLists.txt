@@ -20,7 +20,6 @@ add_definitions(-DQT_NO_KEYWORDS)
 qt5_wrap_cpp(MOC_FILES
     include/moveit_setup_app_plugins/launches_widget.hpp
     include/moveit_setup_app_plugins/perception_widget.hpp
-   # include/moveit_setup_app_plugins/simulation_widget.hpp
 )
 
 add_library(${PROJECT_NAME}
@@ -30,8 +29,6 @@ add_library(${PROJECT_NAME}
     src/perception_config.cpp
     src/perception.cpp
     src/perception_widget.cpp
-   # src/simulation.cpp
-   # src/simulation_widget.cpp
     ${MOC_FILES}
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
