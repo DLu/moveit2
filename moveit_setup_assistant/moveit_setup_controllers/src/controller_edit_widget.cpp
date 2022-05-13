@@ -43,9 +43,9 @@
 #include <QPushButton>
 #include <QString>
 #include <QVBoxLayout>
-#include <moveit_setup_app_plugins/controller_edit_widget.hpp>
+#include <moveit_setup_controllers/controller_edit_widget.hpp>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup_controllers
 {
 // ******************************************************************************************
 //  ControllerEditWidget constructor, create controller edit screen GUI
@@ -252,4 +252,4 @@ std::string ControllerEditWidget::getControllerType()
   return controller_type_field_->currentText().toStdString();
 }
 
-}  // namespace moveit_setup_app_plugins
+}  // namespace moveit_setup_controllers

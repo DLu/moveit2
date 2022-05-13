@@ -40,7 +40,7 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <moveit_setup_framework/utilities.hpp>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup_controllers
 {
 /**
  * Single controller "instance" configuration
@@ -129,7 +129,7 @@ public:
 
     std::string getTemplatePath() const override
     {
-      std::string pkg_path = ament_index_cpp::get_package_share_directory("moveit_setup_app_plugins");
+      std::string pkg_path = ament_index_cpp::get_package_share_directory("moveit_setup_controllers");
       std::string templates_folder = moveit_setup_framework::appendPaths(pkg_path, "templates");
       return moveit_setup_framework::appendPaths(templates_folder, getRelativePath());
     }
@@ -196,4 +196,4 @@ protected:
   std::vector<ControllerInfo> ros_controllers_config_;
   bool changed_;
 };
-}  // namespace moveit_setup_app_plugins
+}  // namespace moveit_setup_controllers

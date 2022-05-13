@@ -34,7 +34,7 @@
 /* Author: Mohamad Ayman */
 
 // SA
-#include <moveit_setup_app_plugins/controllers_widget.hpp>
+#include <moveit_setup_controllers/controllers_widget.hpp>
 #include <moveit_setup_framework/qt/helper_widgets.hpp>
 #include <moveit_msgs/msg/joint_limits.hpp>
 // Qt
@@ -58,7 +58,7 @@
 #include <regex>
 #include <moveit/robot_state/conversions.h>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup_controllers
 {
 // ******************************************************************************************
 // Outer User Interface for MoveIt Configuration Assistant
@@ -794,7 +794,7 @@ void ControllersWidget::itemSelectionChanged()
   }
 }
 
-}  // namespace moveit_setup_app_plugins
+}  // namespace moveit_setup_controllers
 
 #include <pluginlib/class_list_macros.hpp>  // NOLINT
-PLUGINLIB_EXPORT_CLASS(moveit_setup_app_plugins::ControllersWidget, moveit_setup_framework::SetupStepWidget)
+PLUGINLIB_EXPORT_CLASS(moveit_setup_controllers::ControllersWidget, moveit_setup_framework::SetupStepWidget)

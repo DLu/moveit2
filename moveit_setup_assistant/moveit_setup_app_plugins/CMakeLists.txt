@@ -18,8 +18,6 @@ set(CMAKE_AUTOMOC ON)
 add_definitions(-DQT_NO_KEYWORDS)
 
 qt5_wrap_cpp(MOC_FILES
-    include/moveit_setup_app_plugins/controller_edit_widget.hpp
-    include/moveit_setup_app_plugins/controllers_widget.hpp
     include/moveit_setup_app_plugins/launches_widget.hpp
     include/moveit_setup_app_plugins/perception_widget.hpp
    # include/moveit_setup_app_plugins/simulation_widget.hpp
@@ -32,10 +30,6 @@ add_library(${PROJECT_NAME}
     src/perception_config.cpp
     src/perception.cpp
     src/perception_widget.cpp
-    src/controller_edit_widget.cpp
-    src/controllers.cpp
-    src/controllers_widget.cpp
-    src/controller_config.cpp
    # src/simulation.cpp
    # src/simulation_widget.cpp
     ${MOC_FILES}

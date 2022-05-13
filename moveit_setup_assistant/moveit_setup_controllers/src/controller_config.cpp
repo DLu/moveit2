@@ -34,11 +34,11 @@
 
 /* Author: David V. Lu!! */
 
-#include <moveit_setup_app_plugins/controller_config.hpp>
+#include <moveit_setup_controllers/controller_config.hpp>
 #include <moveit_setup_framework/data/srdf_config.hpp>
 #include <moveit_setup_framework/data_warehouse.hpp>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup_controllers
 {
 using moveit_setup_framework::getYamlProperty;
 
@@ -472,7 +472,7 @@ void ControllersConfig::collectVariables(std::vector<moveit_setup_framework::Tem
   variables.push_back(moveit_setup_framework::TemplateVariable("ROS_CONTROLLERS", controllers.str()));
 }
 
-}  // namespace moveit_setup_app_plugins
+}  // namespace moveit_setup_controllers
 
 #include <pluginlib/class_list_macros.hpp>  // NOLINT
-PLUGINLIB_EXPORT_CLASS(moveit_setup_app_plugins::ControllersConfig, moveit_setup_framework::SetupConfig)
+PLUGINLIB_EXPORT_CLASS(moveit_setup_controllers::ControllersConfig, moveit_setup_framework::SetupConfig)

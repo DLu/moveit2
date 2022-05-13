@@ -45,10 +45,10 @@
 // SA
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>
 #include <moveit_setup_framework/qt/double_list_widget.hpp>
-#include <moveit_setup_app_plugins/controllers.hpp>
-#include <moveit_setup_app_plugins/controller_edit_widget.hpp>
+#include <moveit_setup_controllers/controllers.hpp>
+#include <moveit_setup_controllers/controller_edit_widget.hpp>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup_controllers
 {
 class ControllersWidget : public moveit_setup_framework::SetupStepWidget
 {
@@ -155,4 +155,4 @@ private:
   void loadControllerScreen(ControllerInfo* this_controller);
 };
 
-}  // namespace moveit_setup_app_plugins
+}  // namespace moveit_setup_controllers

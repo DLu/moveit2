@@ -33,70 +33,57 @@
  *********************************************************************/
 
 /* Author: David V. Lu!! */
-#pragma once
 
-#include <moveit_setup_framework/setup_step.hpp>
-#include <moveit_setup_framework/data/srdf_config.hpp>
-#include <moveit_setup_app_plugins/controller_config.hpp>
+#include <moveit_setup_controllers/controllers.hpp>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup_controllers
 {
-class Controllers : public moveit_setup_framework::SetupStep
+void Controllers::onInit()
 {
-public:
-  std::string getName() const override
+  config_data_->registerType("controllers", "moveit_setup_controllers::ControllersConfig");
+  srdf_config_ = config_data_->get<moveit_setup_framework::SRDFConfig>("srdf");
+  controllers_config_ = config_data_->get<moveit_setup_controllers::ControllersConfig>("controllers");
+}
+
+// ******************************************************************************************
+// Add a Follow Joint Trajectory action Controller for each Planning Group
+// ******************************************************************************************
+bool Controllers::addDefaultControllers()
+{
+  std::vector<std::string> group_names = getGroupNames();
+  if (group_names.empty())
   {
-    return "Controllers";
+    return false;
   }
 
-  void onInit() override;
-
-  bool isReady() const override
+  // Loop through groups
+  bool success = true;
+  for (const std::string& group_name : group_names)
   {
-    return !srdf_config_->getGroups().empty();
+    // Get list of associated joints
+    std::vector<std::string> joint_names = srdf_config_->getJointNames(group_name, true, false);  // exclude passive
+    if (joint_names.empty())
+    {
+      continue;
+    }
+    bool ret = controllers_config_->addController(group_name + "_controller", "FollowJointTrajectory", joint_names);
+    success &= ret;
   }
 
-  const std::vector<std::string>& getJointNames() const
+  return success;
+}
+
+std::vector<std::string> Controllers::getJointsFromGroups(const std::vector<std::string>& group_names) const
+{
+  std::vector<std::string> joint_names;
+  for (const std::string& group_name : group_names)
   {
-    return srdf_config_->getRobotModel()->getJointModelNames();
+    for (const std::string& joint_name : srdf_config_->getJointNames(group_name, true, false))  // exclude passive
+    {
+      joint_names.push_back(joint_name);
+    }
   }
+  return joint_names;
+}
 
-  std::vector<std::string> getGroupNames() const
-  {
-    return srdf_config_->getGroupNames();
-  }
-
-  std::string getChildOfJoint(const std::string& joint_name) const
-  {
-    return srdf_config_->getChildOfJoint(joint_name);
-  }
-
-  std::vector<ControllerInfo>& getControllers() const
-  {
-    return controllers_config_->getControllers();
-  }
-
-  bool addController(const ControllerInfo& new_controller)
-  {
-    return controllers_config_->addController(new_controller);
-  }
-
-  ControllerInfo* findControllerByName(const std::string& controller_name)
-  {
-    return controllers_config_->findControllerByName(controller_name);
-  }
-
-  bool deleteController(const std::string& controller_name)
-  {
-    return controllers_config_->deleteController(controller_name);
-  }
-
-  bool addDefaultControllers();
-
-  std::vector<std::string> getJointsFromGroups(const std::vector<std::string>& group_names) const;
-
-protected:
-  std::shared_ptr<moveit_setup_framework::SRDFConfig> srdf_config_;
-  std::shared_ptr<ControllersConfig> controllers_config_;
-};
-}  // namespace moveit_setup_app_plugins
+}  // namespace moveit_setup_controllers

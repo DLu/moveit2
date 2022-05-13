@@ -35,14 +35,14 @@
 
 #pragma once
 
-#include <moveit_setup_app_plugins/controllers.hpp>
+#include <moveit_setup_controllers/controllers.hpp>
 #include <QWidget>
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup_controllers
 {
 class ControllerEditWidget : public QWidget
 {
@@ -137,4 +137,4 @@ private:
 
   Controllers& setup_step_;
 };
-}  // namespace moveit_setup_app_plugins
+}  // namespace moveit_setup_controllers
