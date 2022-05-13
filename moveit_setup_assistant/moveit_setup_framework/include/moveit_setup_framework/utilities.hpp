@@ -80,43 +80,23 @@ inline bool createParentFolders(const std::string& file_path_string)
  * @param relative_filepath holds the relative path of the file to the package root
  * @return whether the file belongs to a known package
  */
-inline bool extractPackageNameFromPath(const std::string& path, std::string& package_name,
-                                       std::string& relative_filepath)
+bool extractPackageNameFromPath(const std::string& path, std::string& package_name, std::string& relative_filepath);
+
+struct XMLAttribute
 {
-  boost::filesystem::path sub_path = path;  // holds the directory less one folder
-  boost::filesystem::path relative_path;    // holds the path after the sub_path
+  const char* name;
+  const char* value;
+  bool required = false;
+};
 
-  // truncate path step by step and check if it contains a package.xml
-  while (!sub_path.empty())
-  {
-    if (boost::filesystem::is_regular_file(sub_path / "package.xml"))
-    {
-      relative_filepath = relative_path.string();
-      // Search the <name> </name> string in the package.xml file
-      // This works assuming the package name is entered as <name>PACKAGE_NAME</name>
-      // Default package name to folder name
-      package_name = sub_path.leaf().string();
-      tinyxml2::XMLDocument package_xml_file;
-      auto is_open = package_xml_file.LoadFile((sub_path / "package.xml").c_str());
-      if (is_open == tinyxml2::XML_SUCCESS)
-      {
-        auto name_potential =
-            package_xml_file.FirstChildElement("package")->FirstChildElement("name")->FirstChild()->ToText()->Value();
-        if (name_potential)
-        {
-          // Change package name if we have non-empty potential, else it defaults
-          package_name = name_potential;
-        }
-      }
-      return true;
-    }
-    relative_path = sub_path.leaf() / relative_path;
-    sub_path.remove_leaf();
-  }
-
-  // No package name found, we must be outside ROS
-  return false;
-}
+/** Insert a new XML element with given tag, attributes and text value
+ *
+ *  If a corresponding element already exists (and has required attribute values), it is just reused.
+ *  All attributes are created or overwritten with given values.
+ *  A text value is created or overwritten with given value (if not NULL).
+ *  The element is returned */
+tinyxml2::XMLElement* uniqueInsert(tinyxml2::XMLElement& element, const char* tag,
+                                   const std::vector<XMLAttribute>& attributes = {}, const char* text = nullptr);
 
 // Formerly "parse"
 template <typename T>

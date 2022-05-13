@@ -160,6 +160,7 @@ private:
   mutable std::list<TrajectoryStep>::const_iterator cached_trajectory_segment_;
 };
 
+MOVEIT_CLASS_FORWARD(TimeOptimalTrajectoryGeneration);
 class TimeOptimalTrajectoryGeneration : public TimeParameterization
 {
 public:
@@ -171,7 +172,7 @@ public:
 
   bool computeTimeStamps(robot_trajectory::RobotTrajectory& trajectory,
                          const std::unordered_map<std::string, double>& velocity_limits,
-                         const std::unordered_map<std::string, double>& acceleration_limits) const;
+                         const std::unordered_map<std::string, double>& acceleration_limits) const override;
 
 private:
   bool doTimeParameterizationCalculations(robot_trajectory::RobotTrajectory& trajectory,

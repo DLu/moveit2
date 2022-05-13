@@ -73,7 +73,16 @@ public:
    */
   std::string getGazeboCompatibleURDF();
 
+  bool outputGazeboURDFFile(const std::string& file_path);
+
 protected:
   std::shared_ptr<moveit_setup_framework::URDFConfig> urdf_config_;
+
+  /// Gazebo URDF robot model string
+  // NOTE: Created when the robot urdf is not compatible with Gazebo.
+  std::string gazebo_urdf_string_;
+
+  /// Whether a new Gazebo URDF is created
+  bool save_gazebo_urdf_;
 };
 }  // namespace moveit_setup_simulation

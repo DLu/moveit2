@@ -38,6 +38,7 @@
 // Qt
 class QLabel;
 class QTextEdit;
+class QPushButton;
 
 // SA
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>
@@ -60,6 +61,8 @@ public:
   // ******************************************************************************************
 
   void onInit() override;
+  void focusGiven() override;
+  bool focusLost() override;
 
   moveit_setup_framework::SetupStep& getSetupStep() override
   {
@@ -67,16 +70,16 @@ public:
   }
 
 private Q_SLOTS:
-
   // ******************************************************************************************
   // Slot Event Functions
   // ******************************************************************************************
 
-  // Called the copy to clipboard button is clicked
-  void copyURDF(const QString& link);
-
-  /// Generate URDF button clicked
-  void generateURDFClick();
+  /// Overwrite original URDF with content of document
+  void overwriteURDF();
+  /// Open original URDF with system editor
+  void openURDF();
+  /// Copy the content of the URDF document to the clipboard
+  void copyURDF();
 
 private:
   // ******************************************************************************************
@@ -85,6 +88,8 @@ private:
 
   QTextEdit* simulation_text_;
   QLabel* no_changes_label_;
+  QPushButton* btn_overwrite_;
+  QPushButton* btn_open_;
   QLabel* copy_urdf_;
 
   Simulation setup_step_;
