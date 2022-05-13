@@ -80,7 +80,7 @@ void SimulationWidget::onInit()
   layout->addWidget(instructions);
 
   QTextEdit* instructions_command = new QTextEdit(this);
-  instructions_command->setText(std::string("roscd " + config_data->urdf_pkg_name_).c_str());
+  instructions_command->setText(std::string("roscd " + setup_step_.getURDFPackageName()).c_str());
   instructions_command->setReadOnly(true);
   instructions_command->setMaximumHeight(30);
   layout->addWidget(instructions_command);
@@ -125,7 +125,7 @@ void SimulationWidget::onInit()
 void SimulationWidget::generateURDFClick()
 {
   simulation_text_->setVisible(true);
-  std::string gazebo_compatible_urdf_string = config_data_->getGazeboCompatibleURDF();
+  std::string gazebo_compatible_urdf_string = setup_step_.getGazeboCompatibleURDF();
   std::size_t urdf_length = gazebo_compatible_urdf_string.length();
 
   // Check if the urdf do need new elements to be added

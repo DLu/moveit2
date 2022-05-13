@@ -1,5 +1,27 @@
 # MoveIt Setup Assistant 2.0
 
+## Migration Progress
+### Fully Ported
+ * `moveit_setup_core_plugins::StartScreenWidget`
+ * `moveit_setup_srdf_plugins::DefaultCollisionsWidget`
+ * `moveit_setup_srdf_plugins::VirtualJointsWidget`
+ * `moveit_setup_srdf_plugins::PlanningGroupsWidget`
+ * `moveit_setup_srdf_plugins::RobotPosesWidget`
+ * `moveit_setup_srdf_plugins::EndEffectorsWidget`
+ * `moveit_setup_srdf_plugins::PassiveJointsWidget`
+ * `moveit_setup_app_plugins::PerceptionWidget`
+ * `moveit_setup_app_plugins::LaunchesWidget`
+ * `moveit_setup_core_plugins::AuthorInformationWidget`
+ * `moveit_setup_core_plugins::ConfigurationFilesWidget`
+
+### Not Ported Yet
+ * `moveit_setup_controllers::ControllersWidget`
+ * `moveit_setup_simulation::SimulationWidget`
+
+### Notes
+ * `PerceptionWidget` is ported, except `moveit_configs_utils` needs to be modified to load `sensors_3d.yaml`. This may require adjustments to the format of `sensors_3d.yaml`
+ * Possible bug in `PlanningGroupsWidget`: Creating a new group does not properly create a new JointModelGroup
+
 ## Quick Start
 To run the Setup Assistant
 

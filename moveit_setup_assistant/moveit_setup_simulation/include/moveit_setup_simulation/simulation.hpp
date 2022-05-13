@@ -36,6 +36,7 @@
 #pragma once
 
 #include <moveit_setup_framework/setup_step.hpp>
+#include <moveit_setup_framework/data/urdf_config.hpp>
 
 namespace moveit_setup_simulation
 {
@@ -53,5 +54,26 @@ public:
   {
     return false;
   }
+
+  std::string getURDFPackageName() const
+  {
+    return urdf_config_->getURDFPackageName();
+  }
+
+  /**
+   * \brief Helper function to get the controller that is controlling the joint
+   * \return controller type
+   */
+  std::string getJointHardwareInterface(const std::string& joint_name);
+
+  /**
+   * \brief Parses the existing urdf and constructs a string from it with the elements required by gazebo simulator
+   * added
+   * \return gazebo compatible urdf or empty if error encountered
+   */
+  std::string getGazeboCompatibleURDF();
+
+protected:
+  std::shared_ptr<moveit_setup_framework::URDFConfig> urdf_config_;
 };
 }  // namespace moveit_setup_simulation
