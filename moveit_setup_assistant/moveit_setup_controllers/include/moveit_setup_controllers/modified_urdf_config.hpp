@@ -117,7 +117,7 @@ public:
   };
 
   void collectFiles(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
-                    std::vector<GeneratedFilePtr>& files);
+                    std::vector<GeneratedFilePtr>& files) override;
   void collectDependencies(std::set<std::string>& packages) const override;
   void collectVariables(std::vector<TemplateVariable>& variables) override;
 
