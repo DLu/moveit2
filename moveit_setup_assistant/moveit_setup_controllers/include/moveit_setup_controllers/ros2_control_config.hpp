@@ -43,6 +43,12 @@ namespace moveit_setup
 {
 namespace controllers
 {
+struct ControlInterfaces
+{
+  std::vector<std::string> command_interfaces;
+  std::vector<std::string> state_interfaces;
+};
+
 class ROS2ControlConfig : public IncludedHeaderConfig
 {
 public:
@@ -68,12 +74,31 @@ public:
     return commands;
   }
 
+  void loadFromOriginalURDF();
+
+  std::vector<std::string> getAllJoints() const;
+  const std::vector<std::string>& getUnconfiguredJoints() const
+  {
+    return missing_interfaces_;
+  }
+
+  void addControlInterfaces(const std::string& joint_name, const ControlInterfaces& ci)
+  {
+    new_joint_interfaces_[joint_name] = ci;
+    changed_ = true;
+  }
+
   std::vector<std::string> getCommandInterfaces(const std::string& joint_name) const;
   std::vector<std::string> getStateInterfaces(const std::string& joint_name) const;
 
+  bool isConfigured() const override
+  {
+    return !new_joint_interfaces_.empty();
+  }
+
   bool hasChanges() const override
   {
-    return false;
+    return changed_;
   }
 
   class GeneratedControlHeader : public TemplatedGeneratedFile
@@ -118,7 +143,14 @@ public:
   void collectVariables(std::vector<TemplateVariable>& variables) override;
 
 protected:
+  using ControlInterfaceIterator = std::unordered_map<std::string, ControlInterfaces>::const_iterator;
+  bool findJointInterface(const std::string& joint_name, ControlInterfaceIterator& it) const;
+
   std::shared_ptr<SRDFConfig> srdf_config_;
+
+  std::unordered_map<std::string, ControlInterfaces> original_joint_interfaces_, new_joint_interfaces_;
+  std::vector<std::string> missing_interfaces_;
+  bool changed_;
 };
 }  // namespace controllers
 }  // namespace moveit_setup

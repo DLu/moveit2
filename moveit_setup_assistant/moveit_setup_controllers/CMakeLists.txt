@@ -28,6 +28,7 @@ add_library(${PROJECT_NAME}
     src/controller_config.cpp
     src/modified_urdf_config.cpp
     src/ros2_control_config.cpp
+    src/urdf_modifications.cpp
     ${MOC_FILES}
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
