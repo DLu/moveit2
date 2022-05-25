@@ -186,3 +186,7 @@ void ROS2ControlConfig::collectVariables(std::vector<TemplateVariable>& variable
 
 }  // namespace controllers
 }  // namespace moveit_setup
+
+#include <pluginlib/class_list_macros.hpp>  // NOLINT
+PLUGINLIB_EXPORT_CLASS(moveit_setup::IncludedHeaderConfig, moveit_setup::SetupConfig)
+PLUGINLIB_EXPORT_CLASS(moveit_setup::controllers::ROS2ControlConfig, moveit_setup::SetupConfig)

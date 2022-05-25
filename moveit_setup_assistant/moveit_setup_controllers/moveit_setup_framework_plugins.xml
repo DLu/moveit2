@@ -5,6 +5,9 @@
   <class type="moveit_setup::controllers::IncludedHeaderConfig" base_class_type="moveit_setup::SetupConfig">
     <description>A xacro file that should be included in the ModifiedUrdfConfig</description>
   </class>
+  <class type="moveit_setup::controllers::ROS2ControlConfig" base_class_type="moveit_setup::SetupConfig">
+    <description>Data for Controllers</description>
+  </class>
   <class type="moveit_setup::controllers::ControllersConfig" base_class_type="moveit_setup::SetupConfig">
     <description>Data for Controllers</description>
   </class>

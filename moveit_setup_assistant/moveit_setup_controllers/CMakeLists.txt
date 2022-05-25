@@ -61,6 +61,8 @@ install(FILES moveit_setup_framework_plugins.xml
 install(DIRECTORY include/
         DESTINATION include
 )
+
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 ament_export_include_directories(include)
 
 ament_export_libraries(${PROJECT_NAME})
