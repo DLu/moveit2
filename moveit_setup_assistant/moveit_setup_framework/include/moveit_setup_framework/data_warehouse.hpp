@@ -65,6 +65,13 @@ public:
   SetupConfigPtr get(const std::string& config_name, std::string config_class = "");
 
   /**
+   * @brief Get all of the registered configs that match the given config_class
+   * @param config_class The string representing the class name
+   * @returns Map of shared pointers from config names to singleton config
+   */
+  std::unordered_map<std::string, SetupConfigPtr> getAll(const std::string config_class);
+
+  /**
    * @brief Get the specific singleton for a given config name and class
    *
    * Unlike the non-templated version of this method, this returns
@@ -79,6 +86,26 @@ public:
   std::shared_ptr<T> get(const std::string& config_name, const std::string& config_class = "")
   {
     return std::static_pointer_cast<T>(get(config_name, config_class));
+  }
+
+  /**
+   * @brief Get all of the registered configs that match the given config_class
+   *
+   * Unlike the non-templated version of this method, this returns
+   * the SetupConfig pointers cast to the specific config type.
+   *
+   * @param config_class The string representing the class name
+   * @returns Map of shared pointers from config names to singleton config
+   */
+  template <typename T>
+  std::unordered_map<std::string, std::shared_ptr<T>> getAll(const std::string config_class)
+  {
+    std::unordered_map<std::string, std::shared_ptr<T>> cast_matches;
+    for (const auto& pair : getAll(config_class))
+    {
+      cast_matches[pair.first] = std::static_pointer_cast<T>(pair.second);
+    }
+    return cast_matches;
   }
 
   /**
