@@ -64,7 +64,23 @@ public:
 
   bool needsWork() const;
 
-  void loadDefault();
+  void setInterfaces(const std::vector<std::string>& command_interfaces,
+                     const std::vector<std::string>& state_interfaces);
+
+  std::string getJointsXML() const
+  {
+    return ros2_control_config_->getJointsXML();
+  }
+
+  const ControlInterfaces& getDefaultControlInterfaces() const
+  {
+    return ros2_control_config_->getDefaultControlInterfaces();
+  }
+
+  const ControlInterfaces& getAvailableControlInterfaces() const
+  {
+    return ros2_control_config_->getAvailableControlInterfaces();
+  }
 
 protected:
   std::shared_ptr<SRDFConfig> srdf_config_;

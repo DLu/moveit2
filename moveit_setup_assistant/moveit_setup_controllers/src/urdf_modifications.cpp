@@ -48,16 +48,13 @@ void UrdfModifications::onInit()
   srdf_config_ = config_data_->get<SRDFConfig>("srdf");
 }
 
-void UrdfModifications::loadDefault()
+void UrdfModifications::setInterfaces(const std::vector<std::string>& command_interfaces,
+                                      const std::vector<std::string>& state_interfaces)
 {
-  for (const std::string& joint_name : ros2_control_config_->getUnconfiguredJoints())
-  {
-    ControlInterfaces ci;
-    ci.command_interfaces.push_back("position");
-    ci.state_interfaces.push_back("position");
-    ci.state_interfaces.push_back("velocity");
-    ros2_control_config_->addControlInterfaces(joint_name, ci);
-  }
+  ControlInterfaces ci;
+  ci.command_interfaces = command_interfaces;
+  ci.state_interfaces = state_interfaces;
+  ros2_control_config_->setControlInterfaces(ci);
 }
 
 bool UrdfModifications::needsWork() const

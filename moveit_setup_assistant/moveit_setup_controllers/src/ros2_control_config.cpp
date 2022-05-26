@@ -46,6 +46,29 @@ void ROS2ControlConfig::onInit()
 {
   urdf_config_ = config_data_->get<URDFConfig>("urdf");
   srdf_config_ = config_data_->get<SRDFConfig>("srdf");
+  available_ci_.command_interfaces = getAvailableInterfaceNames();
+  available_ci_.state_interfaces = getAvailableInterfaceNames();
+  default_ci_.command_interfaces = { "position" };
+  default_ci_.state_interfaces = { "position", "velocity" };
+}
+
+void ROS2ControlConfig::loadPrevious(const std::filesystem::path& /*config_package_path*/, const YAML::Node& node)
+{
+  if (!node.IsDefined())
+  {
+    return;
+  }
+
+  getYamlProperty(node, "command", default_ci_.command_interfaces);
+  getYamlProperty(node, "state", default_ci_.state_interfaces);
+}
+
+YAML::Node ROS2ControlConfig::saveToYaml() const
+{
+  YAML::Node node;
+  node["command"] = default_ci_.command_interfaces;
+  node["state"] = default_ci_.state_interfaces;
+  return node;
 }
 
 bool ROS2ControlConfig::findJointInterface(const std::string& joint_name, ControlInterfaceIterator& it) const
@@ -98,6 +121,16 @@ std::vector<std::string> ROS2ControlConfig::getAllJoints() const
   return joint_names;
 }
 
+void ROS2ControlConfig::setControlInterfaces(const ControlInterfaces& ci)
+{
+  default_ci_ = ci;
+  for (const std::string& joint_name : missing_interfaces_)
+  {
+    new_joint_interfaces_[joint_name] = default_ci_;
+  }
+  changed_ = true;
+}
+
 void getInterfaceNames(const tinyxml2::XMLElement* joint_el, const std::string& element_name,
                        std::vector<std::string>& interface_names)
 {
@@ -140,7 +173,7 @@ void ROS2ControlConfig::loadFromOriginalURDF()
   }
 }
 
-void ROS2ControlConfig::collectVariables(std::vector<TemplateVariable>& variables)
+std::string ROS2ControlConfig::getJointsXML() const
 {
   std::string joints = "";
   const std::string TAB = "            ";
@@ -187,8 +220,12 @@ void ROS2ControlConfig::collectVariables(std::vector<TemplateVariable>& variable
     joints += TAB;
     joints += "</joint>\n";
   }
+  return joints;
+}
 
-  variables.push_back(TemplateVariable("ROS2_CONTROL_JOINTS", joints));
+void ROS2ControlConfig::collectVariables(std::vector<TemplateVariable>& variables)
+{
+  variables.push_back(TemplateVariable("ROS2_CONTROL_JOINTS", getJointsXML()));
 }
 
 }  // namespace controllers

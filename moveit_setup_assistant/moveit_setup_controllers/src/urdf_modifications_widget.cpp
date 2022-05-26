@@ -37,6 +37,8 @@
 #include <moveit_setup_controllers/urdf_modifications_widget.hpp>
 #include <moveit_setup_framework/qt/helper_widgets.hpp>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGroupBox>
 #include <QLabel>
 
 namespace moveit_setup
@@ -61,28 +63,90 @@ void UrdfModificationsWidget::onInit()
   this->setLayout(layout);
 }
 
+QWidget* UrdfModificationsWidget::makeInterfacesBox(const std::string& interface_type,
+                                                    const std::vector<std::string>& available_interfaces,
+                                                    const std::vector<std::string>& selected_interfaces,
+                                                    QWidget* parent)
+{
+  QGroupBox* box = new QGroupBox((interface_type + " Interfaces").c_str(), parent);
+  QVBoxLayout* box_layout = new QVBoxLayout(parent);
+  for (const std::string& interface_name : available_interfaces)
+  {
+    QCheckBox* check = new QCheckBox(interface_name.c_str(), parent);
+    box_layout->addWidget(check);
+
+    std::string key = interface_type[0] + interface_name;
+    check_boxes_[key] = check;
+  }
+  for (const std::string& interface_name : selected_interfaces)
+  {
+    std::string key = interface_type[0] + interface_name;
+    check_boxes_[key]->setChecked(true);
+  }
+  box->setLayout(box_layout);
+  return box;
+}
+
 void UrdfModificationsWidget::focusGiven()
 {
   setup_step_.refresh();
   qDeleteAll(content_widget_->children());
+  check_boxes_.clear();
+
   QVBoxLayout* layout = new QVBoxLayout();
-  if (setup_step_.needsWork())
-  {
-    btn_go_ = new QPushButton("Add interfaces");
-    connect(btn_go_, SIGNAL(clicked()), this, SLOT(addInterfaces()));
-    layout->addWidget(btn_go_);
-  }
-  else
+  if (!setup_step_.needsWork())
   {
     layout->addWidget(new QLabel("All of the joints used by this MoveIt config have already been configured using\n"
                                  "ros2_control, so there is no need to modify the URDF with ros2_control tags."));
+    content_widget_->setLayout(layout);
+    return;
   }
+
+  QWidget* interface_widget = new QWidget(this);
+  QHBoxLayout* interface_layout = new QHBoxLayout();
+
+  auto available_interfaces = setup_step_.getAvailableControlInterfaces(),
+       selected_interfaces = setup_step_.getDefaultControlInterfaces();
+
+  interface_layout->addWidget(makeInterfacesBox("Command", available_interfaces.command_interfaces,
+                                                selected_interfaces.command_interfaces, interface_widget));
+  interface_layout->addWidget(makeInterfacesBox("State", available_interfaces.state_interfaces,
+                                                selected_interfaces.state_interfaces, interface_widget));
+
+  interface_widget->setLayout(interface_layout);
+  layout->addWidget(interface_widget);
+
+  btn_go_ = new QPushButton("Add interfaces");
+  connect(btn_go_, SIGNAL(clicked()), this, SLOT(addInterfaces()));
+  layout->addWidget(btn_go_);
+
+  generated_text_widget_ = new QTextEdit();
+  generated_text_widget_->setReadOnly(true);
+  layout->addWidget(generated_text_widget_);
   content_widget_->setLayout(layout);
+}
+
+std::vector<std::string> UrdfModificationsWidget::getInterfaces(const char first_letter,
+                                                                const std::vector<std::string>& available_interfaces)
+{
+  std::vector<std::string> interface_names;
+  for (const std::string& interface_name : available_interfaces)
+  {
+    std::string key = first_letter + interface_name;
+    if (check_boxes_[key]->isChecked())
+    {
+      interface_names.push_back(interface_name);
+    }
+  }
+  return interface_names;
 }
 
 void UrdfModificationsWidget::addInterfaces()
 {
-  setup_step_.loadDefault();
+  auto available_interfaces = setup_step_.getAvailableControlInterfaces();
+  setup_step_.setInterfaces(getInterfaces('C', available_interfaces.command_interfaces),
+                            getInterfaces('S', available_interfaces.state_interfaces));
+  generated_text_widget_->setText(setup_step_.getJointsXML().c_str());
 }
 
 }  // namespace controllers

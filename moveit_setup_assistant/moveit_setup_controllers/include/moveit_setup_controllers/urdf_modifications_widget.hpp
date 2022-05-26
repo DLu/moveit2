@@ -40,6 +40,8 @@
 #include <moveit_setup_controllers/urdf_modifications.hpp>
 
 #include <QPushButton>
+#include <QCheckBox>
+#include <QTextEdit>
 
 namespace moveit_setup
 {
@@ -61,8 +63,14 @@ private Q_SLOTS:
   void addInterfaces();
 
 private:
+  QWidget* makeInterfacesBox(const std::string& interface_type, const std::vector<std::string>& available_interfaces,
+                             const std::vector<std::string>& selected_interfaces, QWidget* parent = nullptr);
+  std::vector<std::string> getInterfaces(const char first_letter, const std::vector<std::string>& available_interfaces);
   QWidget* content_widget_;
   QPushButton* btn_go_;
+  QTextEdit* generated_text_widget_;
+  std::unordered_map<std::string, QCheckBox*> check_boxes_;
+
   UrdfModifications setup_step_;
 };
 }  // namespace controllers

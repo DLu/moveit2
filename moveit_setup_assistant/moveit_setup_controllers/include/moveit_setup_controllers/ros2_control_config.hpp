@@ -49,10 +49,17 @@ struct ControlInterfaces
   std::vector<std::string> state_interfaces;
 };
 
+inline std::vector<std::string> getAvailableInterfaceNames()
+{
+  return { "position", "velocity", "effort" };
+}
+
 class ROS2ControlConfig : public IncludedHeaderConfig
 {
 public:
   void onInit() override;
+  void loadPrevious(const std::filesystem::path& /*config_package_path*/, const YAML::Node& node) override;
+  YAML::Node saveToYaml() const override;
 
   std::vector<std::pair<std::string, std::string>> getArguments() const override
   {
@@ -82,6 +89,18 @@ public:
     return missing_interfaces_;
   }
 
+  const ControlInterfaces& getDefaultControlInterfaces() const
+  {
+    return default_ci_;
+  }
+
+  const ControlInterfaces& getAvailableControlInterfaces() const
+  {
+    return available_ci_;
+  }
+
+  void setControlInterfaces(const ControlInterfaces& ci);
+
   void addControlInterfaces(const std::string& joint_name, const ControlInterfaces& ci)
   {
     new_joint_interfaces_[joint_name] = ci;
@@ -100,6 +119,8 @@ public:
   {
     return changed_;
   }
+
+  std::string getJointsXML() const;
 
   class GeneratedControlHeader : public TemplatedGeneratedFile
   {
@@ -151,6 +172,8 @@ protected:
   std::unordered_map<std::string, ControlInterfaces> original_joint_interfaces_, new_joint_interfaces_;
   std::vector<std::string> missing_interfaces_;
   bool changed_;
+
+  ControlInterfaces default_ci_, available_ci_;
 };
 }  // namespace controllers
 }  // namespace moveit_setup
