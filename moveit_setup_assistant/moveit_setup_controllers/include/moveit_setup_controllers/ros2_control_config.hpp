@@ -112,6 +112,11 @@ public:
 
   bool isConfigured() const override
   {
+    return (!original_joint_interfaces_.empty() && missing_interfaces_.empty()) || !new_joint_interfaces_.empty();
+  }
+
+  bool needsGeneration() const override
+  {
     return !new_joint_interfaces_.empty();
   }
 
@@ -218,8 +223,11 @@ public:
   void collectFiles(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
                     std::vector<GeneratedFilePtr>& files) override
   {
-    files.push_back(std::make_shared<GeneratedControlHeader>(package_path, last_gen_time, *this));
-    files.push_back(std::make_shared<GeneratedInitialPositions>(package_path, last_gen_time, *this));
+    if (needsGeneration())
+    {
+      files.push_back(std::make_shared<GeneratedControlHeader>(package_path, last_gen_time, *this));
+      files.push_back(std::make_shared<GeneratedInitialPositions>(package_path, last_gen_time, *this));
+    }
     files.push_back(std::make_shared<GeneratedControllerConfig>(package_path, last_gen_time, *this));
   }
 

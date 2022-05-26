@@ -59,6 +59,10 @@ public:
   {
     return "";
   }
+  virtual bool needsGeneration() const
+  {
+    return false;
+  }
 
   virtual bool hasChanges() const
   {
@@ -132,7 +136,7 @@ protected:
     std::vector<IncludedHeaderConfig::Ptr> headers;
     for (auto& pair : getHeaderMap())
     {
-      if (pair.second->isConfigured())
+      if (pair.second->needsGeneration())
         headers.push_back(pair.second);
     }
     return headers;
@@ -143,7 +147,7 @@ protected:
     std::vector<std::string> names;
     for (auto& pair : getHeaderMap())
     {
-      if (pair.second->isConfigured())
+      if (pair.second->needsGeneration())
         names.push_back(pair.first);
     }
 

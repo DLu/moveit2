@@ -107,6 +107,10 @@ void ModifiedUrdfConfig::collectVariables(std::vector<TemplateVariable>& variabl
   for (const auto& pair : getHeaderMap())
   {
     const IncludedHeaderConfig::Ptr& header = pair.second;
+    if (!header->needsGeneration())
+    {
+      continue;
+    }
     for (const std::pair<std::string, std::string> argument : header->getArguments())
     {
       args += "    <xacro:arg name=\"";
