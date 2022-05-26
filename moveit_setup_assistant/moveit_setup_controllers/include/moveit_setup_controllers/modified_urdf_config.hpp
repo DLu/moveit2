@@ -124,7 +124,7 @@ public:
 protected:
   std::unordered_map<std::string, IncludedHeaderConfig::Ptr> getHeaderMap() const
   {
-    return config_data_->getAll<IncludedHeaderConfig>("moveit_setup::IncludedHeaderConfig");
+    return config_data_->getAll<IncludedHeaderConfig>();
   }
 
   std::vector<IncludedHeaderConfig::Ptr> getHeaders() const

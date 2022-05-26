@@ -42,6 +42,7 @@ namespace controllers
 {
 void UrdfModifications::onInit()
 {
+  config_data_->registerType("modified_urdf", "moveit_setup::ModifiedUrdfConfig");
   config_data_->registerType("ros2_control", "moveit_setup::controllers::ROS2ControlConfig");
   ros2_control_config_ = config_data_->get<ROS2ControlConfig>("ros2_control");
   srdf_config_ = config_data_->get<SRDFConfig>("srdf");

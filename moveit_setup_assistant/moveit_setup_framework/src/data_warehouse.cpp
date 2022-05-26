@@ -71,20 +71,6 @@ SetupConfigPtr DataWarehouse::get(const std::string& config_name, std::string co
   return config;
 }
 
-std::unordered_map<std::string, SetupConfigPtr> DataWarehouse::getAll(std::string config_class)
-{
-  std::unordered_map<std::string, SetupConfigPtr> matches;
-  for (const auto& pair : registered_types_)
-  {
-    if (pair.second == config_class)
-    {
-      matches[pair.first] = get(pair.first, config_class);
-    }
-  }
-
-  return matches;
-}
-
 void DataWarehouse::registerType(const std::string& config_name, const std::string& config_class)
 {
   registered_types_[config_name] = config_class;

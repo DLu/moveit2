@@ -1,5 +1,5 @@
 <library path="moveit_setup_controllers">
-  <class type="moveit_setup::controllers::ModifiedUrdfConfig" base_class_type="moveit_setup::SetupConfig">
+  <class type="moveit_setup::ModifiedUrdfConfig" base_class_type="moveit_setup::SetupConfig">
     <description>A modified version of the original URDF file with additional interfaces (e.g. ros2_control, simulation)</description>
   </class>
   <class type="moveit_setup::controllers::IncludedHeaderConfig" base_class_type="moveit_setup::SetupConfig">

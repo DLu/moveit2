@@ -63,13 +63,13 @@ public:
 
   std::string getFilename() const override
   {
-    return urdf_config_->getName() + ".ros2_control.xacro";
+    return urdf_config_->getRobotName() + ".ros2_control.xacro";
   }
 
   std::string getCommands() const override
   {
     std::string commands = "    <xacro:";
-    commands += urdf_config_->getName();
+    commands += urdf_config_->getRobotName();
     commands += "_ros2_control name=\"FakeSystem\" initial_positions_file=\"$(arg initial_positions_file)\"/>";
     return commands;
   }

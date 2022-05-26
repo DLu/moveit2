@@ -56,7 +56,8 @@ bool ModifiedUrdfConfig::isConfigured() const
 void ModifiedUrdfConfig::loadPrevious(const std::filesystem::path& /*config_package_path*/, const YAML::Node& node)
 {
   std::vector<std::string> header_vector;
-  getYamlProperty(node, "headers", header_vector);
+  if (node.IsDefined())
+    getYamlProperty(node, "headers", header_vector);
   cached_header_names_ = std::set(header_vector.begin(), header_vector.end());
 }
 
@@ -119,7 +120,7 @@ void ModifiedUrdfConfig::collectVariables(std::vector<TemplateVariable>& variabl
     commands += pair.first;
     commands += " -->\n";
 
-    commands += "        <xacro:include filename=\"";
+    commands += "    <xacro:include filename=\"";
     commands += header->getFilename();
     commands += "\" />\n\n";
 
@@ -129,10 +130,6 @@ void ModifiedUrdfConfig::collectVariables(std::vector<TemplateVariable>& variabl
       commands += header_commands;
       commands += "\n";
     }
-  }
-  if (!args.empty())
-  {
-    args += "\n";
   }
 
   variables.push_back(TemplateVariable("MODIFIED_XACRO_ARGS", args));
