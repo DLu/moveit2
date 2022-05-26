@@ -49,7 +49,6 @@ void UrdfModifications::onInit()
 
 void UrdfModifications::loadDefault()
 {
-  ros2_control_config_->loadFromOriginalURDF();
   for (const std::string& joint_name : ros2_control_config_->getUnconfiguredJoints())
   {
     ControlInterfaces ci;
@@ -58,6 +57,11 @@ void UrdfModifications::loadDefault()
     ci.state_interfaces.push_back("velocity");
     ros2_control_config_->addControlInterfaces(joint_name, ci);
   }
+}
+
+bool UrdfModifications::needsWork() const
+{
+  return !ros2_control_config_->getUnconfiguredJoints().empty();
 }
 
 }  // namespace controllers

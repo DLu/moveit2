@@ -7,7 +7,7 @@
             <hardware>
                 <plugin>fake_components/GenericSystem</plugin>
             </hardware>
-            [ROS2_CONTROL_JOINTS]
+[ROS2_CONTROL_JOINTS]
         </ros2_control>
     </xacro:macro>
 </robot>

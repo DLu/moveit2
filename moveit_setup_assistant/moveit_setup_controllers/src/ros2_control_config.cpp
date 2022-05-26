@@ -144,20 +144,27 @@ void ROS2ControlConfig::collectVariables(std::vector<TemplateVariable>& variable
 {
   std::string joints = "";
   const std::string TAB = "            ";
-  for (const auto& pair : new_joint_interfaces_)
+  // Loop through all joints to preserve joint ordering
+  for (const std::string& joint_name : getAllJoints())
   {
-    const std::string& joint_name = pair.first;
+    auto pair = new_joint_interfaces_.find(joint_name);
+    if (pair == new_joint_interfaces_.end())
+    {
+      continue;
+    }
+
+    const ControlInterfaces& ci = pair->second;
 
     joints += TAB;
     joints += "<joint name=\"" + joint_name + "\">\n";
-    for (const std::string& command_interface : pair.second.command_interfaces)
+    for (const std::string& command_interface : ci.command_interfaces)
     {
       joints += TAB;
       joints += "    <command_interface name=\"";
       joints += command_interface;
       joints += "\"/>\n";
     }
-    for (const std::string& state_interface : pair.second.state_interfaces)
+    for (const std::string& state_interface : ci.state_interfaces)
     {
       joints += TAB;
       joints += "    <state_interface name=\"";
@@ -176,9 +183,9 @@ void ROS2ControlConfig::collectVariables(std::vector<TemplateVariable>& variable
       {
         joints += "\"/>\n";
       }
-      joints += TAB;
-      joints += "</joint>";
     }
+    joints += TAB;
+    joints += "</joint>\n";
   }
 
   variables.push_back(TemplateVariable("ROS2_CONTROL_JOINTS", joints));

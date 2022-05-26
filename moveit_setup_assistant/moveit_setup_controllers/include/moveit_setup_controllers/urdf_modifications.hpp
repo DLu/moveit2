@@ -57,6 +57,13 @@ public:
     return !srdf_config_->getGroups().empty();
   }
 
+  void refresh()
+  {
+    ros2_control_config_->loadFromOriginalURDF();
+  }
+
+  bool needsWork() const;
+
   void loadDefault();
 
 protected:

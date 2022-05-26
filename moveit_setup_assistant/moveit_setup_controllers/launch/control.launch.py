@@ -18,6 +18,7 @@ def generate_launch_description():
                 "setup_steps": [
                     "moveit_setup::core::StartScreenWidget",
                     "moveit_setup::controllers::UrdfModificationsWidget",
+                    "moveit_setup::core::ConfigurationFilesWidget",
                 ]
             },
         ],

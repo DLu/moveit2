@@ -19,6 +19,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 qt5_wrap_cpp(MOC_FILES
     include/moveit_setup_controllers/controller_edit_widget.hpp
     include/moveit_setup_controllers/controllers_widget.hpp
+    include/moveit_setup_controllers/urdf_modifications_widget.hpp
 )
 
 add_library(${PROJECT_NAME}
@@ -29,6 +30,7 @@ add_library(${PROJECT_NAME}
     src/modified_urdf_config.cpp
     src/ros2_control_config.cpp
     src/urdf_modifications.cpp
+    src/urdf_modifications_widget.cpp
     ${MOC_FILES}
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -47,7 +49,9 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-install(DIRECTORY templates DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY templates
+        DESTINATION share/${PROJECT_NAME}
+)
 
 install(TARGETS ${PROJECT_NAME}
         EXPORT export_${PROJECT_NAME}
@@ -62,7 +66,9 @@ install(DIRECTORY include/
         DESTINATION include
 )
 
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME}
+)
 ament_export_include_directories(include)
 
 ament_export_libraries(${PROJECT_NAME})
