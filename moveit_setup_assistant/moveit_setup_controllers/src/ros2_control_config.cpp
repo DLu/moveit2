@@ -61,6 +61,8 @@ void ROS2ControlConfig::loadPrevious(const std::filesystem::path& /*config_packa
 
   getYamlProperty(node, "command", default_ci_.command_interfaces);
   getYamlProperty(node, "state", default_ci_.state_interfaces);
+  setControlInterfaces(default_ci_);
+  changed_ = false;
 }
 
 YAML::Node ROS2ControlConfig::saveToYaml() const
@@ -171,6 +173,19 @@ void ROS2ControlConfig::loadFromOriginalURDF()
       original_joint_interfaces_[joint_name] = ci;
     }
   }
+
+  // Set up initial group state
+  if (!initial_group_state_.joint_values_.empty())
+  {
+    return;
+  }
+  for (const std::string& joint_name : missing_interfaces_)
+  {
+    std::vector<double> joint_value;
+    // TODO: For now, just assume one DOF, and it is zero
+    joint_value.push_back(0.0);
+    initial_group_state_.joint_values_[joint_name] = joint_value;
+  }
 }
 
 std::string ROS2ControlConfig::getJointsXML() const
@@ -221,6 +236,107 @@ std::string ROS2ControlConfig::getJointsXML() const
     joints += "</joint>\n";
   }
   return joints;
+}
+
+bool ROS2ControlConfig::GeneratedInitialPositions::writeYaml(YAML::Emitter& emitter)
+{
+  emitter << YAML::Comment("Default initial positions for " + parent_.urdf_config_->getRobotName() +
+                           "'s ros2_control fake system");
+  emitter << YAML::Newline;
+  emitter << YAML::BeginMap;
+  {
+    emitter << YAML::Key << "initial_positions";
+    emitter << YAML::Value;
+    emitter << YAML::BeginMap;
+    for (const std::string& joint : parent_.missing_interfaces_)
+    {
+      const auto it = parent_.initial_group_state_.joint_values_.find(joint);
+      if (it == parent_.initial_group_state_.joint_values_.end())
+        continue;
+
+      emitter << YAML::Key << joint;
+
+      const std::vector<double>& jv = it->second;
+
+      emitter << YAML::Value;
+      if (jv.size() == 1)
+      {
+        emitter << jv[0];
+      }
+      else
+      {
+        emitter << jv;
+      }
+    }
+    emitter << YAML::EndMap;
+  }
+  emitter << YAML::EndMap;
+
+  return true;
+}
+
+bool ROS2ControlConfig::GeneratedControllerConfig::writeYaml(YAML::Emitter& emitter)
+{
+  std::string controller_name = parent_.urdf_config_->getRobotName() + "_controller";
+
+  emitter << YAML::Comment("This config file is used by ros2_control");
+  emitter << YAML::BeginMap;
+  {
+    // Output controller Manager Config
+    emitter << YAML::Key << "controller_manager";
+    emitter << YAML::Value;
+    emitter << YAML::BeginMap;
+    {
+      emitter << YAML::Key << "ros__parameters";
+      emitter << YAML::Value;
+      emitter << YAML::BeginMap;
+      {
+        emitter << YAML::Key << "update_rate" << YAML::Value << 100;  // Hz
+        emitter << YAML::Comment("Hz");
+        emitter << YAML::Newline;
+        emitter << YAML::Newline;
+        emitter << YAML::Key << controller_name;
+        emitter << YAML::Value;
+        emitter << YAML::BeginMap;
+        {
+          emitter << YAML::Key << "type" << YAML::Value << "joint_trajectory_controller/JointTrajectoryController";
+        }
+        emitter << YAML::Newline << YAML::Newline;
+        emitter << YAML::EndMap;
+        emitter << YAML::Key << "joint_state_broadcaster";
+        emitter << YAML::Value;
+        emitter << YAML::BeginMap;
+        {
+          emitter << YAML::Key << "type" << YAML::Value << "joint_state_broadcaster/JointStateBroadcaster";
+        }
+        emitter << YAML::EndMap;
+      }
+      emitter << YAML::EndMap;
+    }
+    emitter << YAML::EndMap;
+    emitter << YAML::Newline;
+  }
+  // Output Controller Configs
+  {
+    emitter << YAML::Key << controller_name;
+    emitter << YAML::Value;
+    emitter << YAML::BeginMap;
+    {
+      emitter << YAML::Key << "ros__parameters";
+      emitter << YAML::Value;
+      emitter << YAML::BeginMap;
+      {
+        emitter << YAML::Key << "command_interfaces" << YAML::Value << parent_.default_ci_.command_interfaces;
+        emitter << YAML::Key << "state_interfaces" << YAML::Value << parent_.default_ci_.state_interfaces;
+        emitter << YAML::Key << "joints" << YAML::Value << parent_.missing_interfaces_;
+      }
+      emitter << YAML::EndMap;
+    }
+    emitter << YAML::EndMap;
+  }
+  emitter << YAML::EndMap;
+
+  return true;
 }
 
 void ROS2ControlConfig::collectVariables(std::vector<TemplateVariable>& variables)

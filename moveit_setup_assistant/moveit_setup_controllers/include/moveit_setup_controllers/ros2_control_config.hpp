@@ -155,10 +155,72 @@ public:
     ROS2ControlConfig& parent_;
   };
 
+  class GeneratedInitialPositions : public YamlGeneratedFile
+  {
+  public:
+    GeneratedInitialPositions(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
+                              ROS2ControlConfig& parent)
+      : YamlGeneratedFile(package_path, last_gen_time), parent_(parent)
+    {
+    }
+
+    bool hasChanges() const override
+    {
+      return parent_.hasChanges();
+    }
+
+    std::filesystem::path getRelativePath() const override
+    {
+      return "config/initial_positions.yaml";
+    }
+
+    std::string getDescription() const override
+    {
+      return "Initial positions for ros2_control";
+    }
+
+    bool writeYaml(YAML::Emitter& emitter) override;
+
+  protected:
+    ROS2ControlConfig& parent_;
+  };
+
+  class GeneratedControllerConfig : public YamlGeneratedFile
+  {
+  public:
+    GeneratedControllerConfig(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
+                              ROS2ControlConfig& parent)
+      : YamlGeneratedFile(package_path, last_gen_time), parent_(parent)
+    {
+    }
+
+    bool hasChanges() const override
+    {
+      return parent_.hasChanges();
+    }
+
+    std::filesystem::path getRelativePath() const override
+    {
+      return "config/ros2_controllers.yaml";
+    }
+
+    std::string getDescription() const override
+    {
+      return "ros2_control configuration";
+    }
+
+    bool writeYaml(YAML::Emitter& emitter) override;
+
+  protected:
+    ROS2ControlConfig& parent_;
+  };
+
   void collectFiles(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
                     std::vector<GeneratedFilePtr>& files) override
   {
     files.push_back(std::make_shared<GeneratedControlHeader>(package_path, last_gen_time, *this));
+    files.push_back(std::make_shared<GeneratedInitialPositions>(package_path, last_gen_time, *this));
+    files.push_back(std::make_shared<GeneratedControllerConfig>(package_path, last_gen_time, *this));
   }
 
   void collectVariables(std::vector<TemplateVariable>& variables) override;
@@ -174,6 +236,9 @@ protected:
   bool changed_;
 
   ControlInterfaces default_ci_, available_ci_;
+
+  // TODO: There could be an option to load a group state from the RobotPoses
+  srdf::Model::GroupState initial_group_state_;
 };
 }  // namespace controllers
 }  // namespace moveit_setup
