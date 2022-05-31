@@ -55,12 +55,12 @@ struct ControllerInfo
   std::vector<std::string> joints_;  // joints controlled by this controller
 };
 
-static const std::string CONTROLLERS_YAML = "config/ros_controllers.yaml";
+static const std::string CONTROLLERS_YAML = "config/moveit_controllers.yaml";
 
 /**
  * @brief All the controller configurations
  */
-class ControllersConfig : public SetupConfig
+class MoveItControllersConfig : public SetupConfig
 {
 public:
   void loadPrevious(const std::filesystem::path& package_path, const YAML::Node& node) override;
@@ -83,7 +83,7 @@ public:
   {
   public:
     GeneratedControllersConfig(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
-                               ControllersConfig& parent)
+                               MoveItControllersConfig& parent)
       : YamlGeneratedFile(package_path, last_gen_time), parent_(parent)
     {
     }
@@ -106,14 +106,14 @@ public:
     bool writeYaml(YAML::Emitter& emitter) override;
 
   protected:
-    ControllersConfig& parent_;
+    MoveItControllersConfig& parent_;
   };
 
   class GeneratedContollerLaunch : public TemplatedGeneratedFile
   {
   public:
     GeneratedContollerLaunch(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
-                             ControllersConfig& parent)
+                             MoveItControllersConfig& parent)
       : TemplatedGeneratedFile(package_path, last_gen_time), parent_(parent)
     {
     }
@@ -139,7 +139,7 @@ public:
     }
 
   protected:
-    ControllersConfig& parent_;
+    MoveItControllersConfig& parent_;
   };
 
   void collectFiles(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,

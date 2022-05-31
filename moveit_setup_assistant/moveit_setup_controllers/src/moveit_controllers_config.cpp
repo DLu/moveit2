@@ -34,7 +34,7 @@
 
 /* Author: David V. Lu!! */
 
-#include <moveit_setup_controllers/controller_config.hpp>
+#include <moveit_setup_controllers/moveit_controllers_config.hpp>
 #include <moveit_setup_framework/data/srdf_config.hpp>
 #include <moveit_setup_framework/data_warehouse.hpp>
 
@@ -42,7 +42,7 @@ namespace moveit_setup
 {
 namespace controllers
 {
-void ControllersConfig::loadPrevious(const std::filesystem::path& package_path, const YAML::Node& /*node*/)
+void MoveItControllersConfig::loadPrevious(const std::filesystem::path& package_path, const YAML::Node& /*node*/)
 {
   changed_ = false;
   // Load ros controllers yaml file if available-----------------------------------------------
@@ -115,7 +115,7 @@ void ControllersConfig::loadPrevious(const std::filesystem::path& package_path, 
 // ******************************************************************************************
 // Helper function for parsing an individual Controller from ros_controllers yaml file
 // ******************************************************************************************
-bool ControllersConfig::parseController(const YAML::Node& controller)
+bool MoveItControllersConfig::parseController(const YAML::Node& controller)
 {
   // Used in parsing controllers
   ControllerInfo control_setting;
@@ -161,8 +161,8 @@ bool ControllersConfig::parseController(const YAML::Node& controller)
 // ******************************************************************************************
 // Adds a controller to ros_controllers_config_ vector
 // ******************************************************************************************
-bool ControllersConfig::addController(const std::string& name, const std::string& type,
-                                      const std::vector<std::string>& joint_names)
+bool MoveItControllersConfig::addController(const std::string& name, const std::string& type,
+                                            const std::vector<std::string>& joint_names)
 {
   ControllerInfo controller;
   controller.name_ = name;
@@ -174,7 +174,7 @@ bool ControllersConfig::addController(const std::string& name, const std::string
 // ******************************************************************************************
 // Adds a controller to ros_controllers_config_ vector
 // ******************************************************************************************
-bool ControllersConfig::addController(const ControllerInfo& new_controller)
+bool MoveItControllersConfig::addController(const ControllerInfo& new_controller)
 {
   // Used for holding our search results
   ControllerInfo* searched_ros_controller = nullptr;
@@ -192,7 +192,7 @@ bool ControllersConfig::addController(const ControllerInfo& new_controller)
 // ******************************************************************************************
 // Find controller by name
 // ******************************************************************************************
-ControllerInfo* ControllersConfig::findControllerByName(const std::string& controller_name)
+ControllerInfo* MoveItControllersConfig::findControllerByName(const std::string& controller_name)
 {
   // Find the Controller we are editing based on the Controller name string
   ControllerInfo* searched_ros_controller = nullptr;  // used for holding our search results
@@ -212,7 +212,7 @@ ControllerInfo* ControllersConfig::findControllerByName(const std::string& contr
 // ******************************************************************************************
 // Deletes a controller by name
 // ******************************************************************************************
-bool ControllersConfig::deleteController(const std::string& controller_name)
+bool MoveItControllersConfig::deleteController(const std::string& controller_name)
 {
   for (std::vector<ControllerInfo>::iterator controller_it = ros_controllers_config_.begin();
        controller_it != ros_controllers_config_.end(); ++controller_it)
@@ -289,7 +289,7 @@ void outputFollowJointTrajectoryYAML(YAML::Emitter& emitter, std::vector<Control
 // ******************************************************************************************
 // Output controllers config files
 // ******************************************************************************************
-bool ControllersConfig::GeneratedControllersConfig::writeYaml(YAML::Emitter& emitter)
+bool MoveItControllersConfig::GeneratedControllersConfig::writeYaml(YAML::Emitter& emitter)
 {
   // Copy ros_control_config_ to a new vector to avoid modifying it
   std::vector<ControllerInfo> ros_controllers_config_output(parent_.ros_controllers_config_);
@@ -458,7 +458,7 @@ bool ControllersConfig::GeneratedControllersConfig::writeYaml(YAML::Emitter& emi
   return true;
 }
 
-void ControllersConfig::collectVariables(std::vector<TemplateVariable>& variables)
+void MoveItControllersConfig::collectVariables(std::vector<TemplateVariable>& variables)
 {
   // Add Controllers variable for ros_controllers.launch file
   std::stringstream controllers;
@@ -476,4 +476,4 @@ void ControllersConfig::collectVariables(std::vector<TemplateVariable>& variable
 }  // namespace moveit_setup
 
 #include <pluginlib/class_list_macros.hpp>  // NOLINT
-PLUGINLIB_EXPORT_CLASS(moveit_setup::controllers::ControllersConfig, moveit_setup::SetupConfig)
+PLUGINLIB_EXPORT_CLASS(moveit_setup::controllers::MoveItControllersConfig, moveit_setup::SetupConfig)
