@@ -67,16 +67,15 @@ public:
 
   bool isConfigured() const override
   {
-    return !ros_controllers_config_.empty();
+    return !controllers_config_.empty();
   }
 
   /**
-   * \brief Gets ros_controllers_config_ vector
-   * \return pointer to ros_controllers_config_
+   * \brief Gets controllers_config_ vector
    */
   std::vector<ControllerInfo>& getControllers()
   {
-    return ros_controllers_config_;
+    return controllers_config_;
   }
 
   class GeneratedControllersConfig : public YamlGeneratedFile
@@ -109,50 +108,14 @@ public:
     MoveItControllersConfig& parent_;
   };
 
-  class GeneratedContollerLaunch : public TemplatedGeneratedFile
-  {
-  public:
-    GeneratedContollerLaunch(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
-                             MoveItControllersConfig& parent)
-      : TemplatedGeneratedFile(package_path, last_gen_time), parent_(parent)
-    {
-    }
-
-    bool hasChanges() const override
-    {
-      return parent_.changed_ || parent_.hasChangedGroups();
-    }
-
-    std::filesystem::path getRelativePath() const override
-    {
-      return "launch/ros_controllers.launch";
-    }
-
-    std::filesystem::path getTemplatePath() const override
-    {
-      return getSharePath("moveit_setup_controllers") / "templates" / getRelativePath();
-    }
-
-    std::string getDescription() const override
-    {
-      return "ros_controllers launch file";
-    }
-
-  protected:
-    MoveItControllersConfig& parent_;
-  };
-
   void collectFiles(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
                     std::vector<GeneratedFilePtr>& files) override
   {
     files.push_back(std::make_shared<GeneratedControllersConfig>(package_path, last_gen_time, *this));
-    files.push_back(std::make_shared<GeneratedContollerLaunch>(package_path, last_gen_time, *this));
   }
 
-  void collectVariables(std::vector<TemplateVariable>& variables) override;
-
   /**
-   * \brief Adds a controller to ros_controllers_config_ vector
+   * \brief Adds a controller to controllers_config_ vector
    * \param name Name of the controller
    * \param type type of the controller
    * \param joint_names vector of the joint names
@@ -161,7 +124,7 @@ public:
   bool addController(const std::string& name, const std::string& type, const std::vector<std::string>& joint_names);
 
   /**
-   * \brief Adds a controller to ros_controllers_config_ vector
+   * \brief Adds a controller to controllers_config_ vector
    * \param new_controller a new Controller to add
    * \return true if inserted correctly
    */
@@ -195,10 +158,10 @@ protected:
    * @param YAML::Node - individual controller to be parsed
    * @return true if the file was read correctly
    */
-  bool parseController(const YAML::Node& controller);
+  bool parseController(const std::string& name, const YAML::Node& controller);
 
   /// Controllers config data
-  std::vector<ControllerInfo> ros_controllers_config_;
+  std::vector<ControllerInfo> controllers_config_;
   bool changed_;
 };
 }  // namespace controllers
