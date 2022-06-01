@@ -158,7 +158,7 @@ protected:
    * @param YAML::Node - individual controller to be parsed
    * @return true if the file was read correctly
    */
-  bool parseController(const YAML::Node& controller);
+  bool parseController(const std::string& name, const YAML::Node& controller);
 
   /// Controllers config data
   std::vector<ControllerInfo> controllers_config_;
