@@ -52,7 +52,7 @@ namespace controllers
 // ******************************************************************************************
 //  ControllerEditWidget constructor, create controller edit screen GUI
 // ******************************************************************************************
-ControllerEditWidget::ControllerEditWidget(QWidget* parent, Controllers& setup_step)
+ControllerEditWidget::ControllerEditWidget(QWidget* parent, MoveItControllers& setup_step)
   : QWidget(parent), setup_step_(setup_step)
 {
   // Basic widget container

@@ -55,35 +55,34 @@ struct ControllerInfo
   std::vector<std::string> joints_;  // joints controlled by this controller
 };
 
-static const std::string CONTROLLERS_YAML = "config/ros_controllers.yaml";
+static const std::string CONTROLLERS_YAML = "config/moveit_controllers.yaml";
 
 /**
  * @brief All the controller configurations
  */
-class ControllersConfig : public SetupConfig
+class MoveItControllersConfig : public SetupConfig
 {
 public:
   void loadPrevious(const std::filesystem::path& package_path, const YAML::Node& node) override;
 
   bool isConfigured() const override
   {
-    return !ros_controllers_config_.empty();
+    return !controllers_config_.empty();
   }
 
   /**
-   * \brief Gets ros_controllers_config_ vector
-   * \return pointer to ros_controllers_config_
+   * \brief Gets controllers_config_ vector
    */
   std::vector<ControllerInfo>& getControllers()
   {
-    return ros_controllers_config_;
+    return controllers_config_;
   }
 
   class GeneratedControllersConfig : public YamlGeneratedFile
   {
   public:
     GeneratedControllersConfig(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
-                               ControllersConfig& parent)
+                               MoveItControllersConfig& parent)
       : YamlGeneratedFile(package_path, last_gen_time), parent_(parent)
     {
     }
@@ -100,20 +99,20 @@ public:
 
     std::string getDescription() const override
     {
-      return "Creates configurations for ros_controllers.";
+      return "Creates configurations for moveit_controllers.";
     }
 
     bool writeYaml(YAML::Emitter& emitter) override;
 
   protected:
-    ControllersConfig& parent_;
+    MoveItControllersConfig& parent_;
   };
 
   class GeneratedContollerLaunch : public TemplatedGeneratedFile
   {
   public:
     GeneratedContollerLaunch(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
-                             ControllersConfig& parent)
+                             MoveItControllersConfig& parent)
       : TemplatedGeneratedFile(package_path, last_gen_time), parent_(parent)
     {
     }
@@ -139,7 +138,7 @@ public:
     }
 
   protected:
-    ControllersConfig& parent_;
+    MoveItControllersConfig& parent_;
   };
 
   void collectFiles(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
@@ -152,7 +151,7 @@ public:
   void collectVariables(std::vector<TemplateVariable>& variables) override;
 
   /**
-   * \brief Adds a controller to ros_controllers_config_ vector
+   * \brief Adds a controller to controllers_config_ vector
    * \param name Name of the controller
    * \param type type of the controller
    * \param joint_names vector of the joint names
@@ -161,7 +160,7 @@ public:
   bool addController(const std::string& name, const std::string& type, const std::vector<std::string>& joint_names);
 
   /**
-   * \brief Adds a controller to ros_controllers_config_ vector
+   * \brief Adds a controller to controllers_config_ vector
    * \param new_controller a new Controller to add
    * \return true if inserted correctly
    */
@@ -198,7 +197,7 @@ protected:
   bool parseController(const YAML::Node& controller);
 
   /// Controllers config data
-  std::vector<ControllerInfo> ros_controllers_config_;
+  std::vector<ControllerInfo> controllers_config_;
   bool changed_;
 };
 }  // namespace controllers
