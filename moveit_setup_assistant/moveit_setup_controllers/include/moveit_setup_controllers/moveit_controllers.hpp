@@ -75,22 +75,22 @@ public:
 
   std::vector<ControllerInfo>& getControllers() const
   {
-    return moveit_controllers_config_->getControllers();
+    return controllers_config_->getControllers();
   }
 
   bool addController(const ControllerInfo& new_controller)
   {
-    return moveit_controllers_config_->addController(new_controller);
+    return controllers_config_->addController(new_controller);
   }
 
   ControllerInfo* findControllerByName(const std::string& controller_name)
   {
-    return moveit_controllers_config_->findControllerByName(controller_name);
+    return controllers_config_->findControllerByName(controller_name);
   }
 
   bool deleteController(const std::string& controller_name)
   {
-    return moveit_controllers_config_->deleteController(controller_name);
+    return controllers_config_->deleteController(controller_name);
   }
 
   bool addDefaultControllers();
@@ -99,7 +99,7 @@ public:
 
 protected:
   std::shared_ptr<SRDFConfig> srdf_config_;
-  std::shared_ptr<MoveItControllersConfig> moveit_controllers_config_;
+  std::shared_ptr<MoveItControllersConfig> controllers_config_;
 };
 }  // namespace controllers
 }  // namespace moveit_setup

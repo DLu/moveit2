@@ -44,7 +44,7 @@ void MoveItControllers::onInit()
 {
   config_data_->registerType("moveit_controllers", "moveit_setup::controllers::MoveItControllersConfig");
   srdf_config_ = config_data_->get<SRDFConfig>("srdf");
-  moveit_controllers_config_ = config_data_->get<MoveItControllersConfig>("moveit_controllers");
+  controllers_config_ = config_data_->get<MoveItControllersConfig>("moveit_controllers");
 }
 
 // ******************************************************************************************
@@ -68,8 +68,7 @@ bool MoveItControllers::addDefaultControllers()
     {
       continue;
     }
-    bool ret =
-        moveit_controllers_config_->addController(group_name + "_controller", "FollowJointTrajectory", joint_names);
+    bool ret = controllers_config_->addController(group_name + "_controller", "FollowJointTrajectory", joint_names);
     success &= ret;
   }
 
