@@ -458,20 +458,6 @@ bool MoveItControllersConfig::GeneratedControllersConfig::writeYaml(YAML::Emitte
   return true;
 }
 
-void MoveItControllersConfig::collectVariables(std::vector<TemplateVariable>& variables)
-{
-  // Add Controllers variable for ros_controllers.launch file
-  std::stringstream controllers;
-  for (ControllerInfo& controller : controllers_config_)
-  {
-    // Check if the controller belongs to controller_list namespace
-    if (controller.type_ != "FollowJointTrajectory")
-      controllers << controller.name_ << " ";
-  }
-
-  variables.push_back(TemplateVariable("ROS_CONTROLLERS", controllers.str()));
-}
-
 }  // namespace controllers
 }  // namespace moveit_setup
 

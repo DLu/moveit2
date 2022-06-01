@@ -108,47 +108,11 @@ public:
     MoveItControllersConfig& parent_;
   };
 
-  class GeneratedContollerLaunch : public TemplatedGeneratedFile
-  {
-  public:
-    GeneratedContollerLaunch(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
-                             MoveItControllersConfig& parent)
-      : TemplatedGeneratedFile(package_path, last_gen_time), parent_(parent)
-    {
-    }
-
-    bool hasChanges() const override
-    {
-      return parent_.changed_ || parent_.hasChangedGroups();
-    }
-
-    std::filesystem::path getRelativePath() const override
-    {
-      return "launch/ros_controllers.launch";
-    }
-
-    std::filesystem::path getTemplatePath() const override
-    {
-      return getSharePath("moveit_setup_controllers") / "templates" / getRelativePath();
-    }
-
-    std::string getDescription() const override
-    {
-      return "ros_controllers launch file";
-    }
-
-  protected:
-    MoveItControllersConfig& parent_;
-  };
-
   void collectFiles(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
                     std::vector<GeneratedFilePtr>& files) override
   {
     files.push_back(std::make_shared<GeneratedControllersConfig>(package_path, last_gen_time, *this));
-    files.push_back(std::make_shared<GeneratedContollerLaunch>(package_path, last_gen_time, *this));
   }
-
-  void collectVariables(std::vector<TemplateVariable>& variables) override;
 
   /**
    * \brief Adds a controller to controllers_config_ vector
