@@ -34,7 +34,7 @@
 /* Author: Mohamad Ayman */
 
 // SA
-#include <moveit_setup_controllers/controllers_widget.hpp>
+#include <moveit_setup_controllers/moveit_controllers_widget.hpp>
 #include <moveit_setup_framework/qt/helper_widgets.hpp>
 #include <moveit_msgs/msg/joint_limits.hpp>
 // Qt
@@ -65,7 +65,7 @@ namespace controllers
 // ******************************************************************************************
 // Outer User Interface for MoveIt Configuration Assistant
 // ******************************************************************************************
-void ControllersWidget::onInit()
+void MoveItControllersWidget::onInit()
 {
   // Basic widget container
   QVBoxLayout* layout = new QVBoxLayout();
@@ -130,7 +130,7 @@ void ControllersWidget::onInit()
 // ******************************************************************************************
 // Create the main tree view widget
 // ******************************************************************************************
-QWidget* ControllersWidget::createContentsWidget()
+QWidget* MoveItControllersWidget::createContentsWidget()
 {
   // Main widget
   QWidget* content_widget = new QWidget(this);
@@ -213,7 +213,7 @@ QWidget* ControllersWidget::createContentsWidget()
 // ******************************************************************************************
 // Displays data in the controller_configs_ data structure into a QtTableWidget
 // ******************************************************************************************
-void ControllersWidget::loadControllersTree()
+void MoveItControllersWidget::loadControllersTree()
 {
   // Disable Tree
   controllers_tree_->setUpdatesEnabled(false);  // prevent table from updating until we are completely done
@@ -236,7 +236,7 @@ void ControllersWidget::loadControllersTree()
 // ******************************************************************************************
 //  Displays data in the controller_config_ data structure into a QtTableWidget
 // ******************************************************************************************
-void ControllersWidget::loadToControllersTree(const ControllerInfo& controller_it)
+void MoveItControllersWidget::loadToControllersTree(const ControllerInfo& controller_it)
 {
   // Fonts for tree
   const QFont top_level_font(QFont().defaultFamily(), 11, QFont::Bold);
@@ -282,7 +282,7 @@ void ControllersWidget::loadToControllersTree(const ControllerInfo& controller_i
 // ******************************************************************************************
 // Called when setup assistant navigation switches to this screen
 // ******************************************************************************************
-void ControllersWidget::focusGiven()
+void MoveItControllersWidget::focusGiven()
 {
   // load controllers tree
   btn_edit_->setEnabled(false);
@@ -293,7 +293,7 @@ void ControllersWidget::focusGiven()
 // ******************************************************************************************
 // Load the popup screen with correct data for joints
 // ******************************************************************************************
-void ControllersWidget::loadJointsScreen(ControllerInfo* this_controller)
+void MoveItControllersWidget::loadJointsScreen(ControllerInfo* this_controller)
 {
   // Get the names of the all joints
   const std::vector<std::string>& joints = setup_step_.getJointNames();
@@ -321,7 +321,7 @@ void ControllersWidget::loadJointsScreen(ControllerInfo* this_controller)
 // ******************************************************************************************
 // Load the popup screen with correct data for gcroups
 // ******************************************************************************************
-void ControllersWidget::loadGroupsScreen(ControllerInfo* this_controller)
+void MoveItControllersWidget::loadGroupsScreen(ControllerInfo* this_controller)
 {
   // Set the available groups (left box)
   joint_groups_widget_->setAvailable(setup_step_.getGroupNames());
@@ -340,7 +340,7 @@ void ControllersWidget::loadGroupsScreen(ControllerInfo* this_controller)
 // ******************************************************************************************
 // Delete a controller
 // ******************************************************************************************
-void ControllersWidget::deleteController()
+void MoveItControllersWidget::deleteController()
 {
   std::string controller_name = current_edit_controller_;
 
@@ -387,7 +387,7 @@ void ControllersWidget::deleteController()
 // ******************************************************************************************
 // Create a new controller
 // ******************************************************************************************
-void ControllersWidget::addController()
+void MoveItControllersWidget::addController()
 {
   // New Controller
   adding_new_controller_ = true;
@@ -400,7 +400,7 @@ void ControllersWidget::addController()
 // ******************************************************************************************
 // Add a Follow Joint Trajectory action Controller for each Planning Group
 // ******************************************************************************************
-void ControllersWidget::addDefaultControllers()
+void MoveItControllersWidget::addDefaultControllers()
 {
   if (!setup_step_.addDefaultControllers())
     QMessageBox::warning(this, "Error adding controllers", "No Planning Groups configured!");
@@ -410,7 +410,7 @@ void ControllersWidget::addDefaultControllers()
 // ******************************************************************************************
 // Load the popup screen with correct data for controllers
 // ******************************************************************************************
-void ControllersWidget::loadControllerScreen(ControllerInfo* this_controller)
+void MoveItControllersWidget::loadControllerScreen(ControllerInfo* this_controller)
 {
   // Load the avail controllers. This function only runs once
   controller_edit_widget_->loadControllersTypesComboBox();
@@ -439,7 +439,7 @@ void ControllersWidget::loadControllerScreen(ControllerInfo* this_controller)
 // ******************************************************************************************
 // Call when edit screen is canceled
 // ******************************************************************************************
-void ControllersWidget::cancelEditing()
+void MoveItControllersWidget::cancelEditing()
 {
   if (!current_edit_controller_.empty() && adding_new_controller_)
   {
@@ -465,7 +465,7 @@ void ControllersWidget::cancelEditing()
 // ******************************************************************************************
 // Called from Double List widget to highlight joints
 // ******************************************************************************************
-void ControllersWidget::previewSelectedJoints(const std::vector<std::string>& joints)
+void MoveItControllersWidget::previewSelectedJoints(const std::vector<std::string>& joints)
 {
   // Unhighlight all links
   rviz_panel_->unhighlightAll();
@@ -488,7 +488,7 @@ void ControllersWidget::previewSelectedJoints(const std::vector<std::string>& jo
 // ******************************************************************************************
 // Called from Double List widget to highlight a group
 // ******************************************************************************************
-void ControllersWidget::previewSelectedGroup(const std::vector<std::string>& groups)
+void MoveItControllersWidget::previewSelectedGroup(const std::vector<std::string>& groups)
 {
   // Unhighlight all links
   rviz_panel_->unhighlightAll();
@@ -503,7 +503,7 @@ void ControllersWidget::previewSelectedGroup(const std::vector<std::string>& gro
 // ******************************************************************************************
 // Called when an item is seleceted from the controllers tree
 // ******************************************************************************************
-void ControllersWidget::previewSelected(QTreeWidgetItem* selected_item, int /*column*/)
+void MoveItControllersWidget::previewSelected(QTreeWidgetItem* selected_item, int /*column*/)
 {
   // Get the user custom properties of the currently selected row
   int type = selected_item->data(0, Qt::UserRole).value<int>();
@@ -523,7 +523,7 @@ void ControllersWidget::previewSelected(QTreeWidgetItem* selected_item, int /*co
 // ******************************************************************************************
 // Call when a new controller is created and ready to progress to next screen
 // ******************************************************************************************
-void ControllersWidget::saveControllerScreenJoints()
+void MoveItControllersWidget::saveControllerScreenJoints()
 {
   // Save the controller
   if (!saveControllerScreen())
@@ -541,7 +541,7 @@ void ControllersWidget::saveControllerScreenJoints()
 // ******************************************************************************************
 // Call when a new controller is created and ready to progress to next screen
 // ******************************************************************************************
-void ControllersWidget::saveControllerScreenGroups()
+void MoveItControllersWidget::saveControllerScreenGroups()
 {
   // Save the controller
   if (!saveControllerScreen())
@@ -559,7 +559,7 @@ void ControllersWidget::saveControllerScreenGroups()
 // ******************************************************************************************
 // Call when joints edit screen is done and needs to be saved
 // ******************************************************************************************
-void ControllersWidget::saveJointsScreen()
+void MoveItControllersWidget::saveJointsScreen()
 {
   // Find the controller we are editing based on the controller name string
   ControllerInfo* searched_controller = setup_step_.findControllerByName(current_edit_controller_);
@@ -583,7 +583,7 @@ void ControllersWidget::saveJointsScreen()
 // ******************************************************************************************
 // Call when joints edit screen is done and needs to be saved
 // ******************************************************************************************
-void ControllersWidget::saveJointsGroupsScreen()
+void MoveItControllersWidget::saveJointsGroupsScreen()
 {
   // Find the controller we are editing based on the controller name string
   ControllerInfo* searched_controller = setup_step_.findControllerByName(current_edit_controller_);
@@ -601,7 +601,7 @@ void ControllersWidget::saveJointsGroupsScreen()
 // ******************************************************************************************
 // Call when joints edit screen is done and needs to be saved
 // ******************************************************************************************
-void ControllersWidget::saveControllerScreenEdit()
+void MoveItControllersWidget::saveControllerScreenEdit()
 {
   // Save the controller
   if (!saveControllerScreen())
@@ -614,7 +614,7 @@ void ControllersWidget::saveControllerScreenEdit()
 // ******************************************************************************************
 // Call when controller edit screen is done and needs to be saved
 // ******************************************************************************************
-bool ControllersWidget::saveControllerScreen()
+bool MoveItControllersWidget::saveControllerScreen()
 {
   // Get a reference to the supplied strings
   const std::string& controller_name = controller_edit_widget_->getControllerName();
@@ -688,7 +688,7 @@ bool ControllersWidget::saveControllerScreen()
 // ******************************************************************************************
 // Edit whenever element is selected in the controllers tree view
 // ******************************************************************************************
-void ControllersWidget::editSelected()
+void MoveItControllersWidget::editSelected()
 {
   QTreeWidgetItem* item = controllers_tree_->currentItem();
   QTreeWidgetItem* controller_item;
@@ -746,7 +746,7 @@ void ControllersWidget::editSelected()
 // ******************************************************************************************
 // Edit a controller
 // ******************************************************************************************
-void ControllersWidget::editController()
+void MoveItControllersWidget::editController()
 {
   QTreeWidgetItem* item = controllers_tree_->currentItem();
 
@@ -765,7 +765,7 @@ void ControllersWidget::editController()
 // ******************************************************************************************
 // Switch to current controllers view
 // ******************************************************************************************
-void ControllersWidget::showMainScreen()
+void MoveItControllersWidget::showMainScreen()
 {
   stacked_widget_->setCurrentIndex(0);
 
@@ -776,7 +776,7 @@ void ControllersWidget::showMainScreen()
 // ******************************************************************************************
 // Switch which screen is being shown
 // ******************************************************************************************
-void ControllersWidget::changeScreen(int index)
+void MoveItControllersWidget::changeScreen(int index)
 {
   stacked_widget_->setCurrentIndex(index);
 
@@ -787,7 +787,7 @@ void ControllersWidget::changeScreen(int index)
 // ******************************************************************************************
 // Expand/Collapse Tree
 // ******************************************************************************************
-void ControllersWidget::alterTree(const QString& link)
+void MoveItControllersWidget::alterTree(const QString& link)
 {
   if (link.contains("expand"))
     controllers_tree_->expandAll();
@@ -795,7 +795,7 @@ void ControllersWidget::alterTree(const QString& link)
     controllers_tree_->collapseAll();
 }
 
-void ControllersWidget::itemSelectionChanged()
+void MoveItControllersWidget::itemSelectionChanged()
 {
   QList<QTreeWidgetItem*> selected_items = controllers_tree_->selectedItems();
   if (selected_items.empty())
@@ -809,4 +809,4 @@ void ControllersWidget::itemSelectionChanged()
 }  // namespace moveit_setup
 
 #include <pluginlib/class_list_macros.hpp>  // NOLINT
-PLUGINLIB_EXPORT_CLASS(moveit_setup::controllers::ControllersWidget, moveit_setup::SetupStepWidget)
+PLUGINLIB_EXPORT_CLASS(moveit_setup::controllers::MoveItControllersWidget, moveit_setup::SetupStepWidget)

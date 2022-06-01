@@ -45,14 +45,14 @@
 // SA
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>
 #include <moveit_setup_framework/qt/double_list_widget.hpp>
-#include <moveit_setup_controllers/controllers.hpp>
+#include <moveit_setup_controllers/moveit_controllers.hpp>
 #include <moveit_setup_controllers/controller_edit_widget.hpp>
 
 namespace moveit_setup
 {
 namespace controllers
 {
-class ControllersWidget : public SetupStepWidget
+class MoveItControllersWidget : public SetupStepWidget
 {
   Q_OBJECT
 
@@ -144,7 +144,7 @@ private:
   /// Remember whethere we're editing a controller or adding a new one
   bool adding_new_controller_;
 
-  Controllers setup_step_;
+  MoveItControllers setup_step_;
 
   /// Builds the main screen list widget
   QWidget* createContentsWidget();

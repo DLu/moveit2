@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <moveit_setup_controllers/controllers.hpp>
+#include <moveit_setup_controllers/moveit_controllers.hpp>
 #include <QWidget>
 #include <QComboBox>
 #include <QLabel>
@@ -56,7 +56,7 @@ public:
   // ******************************************************************************************
 
   /// Constructor
-  ControllerEditWidget(QWidget* parent, Controllers& setup_step);
+  ControllerEditWidget(QWidget* parent, MoveItControllers& setup_step);
 
   /// Set the previous data
   void setSelected(const std::string& controller_name);
@@ -137,7 +137,7 @@ private:
   // For loading default types combo box just once
   bool has_loaded_ = false;
 
-  Controllers& setup_step_;
+  MoveItControllers& setup_step_;
 };
 }  // namespace controllers
 }  // namespace moveit_setup
