@@ -77,7 +77,7 @@ void MoveItControllersWidget::onInit()
 
   // Top Header Area ------------------------------------------------
   auto header = new HeaderWidget(
-      "Setup Controllers",
+      "Setup MoveIt Controllers",
       "Configure controllers to be used by MoveIt's controller manager(s) to operate the robot's physical hardware",
       this);
   layout->addWidget(header);

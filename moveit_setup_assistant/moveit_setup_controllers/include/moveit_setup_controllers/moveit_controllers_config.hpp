@@ -99,7 +99,7 @@ public:
 
     std::string getDescription() const override
     {
-      return "Creates configurations for ros_controllers.";
+      return "Creates configurations for moveit_controllers.";
     }
 
     bool writeYaml(YAML::Emitter& emitter) override;
