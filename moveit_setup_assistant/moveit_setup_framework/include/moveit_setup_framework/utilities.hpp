@@ -36,41 +36,38 @@
 
 #pragma once
 
-#include <boost/filesystem/path.hpp>        // for creating folders/files
-#include <boost/filesystem/operations.hpp>  // is_regular_file, is_directory, etc.
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <filesystem>
 #include <string>
 #include <tinyxml2.h>
 #include <yaml-cpp/yaml.h>
 
-namespace moveit_setup_framework
+namespace moveit_setup
 {
-// ******************************************************************************************
-// Helper Function for joining a file path and a file name, or two file paths, etc, in a cross-platform way
-// ******************************************************************************************
-inline std::string appendPaths(const std::string& path1, const std::string& path2)
+/**
+ * @brief Return a path for the given package's share folder
+ */
+inline std::filesystem::path getSharePath(const std::string& package_name)
 {
-  boost::filesystem::path result = path1;
-  result /= path2;
-  return result.make_preferred().string();
+  return std::filesystem::path(ament_index_cpp::get_package_share_directory(package_name));
 }
 
 /**
  * @brief Create folders (recursively)
  * @return false if the path was not a directory and was unable to create the directory(s)
  */
-inline bool createFolders(const std::string& output_path)
+inline bool createFolders(const std::filesystem::path& output_path)
 {
-  return boost::filesystem::is_directory(output_path) || boost::filesystem::create_directories(output_path);
+  return std::filesystem::is_directory(output_path) || std::filesystem::create_directories(output_path);
 }
 
 /**
  * @brief Create parent folders (recursively)
  * @return false if the path was not a directory and was unable to create the directory(s)
  */
-inline bool createParentFolders(const std::string& file_path_string)
+inline bool createParentFolders(const std::filesystem::path& file_path)
 {
-  boost::filesystem::path file_path(file_path_string);
-  return createFolders(file_path.parent_path().string());
+  return createFolders(file_path.parent_path());
 }
 
 /**
@@ -80,23 +77,8 @@ inline bool createParentFolders(const std::string& file_path_string)
  * @param relative_filepath holds the relative path of the file to the package root
  * @return whether the file belongs to a known package
  */
-bool extractPackageNameFromPath(const std::string& path, std::string& package_name, std::string& relative_filepath);
-
-struct XMLAttribute
-{
-  const char* name;
-  const char* value;
-  bool required = false;
-};
-
-/** Insert a new XML element with given tag, attributes and text value
- *
- *  If a corresponding element already exists (and has required attribute values), it is just reused.
- *  All attributes are created or overwritten with given values.
- *  A text value is created or overwritten with given value (if not NULL).
- *  The element is returned */
-tinyxml2::XMLElement* uniqueInsert(tinyxml2::XMLElement& element, const char* tag,
-                                   const std::vector<XMLAttribute>& attributes = {}, const char* text = nullptr);
+bool extractPackageNameFromPath(const std::filesystem::path& path, std::string& package_name,
+                                std::filesystem::path& relative_filepath);
 
 // Formerly "parse"
 template <typename T>
@@ -108,4 +90,16 @@ inline bool getYamlProperty(const YAML::Node& node, const std::string& key, T& s
   return valid;
 }
 
-}  // namespace moveit_setup_framework
+inline bool getYamlProperty(const YAML::Node& node, const std::string& key, std::filesystem::path& storage,
+                            const std::string& default_value = "")
+{
+  std::string storage_s;
+  bool ret = getYamlProperty(node, key, storage_s, default_value);
+  if (ret)
+  {
+    storage = storage_s;
+  }
+  return ret;
+}
+
+}  // namespace moveit_setup

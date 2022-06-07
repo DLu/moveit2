@@ -36,12 +36,15 @@
 
 #include <moveit_setup_app_plugins/perception.hpp>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup
+{
+namespace app
 {
 void Perception::onInit()
 {
-  config_data_->registerType("sensors", "moveit_setup_app_plugins::PerceptionConfig");
-  perception_config_ = config_data_->get<moveit_setup_app_plugins::PerceptionConfig>("sensors");
+  config_data_->registerType("sensors", "moveit_setup::app::PerceptionConfig");
+  perception_config_ = config_data_->get<PerceptionConfig>("sensors");
 }
 
-}  // namespace moveit_setup_app_plugins
+}  // namespace app
+}  // namespace moveit_setup

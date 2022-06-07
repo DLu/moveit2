@@ -44,12 +44,14 @@ class QLineEdit;
 #include <moveit_setup_framework/qt/setup_step_widget.hpp>
 #include <moveit_setup_app_plugins/perception.hpp>
 
-namespace moveit_setup_app_plugins
+namespace moveit_setup
+{
+namespace app
 {
 // ******************************************************************************************
 // User Interface for setting up 3D sensor config
 // ******************************************************************************************
-class PerceptionWidget : public moveit_setup_framework::SetupStepWidget
+class PerceptionWidget : public SetupStepWidget
 {
   Q_OBJECT
 
@@ -69,7 +71,7 @@ public:
   /// Populate the combo dropdown box with sensor plugins
   void loadSensorPluginsComboBox();
 
-  moveit_setup_framework::SetupStep& getSetupStep() override
+  SetupStep& getSetupStep() override
   {
     return setup_step_;
   }
@@ -120,4 +122,5 @@ private:
   Perception setup_step_;
 };
 
-}  // namespace moveit_setup_app_plugins
+}  // namespace app
+}  // namespace moveit_setup

@@ -250,37 +250,47 @@ class MoveItConfigsBuilder(ParameterBuilder):
         self.__moveit_configs.package_path = self._package_path
         self.__robot_name = robot_name
         setup_assistant_file = self._package_path / ".setup_assistant"
-        if not setup_assistant_file.exists():
+
+        self.__urdf_package = None
+        self.__urdf_file_path = None
+        self.__srdf_file_path = None
+
+        modified_urdf_path = Path("config") / (self.__robot_name + ".urdf.xacro")
+        if (self._package_path / modified_urdf_path).exists():
+            self.__urdf_package = self._package_path
+            self.__urdf_file_path = modified_urdf_path
+
+        if setup_assistant_file.exists():
+            setup_assistant_yaml = load_yaml(setup_assistant_file)
+            config = setup_assistant_yaml.get("moveit_setup_assistant_config", {})
+            urdf_config = config.get("urdf", config.get("URDF"))
+            if urdf_config and self.__urdf_package is None:
+                self.__urdf_package = Path(
+                    get_package_share_directory(urdf_config["package"])
+                )
+                self.__urdf_file_path = Path(urdf_config["relative_path"])
+
+            srdf_config = config.get("srdf", config.get("SRDF"))
+            if srdf_config:
+                self.__srdf_file_path = Path(srdf_config["relative_path"])
+
+        if not self.__urdf_package or not self.__urdf_file_path:
             logging.warning(
-                f"\x1b[33;21mPackage `{self._package_path}` doesn't have `.setup_assistant` file "
-                f"-- using config/{robot_name}.urdf and config/{robot_name}.srdf\x1b[0m"
+                f"\x1b[33;21mCannot infer URDF from `{self._package_path}`. -- using config/{robot_name}.urdf\x1b[0m"
             )
             self.__urdf_package = self._package_path
             self.__urdf_file_path = self.__config_dir_path / (
                 self.__robot_name + ".urdf"
             )
+
+        if not self.__srdf_file_path:
+            logging.warning(
+                f"\x1b[33;21mCannot infer SRDF from `{self._package_path}`. -- using config/{robot_name}.srdf\x1b[0m"
+            )
             self.__srdf_file_path = self.__config_dir_path / (
                 self.__robot_name + ".srdf"
             )
-        else:
-            setup_assistant_yaml = load_yaml(setup_assistant_file)
-            self.__urdf_package = Path(
-                get_package_share_directory(
-                    setup_assistant_yaml["moveit_setup_assistant_config"]["URDF"][
-                        "package"
-                    ]
-                )
-            )
-            self.__urdf_file_path = Path(
-                setup_assistant_yaml["moveit_setup_assistant_config"]["URDF"][
-                    "relative_path"
-                ]
-            )
-            self.__srdf_file_path = Path(
-                setup_assistant_yaml["moveit_setup_assistant_config"]["SRDF"][
-                    "relative_path"
-                ]
-            )
+
         self.__robot_description = robot_description
 
     def robot_description(self, file_path: Optional[str] = None, mappings: dict = None):
@@ -382,9 +392,10 @@ class MoveItConfigsBuilder(ParameterBuilder):
             controller_pattern = re.compile("^(.*)_controllers.yaml$")
             possible_names = get_pattern_matches(config_folder, controller_pattern)
             if not possible_names:
-                raise RuntimeError(
-                    "trajectory_execution: `Parameter file_path is undefined "
-                    f"and no matches for {config_folder}/*_controllers.yaml"
+                # Warn the user instead of raising exception
+                logging.warning(
+                    "\x1b[33;20mtrajectory_execution: `Parameter file_path is undefined "
+                    f"and no matches for {config_folder}/*_controllers.yaml\x1b[0m"
                 )
             else:
                 chosen_name = None
@@ -409,7 +420,8 @@ class MoveItConfigsBuilder(ParameterBuilder):
         else:
             file_path = self._package_path / file_path
 
-        self.__moveit_configs.trajectory_execution.update(load_yaml(file_path))
+        if file_path:
+            self.__moveit_configs.trajectory_execution.update(load_yaml(file_path))
         return self
 
     def planning_scene_monitor(
@@ -418,6 +430,8 @@ class MoveItConfigsBuilder(ParameterBuilder):
         publish_geometry_updates: bool = True,
         publish_state_updates: bool = True,
         publish_transforms_updates: bool = True,
+        publish_robot_description: bool = False,
+        publish_robot_description_semantic: bool = False,
     ):
         self.__moveit_configs.planning_scene_monitor = {
             # TODO: Fix parameter namespace upstream -- see planning_scene_monitor.cpp:262
@@ -426,6 +440,8 @@ class MoveItConfigsBuilder(ParameterBuilder):
             "publish_geometry_updates": publish_geometry_updates,
             "publish_state_updates": publish_state_updates,
             "publish_transforms_updates": publish_transforms_updates,
+            "publish_robot_description": publish_robot_description,
+            "publish_robot_description_semantic": publish_robot_description_semantic,
             # }
         }
         return self

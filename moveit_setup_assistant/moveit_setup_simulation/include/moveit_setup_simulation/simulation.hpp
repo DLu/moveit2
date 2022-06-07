@@ -38,9 +38,11 @@
 #include <moveit_setup_framework/setup_step.hpp>
 #include <moveit_setup_framework/data/urdf_config.hpp>
 
-namespace moveit_setup_simulation
+namespace moveit_setup
 {
-class Simulation : public moveit_setup_framework::SetupStep
+namespace simulation
+{
+class Simulation : public SetupStep
 {
 public:
   std::string getName() const override
@@ -55,9 +57,19 @@ public:
     return false;
   }
 
+  std::filesystem::path getURDFPath() const
+  {
+    return urdf_config_->getURDFPath();
+  }
+
   std::string getURDFPackageName() const
   {
     return urdf_config_->getURDFPackageName();
+  }
+
+  std::string getURDFContents() const
+  {
+    return urdf_config_->getURDFContents();
   }
 
   /**
@@ -73,10 +85,21 @@ public:
    */
   std::string getGazeboCompatibleURDF();
 
-  bool outputGazeboURDFFile(const std::string& file_path);
+  bool outputGazeboURDFFile(const std::filesystem::path& file_path);
+
+  /**
+   * @brief Check if the given xml is valid
+   * @param[in] new_urdf_contents The string of xml to check
+   * @param[out] error_row The row of the error
+   * @param[out] error_col The col of the error
+   * @param[out] error_description The description
+   * @returns True if valid, false otherwise
+   */
+  bool isValidXML(const std::string& new_urdf_contents, int& error_row, int& error_col,
+                  std::string& error_description) const;
 
 protected:
-  std::shared_ptr<moveit_setup_framework::URDFConfig> urdf_config_;
+  std::shared_ptr<URDFConfig> urdf_config_;
 
   /// Gazebo URDF robot model string
   // NOTE: Created when the robot urdf is not compatible with Gazebo.
@@ -85,4 +108,5 @@ protected:
   /// Whether a new Gazebo URDF is created
   bool save_gazebo_urdf_;
 };
-}  // namespace moveit_setup_simulation
+}  // namespace simulation
+}  // namespace moveit_setup

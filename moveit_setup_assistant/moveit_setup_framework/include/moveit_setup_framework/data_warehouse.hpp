@@ -42,7 +42,7 @@
 
 #pragma once
 
-namespace moveit_setup_framework
+namespace moveit_setup
 {
 MOVEIT_CLASS_FORWARD(DataWarehouse);  // Defines DataWarehousePtr, ConstPtr, WeakPtr... etc
 
@@ -82,6 +82,30 @@ public:
   }
 
   /**
+   * @brief Get all of the registered configs that match the given config_class
+   *
+   * @param config_class The string representing the class name
+   * @returns Map of shared pointers from config names to singleton config
+   */
+  template <typename T>
+  std::unordered_map<std::string, std::shared_ptr<T>> getAll()
+  {
+    std::unordered_map<std::string, std::shared_ptr<T>> matches;
+    for (const auto& pair : registered_types_)
+    {
+      SetupConfigPtr uncast_ptr = get(pair.first);
+      std::shared_ptr<T> ptr = std::dynamic_pointer_cast<T>(uncast_ptr);
+      if (!ptr)
+      {
+        continue;
+      }
+
+      matches[pair.first] = ptr;
+    }
+    return matches;
+  }
+
+  /**
    * @brief Associates a class_name with the given name. Makes calls to get more succinct.
    */
   void registerType(const std::string& config_name, const std::string& config_class);
@@ -105,4 +129,4 @@ protected:
   std::unordered_map<std::string, SetupConfigPtr> configs_;        // mapping from name to config
   std::unordered_map<std::string, std::string> registered_types_;  // mapping from name to config class type
 };
-}  // namespace moveit_setup_framework
+}  // namespace moveit_setup

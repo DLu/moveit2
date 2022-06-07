@@ -37,19 +37,22 @@
 
 #include <moveit_setup_framework/setup_step.hpp>
 #include <moveit_setup_framework/data/srdf_config.hpp>
-#include <moveit_setup_controllers/controller_config.hpp>
+#include <moveit_setup_controllers/controllers_config.hpp>
 
-namespace moveit_setup_controllers
+namespace moveit_setup
 {
-class Controllers : public moveit_setup_framework::SetupStep
+namespace controllers
+{
+class Controllers : public SetupStep
 {
 public:
-  std::string getName() const override
-  {
-    return "Controllers";
-  }
+  virtual std::string getInstructions() const = 0;
 
-  void onInit() override;
+  virtual std::string getButtonText() const = 0;
+
+  virtual std::vector<std::string> getAvailableTypes() const = 0;
+
+  virtual std::string getDefaultType() const = 0;
 
   bool isReady() const override
   {
@@ -96,7 +99,8 @@ public:
   std::vector<std::string> getJointsFromGroups(const std::vector<std::string>& group_names) const;
 
 protected:
-  std::shared_ptr<moveit_setup_framework::SRDFConfig> srdf_config_;
+  std::shared_ptr<SRDFConfig> srdf_config_;
   std::shared_ptr<ControllersConfig> controllers_config_;
 };
-}  // namespace moveit_setup_controllers
+}  // namespace controllers
+}  // namespace moveit_setup

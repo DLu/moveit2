@@ -36,15 +36,10 @@
 
 #include <moveit_setup_controllers/controllers.hpp>
 
-namespace moveit_setup_controllers
+namespace moveit_setup
 {
-void Controllers::onInit()
+namespace controllers
 {
-  config_data_->registerType("controllers", "moveit_setup_controllers::ControllersConfig");
-  srdf_config_ = config_data_->get<moveit_setup_framework::SRDFConfig>("srdf");
-  controllers_config_ = config_data_->get<moveit_setup_controllers::ControllersConfig>("controllers");
-}
-
 // ******************************************************************************************
 // Add a Follow Joint Trajectory action Controller for each Planning Group
 // ******************************************************************************************
@@ -66,7 +61,7 @@ bool Controllers::addDefaultControllers()
     {
       continue;
     }
-    bool ret = controllers_config_->addController(group_name + "_controller", "FollowJointTrajectory", joint_names);
+    bool ret = controllers_config_->addController(group_name + "_controller", getDefaultType(), joint_names);
     success &= ret;
   }
 
@@ -86,4 +81,5 @@ std::vector<std::string> Controllers::getJointsFromGroups(const std::vector<std:
   return joint_names;
 }
 
-}  // namespace moveit_setup_controllers
+}  // namespace controllers
+}  // namespace moveit_setup

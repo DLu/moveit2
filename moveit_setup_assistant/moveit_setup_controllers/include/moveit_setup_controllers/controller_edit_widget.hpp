@@ -42,7 +42,9 @@
 #include <QLineEdit>
 #include <QPushButton>
 
-namespace moveit_setup_controllers
+namespace moveit_setup
+{
+namespace controllers
 {
 class ControllerEditWidget : public QWidget
 {
@@ -54,13 +56,13 @@ public:
   // ******************************************************************************************
 
   /// Constructor
-  ControllerEditWidget(QWidget* parent, Controllers& setup_step);
+  ControllerEditWidget(QWidget* parent);
 
   /// Set the previous data
-  void setSelected(const std::string& controller_name);
+  void setSelected(const std::string& controller_name, const ControllerInfo* info);
 
   /// Populate the combo dropdown box with controllers types
-  void loadControllersTypesComboBox();
+  void loadControllersTypesComboBox(const std::vector<std::string>& controller_types);
 
   /// Hide delete controller button
   void hideDelete();
@@ -134,7 +136,6 @@ private:
 
   // For loading default types combo box just once
   bool has_loaded_ = false;
-
-  Controllers& setup_step_;
 };
-}  // namespace moveit_setup_controllers
+}  // namespace controllers
+}  // namespace moveit_setup

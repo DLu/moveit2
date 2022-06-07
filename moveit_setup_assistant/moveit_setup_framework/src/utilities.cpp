@@ -36,23 +36,31 @@
 
 #include <moveit_setup_framework/utilities.hpp>
 
-namespace moveit_setup_framework
+namespace moveit_setup
 {
-bool extractPackageNameFromPath(const std::string& path, std::string& package_name, std::string& relative_filepath)
+bool extractPackageNameFromPath(const std::filesystem::path& path, std::string& package_name,
+                                std::filesystem::path& relative_filepath)
 {
-  boost::filesystem::path sub_path = path;  // holds the directory less one folder
-  boost::filesystem::path relative_path;    // holds the path after the sub_path
+  std::filesystem::path sub_path = path;  // holds the directory less one folder
+  if (std::filesystem::is_regular_file(sub_path))
+  {
+    relative_filepath = sub_path.filename();  // holds the path after the sub_path
+    sub_path = sub_path.parent_path();
+  }
+  else
+  {
+    relative_filepath = sub_path;
+  }
 
   // truncate path step by step and check if it contains a package.xml
   while (!sub_path.empty())
   {
-    if (boost::filesystem::is_regular_file(sub_path / "package.xml"))
+    if (std::filesystem::is_regular_file(sub_path / "package.xml"))
     {
-      relative_filepath = relative_path.string();
       // Search the <name> </name> string in the package.xml file
       // This works assuming the package name is entered as <name>PACKAGE_NAME</name>
       // Default package name to folder name
-      package_name = sub_path.leaf().string();
+      package_name = sub_path.filename().string();
       tinyxml2::XMLDocument package_xml_file;
       auto is_open = package_xml_file.LoadFile((sub_path / "package.xml").c_str());
       if (is_open == tinyxml2::XML_SUCCESS)
@@ -67,59 +75,11 @@ bool extractPackageNameFromPath(const std::string& path, std::string& package_na
       }
       return true;
     }
-    relative_path = sub_path.leaf() / relative_path;
-    sub_path.remove_leaf();
+    relative_filepath = sub_path.filename() / relative_filepath;
+    sub_path = sub_path.parent_path();
   }
-
   // No package name found, we must be outside ROS
   return false;
 }
 
-namespace
-{
-bool hasRequiredAttributes(const tinyxml2::XMLElement& e, const std::vector<XMLAttribute>& attributes)
-{
-  for (const auto& attr : attributes)
-  {
-    if (!attr.required)
-      continue;  // attribute not required
-    const char* value = e.Attribute(attr.name);
-    if (value && strcmp(attr.value, value) == 0)
-      continue;  // attribute has required value
-    else
-      return false;
-  }
-  return true;
-};
-}  // namespace
-
-tinyxml2::XMLElement* uniqueInsert(tinyxml2::XMLElement& element, const char* tag,
-                                   const std::vector<XMLAttribute>& attributes, const char* text)
-{
-  // search for existing element with required tag name and attributes
-  tinyxml2::XMLElement* result = element.FirstChildElement(tag);
-  while (result && !hasRequiredAttributes(*result, attributes))
-    result = result->NextSiblingElement(tag);
-
-  if (!result)  // if not yet present, create new element
-  {
-    result = element.GetDocument()->NewElement(tag);
-    element.InsertEndChild(result);
-  }
-
-  // set (not-yet existing) attributes
-  for (const auto& attr : attributes)
-  {
-    if (!result->Attribute(attr.name))
-      result->SetAttribute(attr.name, attr.value);
-  }
-
-  // insert text if required
-  if (text && !result->GetText())
-  {
-    result->InsertEndChild(result->GetDocument()->NewText(text));
-  }
-
-  return result;
-}
-}  // namespace moveit_setup_framework
+}  // namespace moveit_setup
