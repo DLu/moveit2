@@ -43,6 +43,10 @@ namespace simulation
 {
 void Simulation::onInit()
 {
+  config_data_->registerType("modified_urdf", "moveit_setup::ModifiedUrdfConfig");
+  config_data_->registerType("sim_xacro", "moveit_setup::simulation::SimXacroConfig");
+  sim_xacro_config_ = config_data_->get<SimXacroConfig>("sim_xacro");
+
   urdf_config_ = config_data_->get<URDFConfig>("urdf");
 }
 

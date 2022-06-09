@@ -137,7 +137,7 @@ void SimulationWidget::focusGiven()
 
   // Add generated Gazebo URDF to config file if not empty
   bool have_changes = !text.empty();
-  config_data_->save_gazebo_urdf_ = have_changes;
+  // TODO: config_data_->save_gazebo_urdf_ = have_changes;
 
   // GUI elements are visible only if there are URDF changes to display/edit
   simulation_text_->setVisible(have_changes);
@@ -147,7 +147,7 @@ void SimulationWidget::focusGiven()
   no_changes_label_->setVisible(!have_changes);
 
   // Disable overwrite button if URDF originates from xacro
-  btn_overwrite_->setDisabled(config_data_->urdf_from_xacro_);
+  // TODO: btn_overwrite_->setDisabled(config_data_->urdf_from_xacro_);
   QString tooltip;
   if (btn_overwrite_->isEnabled())
     tooltip = tr("Overwrite URDF in original location:\n").append(setup_step_.getURDFPath().c_str());
@@ -155,16 +155,21 @@ void SimulationWidget::focusGiven()
     tooltip = tr("Cannot overwrite original, <i>xacro-based</i> URDF");
   btn_overwrite_->setToolTip(tooltip);
 
+  /* TODO:
   if (have_changes)
     config_data_->changes |= MoveItConfigData::SIMULATION;
   else
     config_data_->changes &= ~MoveItConfigData::SIMULATION;
+    */
 }
 
 bool SimulationWidget::focusLost()
 {
+  /*
+   TODO:
   if (!config_data_->save_gazebo_urdf_)
     return true;  // saving is disabled anyway
+*/
 
   // validate XML
   std::string urdf = simulation_text_->document()->toPlainText().toStdString();
@@ -173,7 +178,7 @@ bool SimulationWidget::focusLost()
 
   if (setup_step_.isValidXML(urdf, error_row, error_col, error_description))
   {
-    config_data_->gazebo_urdf_string_ = std::move(urdf);
+    // TODO: config_data_->gazebo_urdf_string_ = std::move(urdf);
     return true;
   }
   else
@@ -197,6 +202,7 @@ void SimulationWidget::overwriteURDF()
   if (!focusLost())  // validate XML
     return;
 
+  /*TODO:
   if (!setup_step_.outputGazeboURDFFile(config_data_->urdf_path_))
     QMessageBox::warning(this, "Gazebo URDF", tr("Failed to save to ").append(config_data_->urdf_path_.c_str()));
   else  // Display success message
@@ -206,6 +212,7 @@ void SimulationWidget::overwriteURDF()
   // Remove Gazebo URDF file from list of to-be-written config files
   config_data_->save_gazebo_urdf_ = false;
   config_data_->changes &= ~MoveItConfigData::SIMULATION;
+  */
 }
 
 void SimulationWidget::openURDF()
