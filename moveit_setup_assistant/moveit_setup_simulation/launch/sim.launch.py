@@ -22,6 +22,10 @@ def generate_launch_description():
                 ]
             },
         ],
+        arguments=[
+            "-c",
+            "/home/dlu/OpenSource/ws_moveit2/src/moveit_resources/fanuc_moveit_config",
+        ],
     )
 
     return ld
