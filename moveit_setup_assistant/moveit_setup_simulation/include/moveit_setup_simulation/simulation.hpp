@@ -37,6 +37,7 @@
 
 #include <moveit_setup_framework/setup_step.hpp>
 #include <moveit_setup_framework/data/urdf_config.hpp>
+#include <moveit_setup_simulation/sim_xacro_config.hpp>
 
 namespace moveit_setup
 {
@@ -54,7 +55,8 @@ public:
 
   bool isReady() const override
   {
-    return false;
+    // TODO
+    return true;
   }
 
   std::filesystem::path getURDFPath() const
@@ -100,6 +102,7 @@ public:
 
 protected:
   std::shared_ptr<URDFConfig> urdf_config_;
+  std::shared_ptr<SimXacroConfig> sim_xacro_config_;
 
   /// Gazebo URDF robot model string
   // NOTE: Created when the robot urdf is not compatible with Gazebo.

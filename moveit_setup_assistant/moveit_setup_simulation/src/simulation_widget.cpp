@@ -37,7 +37,6 @@
 #include <moveit_setup_simulation/simulation_widget.hpp>
 #include <moveit_setup_framework/qt/helper_widgets.hpp>
 #include <moveit_setup_framework/qt/xml_syntax_highlighter.hpp>
-#include <moveit_setup_framework/utilities.hpp>
 
 // Qt
 #include <QColor>
@@ -53,7 +52,9 @@
 
 #include <regex>
 
-namespace moveit_setup_simulation
+namespace moveit_setup
+{
+namespace simulation
 {
 // ******************************************************************************************
 // Constructor
@@ -66,12 +67,10 @@ void SimulationWidget::onInit()
 
   // Top Header Area ------------------------------------------------
 
-  auto header =
-      new moveit_setup_framework::HeaderWidget("Simulate With Gazebo",
-                                               "The following tool will auto-generate the URDF changes needed "
-                                               "for Gazebo compatibility with ROSControl and MoveIt. The "
-                                               "needed changes are shown in green.",
-                                               this);
+  auto header = new HeaderWidget("Simulate With Gazebo",
+                                 "The following tool will auto-generate the URDF changes needed for Gazebo "
+                                 "compatibility with ROSControl and MoveIt. The needed changes are shown in green.",
+                                 this);
   layout->addWidget(header);
   layout->addSpacerItem(new QSpacerItem(1, 8, QSizePolicy::Fixed, QSizePolicy::Fixed));
 
@@ -109,7 +108,7 @@ void SimulationWidget::onInit()
   simulation_text_->setLineWrapMode(QTextEdit::NoWrap);
   layout->addWidget(simulation_text_);
   // Configure highlighter
-  auto highlighter = new moveit_setup_framework::XmlSyntaxHighlighter(simulation_text_->document());
+  auto highlighter = new XmlSyntaxHighlighter(simulation_text_->document());
   QTextCharFormat format;
   format.setForeground(Qt::darkGreen);
   highlighter->addTag("inertial", format);
@@ -132,13 +131,13 @@ void SimulationWidget::focusGiven()
     return;  // nothing to do
 
   simulation_text_->setVisible(true);
-  std::string text = setup_step_.generateGazeboCompatibleURDF();
+  std::string text = setup_step_.getGazeboCompatibleURDF();
 
   simulation_text_->document()->setPlainText(QString::fromStdString(text));
 
   // Add generated Gazebo URDF to config file if not empty
   bool have_changes = !text.empty();
-  config_data_->save_gazebo_urdf_ = have_changes;
+  // TODO: config_data_->save_gazebo_urdf_ = have_changes;
 
   // GUI elements are visible only if there are URDF changes to display/edit
   simulation_text_->setVisible(have_changes);
@@ -148,43 +147,51 @@ void SimulationWidget::focusGiven()
   no_changes_label_->setVisible(!have_changes);
 
   // Disable overwrite button if URDF originates from xacro
-  btn_overwrite_->setDisabled(config_data_->urdf_from_xacro_);
+  // TODO: btn_overwrite_->setDisabled(config_data_->urdf_from_xacro_);
   QString tooltip;
   if (btn_overwrite_->isEnabled())
-    tooltip = tr("Overwrite URDF in original location:\n").append(config_data_->urdf_path_.c_str());
+    tooltip = tr("Overwrite URDF in original location:\n").append(setup_step_.getURDFPath().c_str());
   else
     tooltip = tr("Cannot overwrite original, <i>xacro-based</i> URDF");
   btn_overwrite_->setToolTip(tooltip);
 
+  /* TODO:
   if (have_changes)
     config_data_->changes |= MoveItConfigData::SIMULATION;
   else
     config_data_->changes &= ~MoveItConfigData::SIMULATION;
+    */
 }
 
 bool SimulationWidget::focusLost()
 {
+  /*
+   TODO:
   if (!config_data_->save_gazebo_urdf_)
     return true;  // saving is disabled anyway
+*/
 
   // validate XML
-  TiXmlDocument doc;
-  auto urdf = simulation_text_->document()->toPlainText().toStdString();
-  doc.Parse(urdf.c_str(), nullptr, TIXML_ENCODING_UTF8);
-  if (doc.Error())
+  std::string urdf = simulation_text_->document()->toPlainText().toStdString();
+  int error_row, error_col;
+  std::string error_description;
+
+  if (setup_step_.isValidXML(urdf, error_row, error_col, error_description))
+  {
+    // TODO: config_data_->gazebo_urdf_string_ = std::move(urdf);
+    return true;
+  }
+  else
   {
     QTextCursor cursor = simulation_text_->textCursor();
     cursor.movePosition(QTextCursor::Start);
-    cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, doc.ErrorRow());
-    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, doc.ErrorCol());
+    cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, error_row);
+    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, error_col);
     simulation_text_->setTextCursor(cursor);
-    QMessageBox::warning(this, tr("Gazebo URDF"), tr("Error parsing XML:\n").append(doc.ErrorDesc()));
+    QMessageBox::warning(this, tr("Gazebo URDF"), tr("Error parsing XML:\n").append(error_description.c_str()));
     simulation_text_->setFocus(Qt::OtherFocusReason);
     return false;  // reject switching
   }
-  else
-    config_data_->gazebo_urdf_string_ = std::move(urdf);
-  return true;
 }
 
 // ******************************************************************************************
@@ -195,6 +202,7 @@ void SimulationWidget::overwriteURDF()
   if (!focusLost())  // validate XML
     return;
 
+  /*TODO:
   if (!setup_step_.outputGazeboURDFFile(config_data_->urdf_path_))
     QMessageBox::warning(this, "Gazebo URDF", tr("Failed to save to ").append(config_data_->urdf_path_.c_str()));
   else  // Display success message
@@ -204,11 +212,12 @@ void SimulationWidget::overwriteURDF()
   // Remove Gazebo URDF file from list of to-be-written config files
   config_data_->save_gazebo_urdf_ = false;
   config_data_->changes &= ~MoveItConfigData::SIMULATION;
+  */
 }
 
 void SimulationWidget::openURDF()
 {
-  QProcess::startDetached(qgetenv("EDITOR"), { config_data_->urdf_path_.c_str() });
+  QProcess::startDetached(qgetenv("EDITOR"), { setup_step_.getURDFPath().c_str() });
 }
 
 // ******************************************************************************************
@@ -219,7 +228,8 @@ void SimulationWidget::copyURDF()
   simulation_text_->selectAll();
   simulation_text_->copy();
 }
-}  // namespace moveit_setup_simulation
+}  // namespace simulation
+}  // namespace moveit_setup
 
 #include <pluginlib/class_list_macros.hpp>  // NOLINT
-PLUGINLIB_EXPORT_CLASS(moveit_setup_simulation::SimulationWidget, moveit_setup_framework::SetupStepWidget)
+PLUGINLIB_EXPORT_CLASS(moveit_setup::simulation::SimulationWidget, moveit_setup::SetupStepWidget)

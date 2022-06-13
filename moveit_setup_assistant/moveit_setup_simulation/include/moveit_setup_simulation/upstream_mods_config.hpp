@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2022, Bielefeld University, Inc.
+ *  Copyright (c) 2022, Metro Robots
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Bielefeld University nor the names of its
+ *   * Neither the name of Metro Robots nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,35 +32,74 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Robert Haschke */
+/* Author: David V. Lu!! */
 
 #pragma once
 
-// TODO: This header uses tinyxml.h whereas moveit_setup_framework/utilities.hpp uses tinyxml2.h
-//       One xml library should be selected and used throughout moveit_setup_assistant
-
-#include <tinyxml.h>
-#include <vector>
+#include <moveit_setup_framework/config.hpp>
+#include <moveit_setup_framework/data_warehouse.hpp>
+#include <moveit_setup_framework/data/urdf_config.hpp>
 
 namespace moveit_setup
 {
 namespace simulation
 {
-struct Attribute
+class UpstreamModsConfig : public SetupConfig
 {
-  const char* name;
-  const char* value;
-  bool required = false;
+public:
+  void onInit() override;
+
+  void load();
+
+  bool isConfigured() const override
+  {
+    return true;
+  }
+
+  void collectFiles(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
+                    std::vector<GeneratedFilePtr>& files) override;
+
+protected:
+  struct ModifiedFile
+  {
+    std::filesystem::path path;
+    std::shared_ptr<tinyxml2::XMLDocument> xml_doc;  // shared pointer for insertion into vector
+  };
+
+  class GeneratedModifiedFile : public GeneratedFile
+  {
+  public:
+    GeneratedModifiedFile(const std::filesystem::path& package_path, const GeneratedTime& last_gen_time,
+                          ModifiedFile& mf)
+      : GeneratedFile(package_path, last_gen_time), mf_(mf)
+    {
+    }
+
+    bool hasChanges() const override
+    {
+      return true;
+    }
+
+    std::filesystem::path getRelativePath() const override
+    {
+      return mf_.path;
+    }
+
+    std::string getDescription() const override
+    {
+      return "Original URDF file modified to have required simulation properties";
+    }
+
+    bool write() override;
+
+  protected:
+    ModifiedFile& mf_;
+  };
+
+  void loadFromURDF();
+
+  std::shared_ptr<URDFConfig> urdf_config_;
+  std::vector<ModifiedFile> modified_files_;
 };
-
-/** Insert a new XML element with given tag, attributes and text value
- *
- *  If a corresponding element already exists (and has required attribute values), it is just reused.
- *  All attributes are created or overwritten with given values.
- *  A text value is created or overwritten with given value (if not NULL).
- *  The element is returned */
-TiXmlElement* uniqueInsert(TiXmlElement& element, const char* tag, const std::vector<Attribute>& attributes = {},
-                           const char* text = nullptr);
-
 }  // namespace simulation
 }  // namespace moveit_setup

@@ -9,6 +9,7 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(moveit_setup_framework REQUIRED)
+find_package(moveit_setup_controllers REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 
@@ -23,7 +24,8 @@ qt5_wrap_cpp(MOC_FILES
 add_library(${PROJECT_NAME}
     src/simulation.cpp
     src/simulation_widget.cpp
-    src/xml_manipulation.cpp
+    src/sim_xacro_config.cpp
+    src/upstream_mods_config.cpp
     ${MOC_FILES}
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -33,6 +35,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 ament_target_dependencies(${PROJECT_NAME}
   ament_index_cpp
   moveit_setup_framework
+  moveit_setup_controllers
   pluginlib
   rclcpp
 )
@@ -56,6 +59,11 @@ install(FILES moveit_setup_framework_plugins.xml
 install(DIRECTORY include/
         DESTINATION include
 )
+
+install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME}
+)
+
 ament_export_include_directories(include)
 
 ament_export_libraries(${PROJECT_NAME})
