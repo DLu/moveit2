@@ -112,7 +112,7 @@ void expectYamlEquivalence(const YAML::Node& generated, const YAML::Node& refere
 
   if (generated.Type() != reference.Type())
   {
-    FAIL() << msg_prefix + "does not have matching types!";
+    ADD_FAILURE() << msg_prefix + "does not have matching types!";
     return;
   }
 
@@ -120,7 +120,7 @@ void expectYamlEquivalence(const YAML::Node& generated, const YAML::Node& refere
   {
     if (generated.size() != reference.size())
     {
-      FAIL() << msg_prefix + "does not have matching sizes!";
+      ADD_FAILURE() << msg_prefix + "does not have matching sizes!";
       return;
     }
     for (std::size_t i = 0; i < generated.size(); ++i)
@@ -142,11 +142,11 @@ void expectYamlEquivalence(const YAML::Node& generated, const YAML::Node& refere
 
     for (const std::string& key : missing_keys)
     {
-      FAIL() << msg_prefix << "is missing the key '" << key << "'";
+      ADD_FAILURE() << msg_prefix << "is missing the key '" << key << "'";
     }
     for (const std::string& key : extra_keys)
     {
-      FAIL() << msg_prefix << "has an extra key '" << key << "'";
+      ADD_FAILURE() << msg_prefix << "has an extra key '" << key << "'";
     }
     for (const std::string& key : common_keys)
     {
