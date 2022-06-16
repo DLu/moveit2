@@ -56,8 +56,8 @@ protected:
    */
   void SetUp() override
   {
-    rclcpp::Node::SharedPtr node = rclcpp::Node::make_shared("test_node");
-    config_data_ = std::make_shared<moveit_setup::DataWarehouse>(node);
+    node_ = rclcpp::Node::make_shared("test_node");
+    config_data_ = std::make_shared<moveit_setup::DataWarehouse>(node_);
     output_dir_ = std::filesystem::temp_directory_path() / "moveit_setup_test";
   }
 
@@ -88,6 +88,7 @@ protected:
       std::filesystem::remove_all(output_dir_);
   }
 
+  rclcpp::Node::SharedPtr node_;
   moveit_setup::DataWarehousePtr config_data_;
   std::filesystem::path output_dir_;
   moveit_setup::GeneratedTime placeholder_timestamp_;

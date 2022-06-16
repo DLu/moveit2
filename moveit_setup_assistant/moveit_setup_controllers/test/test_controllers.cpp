@@ -36,6 +36,7 @@
 #include <moveit_setup_framework/testing_utils.hpp>
 #include <moveit_setup_controllers/ros2_controllers_config.hpp>
 #include <moveit_setup_controllers/moveit_controllers_config.hpp>
+#include <moveit_setup_controllers/ros2_controllers.hpp>
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("test_controllers");
 
@@ -117,6 +118,34 @@ TEST_F(ControllersTest, OutputFanuc)
   {
     expectYamlEquivalence(output_dir_ / relative_path, original_config / relative_path);
   }
+}
+
+TEST_F(ControllersTest, AddDefaultControllers)
+{
+  // only preload urdf and srdf
+  auto config_dir = getSharePath("moveit_resources_panda_moveit_config");
+  YAML::Node settings = YAML::LoadFile(config_dir / ".setup_assistant")["moveit_setup_assistant_config"];
+  config_data_->get<moveit_setup::URDFConfig>("urdf")->loadPrevious(config_dir, settings["URDF"]);
+  auto srdf_config = config_data_->get<moveit_setup::SRDFConfig>("srdf");
+  srdf_config->loadPrevious(config_dir, settings["SRDF"]);
+
+  auto ros2_controllers_config = config_data_->get<ROS2ControllersConfig>("ros2_controllers");
+
+  // Initially no controllers
+  EXPECT_EQ(ros2_controllers_config->getControllers().size(), 0u);
+
+  // Run the setup step
+  moveit_setup::controllers::ROS2Controllers setup_step;
+  setup_step.initialize(node_, config_data_);
+
+  // Adding default controllers, a controller for each planning group
+  setup_step.addDefaultControllers();
+
+  // Number of the planning groups defined in the model srdf
+  size_t group_count = srdf_config->getGroups().size();
+
+  // Test that addDefaultControllers() did accually add a controller for the new_group
+  EXPECT_EQ(ros2_controllers_config->getControllers().size(), group_count);
 }
 
 int main(int argc, char** argv)

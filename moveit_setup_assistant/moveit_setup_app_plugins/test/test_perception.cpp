@@ -79,8 +79,6 @@ TEST_F(PerceptionTest, ReadingSensorsConfig)
 // This tests writing of sensors_3d.yaml
 TEST_F(PerceptionTest, WritingSensorsConfig)
 {
-  std::filesystem::path original_config = getSharePath("moveit_resources_fanuc_moveit_config");
-
   auto sensors_config = config_data_->get<PerceptionConfig>("sensors");
 
   // Empty Config Should have No Sensors
