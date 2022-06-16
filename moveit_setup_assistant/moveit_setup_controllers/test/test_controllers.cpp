@@ -39,6 +39,8 @@
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("test_controllers");
 
+using moveit_setup::expectYamlEquivalence;
+using moveit_setup::getSharePath;
 using moveit_setup::controllers::ControllerInfo;
 using moveit_setup::controllers::MoveItControllersConfig;
 using moveit_setup::controllers::ROS2ControllersConfig;
@@ -110,7 +112,11 @@ TEST_F(ControllersTest, OutputFanuc)
   generateFiles<ROS2ControllersConfig>("ros2_controllers");
   generateFiles<MoveItControllersConfig>("moveit_controllers");
 
-  // TODO: Check files
+  std::filesystem::path original_config = getSharePath("moveit_resources_fanuc_moveit_config");
+  for (const std::string& relative_path : { "config/moveit_controllers.yaml", "config/ros2_controllers.yaml" })
+  {
+    expectYamlEquivalence(output_dir_ / relative_path, original_config / relative_path);
+  }
 }
 
 int main(int argc, char** argv)

@@ -38,6 +38,7 @@
 
 #include <moveit_setup_framework/data_warehouse.hpp>
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <filesystem>
 
 namespace moveit_setup
@@ -92,4 +93,84 @@ protected:
   moveit_setup::GeneratedTime placeholder_timestamp_;
   bool delete_when_finished_{ true };  // Set to false to keep the files around
 };
+
+std::set<std::string> getKeys(const YAML::Node& node)
+{
+  std::set<std::string> keys;
+  for (const auto& kv : node)
+  {
+    keys.insert(kv.first.as<std::string>());
+  }
+  return keys;
+}
+
+void expectYamlEquivalence(const YAML::Node& generated, const YAML::Node& reference,
+                           const std::filesystem::path& generated_path, const std::string& yaml_namespace = "")
+{
+  std::string msg_prefix =
+      std::string("In ") + generated_path.c_str() + ", node with namespace '" + yaml_namespace + "' ";
+
+  if (generated.Type() != reference.Type())
+  {
+    FAIL() << msg_prefix + "does not have matching types!";
+    return;
+  }
+
+  if (generated.IsSequence())
+  {
+    if (generated.size() != reference.size())
+    {
+      FAIL() << msg_prefix + "does not have matching sizes!";
+      return;
+    }
+    for (std::size_t i = 0; i < generated.size(); ++i)
+    {
+      std::string sub_namespace = yaml_namespace + "[" + std::to_string(i) + "]";
+      expectYamlEquivalence(generated[i], reference[i], generated_path, sub_namespace);
+    }
+  }
+  else if (generated.IsMap())
+  {
+    std::set<std::string> gkeys = getKeys(generated), rkeys = getKeys(reference), missing_keys, common_keys, extra_keys;
+
+    std::set_difference(rkeys.begin(), rkeys.end(), gkeys.begin(), gkeys.end(),
+                        std::inserter(missing_keys, missing_keys.end()));
+    std::set_difference(gkeys.begin(), gkeys.end(), rkeys.begin(), rkeys.end(),
+                        std::inserter(extra_keys, extra_keys.end()));
+    std::set_intersection(gkeys.begin(), gkeys.end(), rkeys.begin(), rkeys.end(),
+                          std::inserter(common_keys, common_keys.end()));
+
+    for (const std::string& key : missing_keys)
+    {
+      FAIL() << msg_prefix << "is missing the key '" << key << "'";
+    }
+    for (const std::string& key : extra_keys)
+    {
+      FAIL() << msg_prefix << "has an extra key '" << key << "'";
+    }
+    for (const std::string& key : common_keys)
+    {
+      std::string sub_namespace = yaml_namespace + "/" + key;
+      expectYamlEquivalence(generated[key], reference[key], generated_path, sub_namespace);
+    }
+  }
+  else
+  {
+    EXPECT_EQ(generated.as<std::string>(), reference.as<std::string>())
+        << msg_prefix << "does not match scalar values!";
+  }
+}
+
+void expectYamlEquivalence(const std::filesystem::path& generated_path, const std::filesystem::path& reference_path)
+{
+  EXPECT_EQ(std::filesystem::is_regular_file(generated_path), std::filesystem::is_regular_file(reference_path));
+  if (!std::filesystem::is_regular_file(reference_path))
+  {
+    return;
+  }
+  const YAML::Node& generated = YAML::LoadFile(generated_path);
+  const YAML::Node& reference = YAML::LoadFile(reference_path);
+  expectYamlEquivalence(generated, reference, generated_path);
+}
+
 }  // namespace moveit_setup
