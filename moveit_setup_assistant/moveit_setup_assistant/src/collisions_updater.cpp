@@ -39,9 +39,9 @@
 #include <moveit_setup_framework/data/srdf_config.hpp>
 #include <moveit_setup_framework/data/urdf_config.hpp>
 #include <moveit/rdf_loader/rdf_loader.h>
-#include <rclcpp/rclcpp.hpp>
-
 #include <boost/program_options.hpp>
+#include <rclcpp/logger.hpp>
+#include <rclcpp/logging.hpp>
 
 namespace po = boost::program_options;
 

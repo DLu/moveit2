@@ -50,12 +50,12 @@ void ROS2ControllersConfig::loadPrevious(const std::filesystem::path& package_pa
   changed_ = false;
   controllers_.clear();
 
-  // Load moveit controllers yaml file if available-----------------------------------------------
+  // Load ros2 controllers yaml file if available-----------------------------------------------
   std::filesystem::path ros_controllers_yaml_path = package_path / CONTROLLERS_YAML;
   std::ifstream input_stream(ros_controllers_yaml_path);
   if (!input_stream.good())
   {
-    RCLCPP_WARN_STREAM((*logger_), "Does not exist " << ros_controllers_yaml_path);
+    RCLCPP_WARN_STREAM(*logger_, "Does not exist " << ros_controllers_yaml_path);
     return;
   }
 
@@ -123,7 +123,7 @@ void ROS2ControllersConfig::loadPrevious(const std::filesystem::path& package_pa
   }
   catch (YAML::ParserException& e)  // Catch errors
   {
-    RCLCPP_ERROR_STREAM((*logger_), e.what());
+    RCLCPP_ERROR_STREAM(*logger_, e.what());
   }
 }
 

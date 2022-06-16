@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>pilz_industrial_motion_planner</name>
-  <version>2.4.0</version>
+  <version>2.5.1</version>
   <description>MoveIt plugin to generate industrial trajectories PTP, LIN, CIRC and sequences thereof.</description>
 
   <maintainer email="c.henkel@pilz.de">Christian Henkel</maintainer>
@@ -28,6 +28,7 @@
   <depend>moveit_core</depend>
   <depend>moveit_ros_planning</depend> <!-- RobotModelLoader -->
   <depend>moveit_ros_move_group</depend> <!-- move_group capability -->
+  <depend>orocos_kdl_vendor</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>tf2</depend>

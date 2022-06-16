@@ -36,13 +36,14 @@
  *   POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <rclcpp/logger.hpp>
+#include <rclcpp/logging.hpp>
 #include <limits>
 #include <Eigen/Geometry>
 #include <algorithm>
 #include <cmath>
 #include <moveit/trajectory_processing/time_optimal_trajectory_generation.h>
 #include <vector>
-#include "rclcpp/rclcpp.hpp"
 
 namespace trajectory_processing
 {
@@ -1102,6 +1103,10 @@ bool TimeOptimalTrajectoryGeneration::doTimeParameterizationCalculations(robot_t
 
     if (diverse_point)
       points.push_back(new_point);
+    // If the last point is not a diverse_point we replace the last added point with it to make sure to always have the
+    // input end point as the last point
+    else if (p == num_points - 1)
+      points.back() = new_point;
   }
 
   // Return trajectory with only the first waypoint if there are not multiple diverse points
