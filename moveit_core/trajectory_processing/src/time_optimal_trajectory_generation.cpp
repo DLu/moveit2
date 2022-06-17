@@ -345,10 +345,6 @@ Trajectory::Trajectory(const Path& path, const Eigen::VectorXd& max_velocity, co
 
   if (valid_)
   {
-    for (auto step : trajectory_)
-    {
-      std::cout << step.path_pos_ << " " << step.path_vel_ << std::endl;
-    }
     // Calculate timing
     std::list<TrajectoryStep>::iterator previous = trajectory_.begin();
     std::list<TrajectoryStep>::iterator it = previous;
@@ -838,8 +834,6 @@ Eigen::VectorXd Trajectory::getVelocity(double time) const
   const double path_pos =
       previous->path_pos_ + time_step * previous->path_vel_ + 0.5 * time_step * time_step * acceleration;
   const double path_vel = previous->path_vel_ + time_step * acceleration;
-  std::cout << "getVelocity" << time << " " << time_step << " " << acceleration << " " << path_pos << " " << path_vel
-            << std::endl;
 
   return path_.getTangent(path_pos) * path_vel;
 }
@@ -1119,7 +1113,6 @@ bool TimeOptimalTrajectoryGeneration::doTimeParameterizationCalculations(robot_t
     trajectory.addSuffixWayPoint(waypoint, 0.0);
     return true;
   }
-  RCLCPP_INFO_STREAM(LOGGER, trajectory);
 
   // Now actually call the algorithm
   Trajectory parameterized(Path(points, path_tolerance_), max_velocity, max_acceleration, DEFAULT_TIMESTEP);
@@ -1128,10 +1121,6 @@ bool TimeOptimalTrajectoryGeneration::doTimeParameterizationCalculations(robot_t
     RCLCPP_ERROR(LOGGER, "Unable to parameterize trajectory.");
     return false;
   }
-
-  RCLCPP_INFO_STREAM(LOGGER, trajectory);
-
-  if (resample_dt_ == 0.0) {}
 
   // Compute sample count
   size_t sample_count = std::ceil(parameterized.getDuration() / resample_dt_);
@@ -1158,7 +1147,6 @@ bool TimeOptimalTrajectoryGeneration::doTimeParameterizationCalculations(robot_t
     trajectory.addSuffixWayPoint(waypoint, t - last_t);
     last_t = t;
   }
-  RCLCPP_INFO_STREAM(LOGGER, trajectory);
 
   return true;
 }
