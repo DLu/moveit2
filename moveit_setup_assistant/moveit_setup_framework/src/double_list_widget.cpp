@@ -40,12 +40,15 @@
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
+#include <rclcpp/logging.hpp>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QString>
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <moveit_setup_framework/qt/double_list_widget.hpp>
+
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("DoubleListWidget");
 
 namespace moveit_setup
 {
@@ -336,7 +339,8 @@ void DoubleListWidget::previewSelected(const QList<QTableWidgetItem*>& selected)
 
 std::vector<std::string> DoubleListWidget::getSelectedValues() const
 {
-  std::vector<std::string> values(selected_data_table_->rowCount());
+  std::vector<std::string> values;
+  values.reserve(selected_data_table_->rowCount());
   for (int i = 0; i < selected_data_table_->rowCount(); ++i)
   {
     values.push_back(selected_data_table_->item(i, 0)->text().toStdString());

@@ -81,7 +81,7 @@ unsigned int countElements(const tinyxml2::XMLNode& parent, const char* child_na
 {
   unsigned int count = 0;
   for (const tinyxml2::XMLElement* sub_el = parent.FirstChildElement(child_name); sub_el != nullptr;
-       sub_el = sub_el->NextSiblingElement())
+       sub_el = sub_el->NextSiblingElement(child_name))
   {
     count++;
   }
@@ -163,6 +163,40 @@ TEST_F(SRDFTest, SetLinks)
   group_el = root->FirstChildElement("group");
   ASSERT_NE(group_el, nullptr);
   EXPECT_EQ(countElements(*group_el, "link"), 4u);
+}
+
+TEST_F(SRDFTest, SetJointsThenLinks)
+{
+  initializeWithFanuc();
+
+  PlanningGroups pg;
+  initializeStep(pg);
+  std::string group_name = "manipulator";
+  pg.create(group_name);
+
+  std::vector<std::string> joints = { "joint_1", "joint_2" };
+  pg.setJoints(group_name, joints);
+
+  generateXML();
+
+  auto root = srdf_xml_.FirstChildElement("robot");
+  auto group_el = root->FirstChildElement("group");
+  ASSERT_NE(group_el, nullptr);
+  EXPECT_EQ(std::string(group_el->Attribute("name")), group_name);
+  EXPECT_EQ(countElements(*group_el, "joint"), 2u);
+  EXPECT_EQ(countElements(*group_el, "link"), 0u);
+
+  std::vector<std::string> links = { "base_link", "link_1" };
+  pg.setLinks(group_name, links);
+
+  generateXML();
+
+  root = srdf_xml_.FirstChildElement("robot");
+  group_el = root->FirstChildElement("group");
+  ASSERT_NE(group_el, nullptr);
+  EXPECT_EQ(std::string(group_el->Attribute("name")), group_name);
+  EXPECT_EQ(countElements(*group_el, "joint"), 2u);
+  EXPECT_EQ(countElements(*group_el, "link"), 2u);
 }
 
 int main(int argc, char** argv)

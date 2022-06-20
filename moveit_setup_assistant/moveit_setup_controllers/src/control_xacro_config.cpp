@@ -136,10 +136,10 @@ void ControlXacroConfig::loadFromDescription()
   auto urdf_config = config_data_->get<URDFConfig>("urdf");
   urdf_xml.Parse(urdf_config->getURDFContents().c_str());
   for (XMLElement* control_el = urdf_xml.FirstChildElement("ros2_control"); control_el != nullptr;
-       control_el = control_el->NextSiblingElement())
+       control_el = control_el->NextSiblingElement("ros2_control"))
   {
     for (XMLElement* joint_el = control_el->FirstChildElement("joint"); joint_el != nullptr;
-         joint_el = joint_el->NextSiblingElement())
+         joint_el = joint_el->NextSiblingElement("joint"))
     {
       std::string joint_name = joint_el->Attribute("name");
 
