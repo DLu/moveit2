@@ -51,23 +51,39 @@ protected:
     srdf_config_ = config_data_->get<SRDFConfig>("srdf");
   }
 
+  void initializeWithURDF(const std::filesystem::path& urdf)
+  {
+    config_data_->preloadWithURDFPath(urdf);
+    srdf_config_->updateRobotModel();
+  }
+
+  void initializeWithFanuc()
+  {
+    initializeWithURDF(getSharePath("moveit_resources_fanuc_description") / "urdf" / "fanuc.urdf");
+  }
+
+  void generateXML(const std::string& robot_name = "fanuc")
+  {
+    generateFiles<SRDFConfig>("srdf");
+    std::filesystem::path srdf_path = output_dir_ / "config" / (robot_name + ".srdf");
+    ASSERT_TRUE(std::filesystem::is_regular_file(srdf_path));
+
+    ASSERT_EQ(srdf_xml_.LoadFile(srdf_path.c_str()), tinyxml2::XML_SUCCESS);
+  }
+
   std::shared_ptr<SRDFConfig> srdf_config_;
+  tinyxml2::XMLDocument srdf_xml_;
 };
 
 TEST_F(SRDFTest, Empty)
 {
-  auto fanuc_path = getSharePath("moveit_resources_fanuc_description");
-  config_data_->preloadWithURDFPath(fanuc_path / "urdf" / "fanuc.urdf");
-  srdf_config_->updateRobotModel();
-  generateFiles<SRDFConfig>("srdf");
+  initializeWithFanuc();
 
-  std::filesystem::path srdf_path = output_dir_ / "config" / "fanuc.srdf";
-  ASSERT_TRUE(std::filesystem::is_regular_file(srdf_path));
+  // do nothing
 
-  tinyxml2::XMLDocument srdf_xml;
-  ASSERT_EQ(srdf_xml.LoadFile(srdf_path.c_str()), tinyxml2::XML_SUCCESS);
+  generateXML();
 
-  auto root = srdf_xml.FirstChildElement("robot");
+  auto root = srdf_xml_.FirstChildElement("robot");
   EXPECT_EQ(std::string(root->Attribute("name")), std::string("fanuc"));
   EXPECT_TRUE(root->NoChildren());
 }
