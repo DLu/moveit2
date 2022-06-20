@@ -37,6 +37,7 @@
 #pragma once
 
 #include <moveit_setup_framework/data_warehouse.hpp>
+#include <moveit_setup_framework/setup_step.hpp>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <filesystem>
@@ -75,6 +76,11 @@ protected:
     {
       file->write();
     }
+  }
+
+  void initializeStep(SetupStep& setup_step)
+  {
+    setup_step.initialize(node_, config_data_);
   }
 
   /**

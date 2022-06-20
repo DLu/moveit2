@@ -136,7 +136,7 @@ TEST_F(ControllersTest, AddDefaultControllers)
 
   // Run the setup step
   moveit_setup::controllers::ROS2Controllers setup_step;
-  setup_step.initialize(node_, config_data_);
+  initializeStep(setup_step);
 
   // Adding default controllers, a controller for each planning group
   setup_step.addDefaultControllers();

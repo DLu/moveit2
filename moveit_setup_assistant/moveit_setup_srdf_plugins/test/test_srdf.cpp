@@ -35,12 +35,14 @@
 /* Author: David V. Lu!! */
 #include <moveit_setup_framework/testing_utils.hpp>
 #include <moveit_setup_framework/data/srdf_config.hpp>
+#include <moveit_setup_srdf_plugins/planning_groups.hpp>
 #include <tinyxml2.h>
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("test_srdf");
 
 using moveit_setup::getSharePath;
 using moveit_setup::SRDFConfig;
+using moveit_setup::srdf_setup::PlanningGroups;
 
 class SRDFTest : public moveit_setup::MoveItSetupTest
 {
@@ -75,6 +77,17 @@ protected:
   tinyxml2::XMLDocument srdf_xml_;
 };
 
+unsigned int countElements(const tinyxml2::XMLNode& parent, const char* child_name)
+{
+  unsigned int count = 0;
+  for (const tinyxml2::XMLElement* sub_el = parent.FirstChildElement(child_name); sub_el != nullptr;
+       sub_el = sub_el->NextSiblingElement())
+  {
+    count++;
+  }
+  return count;
+}
+
 TEST_F(SRDFTest, Empty)
 {
   initializeWithFanuc();
@@ -86,6 +99,70 @@ TEST_F(SRDFTest, Empty)
   auto root = srdf_xml_.FirstChildElement("robot");
   EXPECT_EQ(std::string(root->Attribute("name")), std::string("fanuc"));
   EXPECT_TRUE(root->NoChildren());
+}
+
+TEST_F(SRDFTest, SetJoints)
+{
+  initializeWithFanuc();
+
+  PlanningGroups pg;
+  initializeStep(pg);
+  std::string group_name = "manipulator";
+  pg.create(group_name);
+
+  std::vector<std::string> joints = { "joint_1", "joint_2" };
+  pg.setJoints(group_name, joints);
+
+  generateXML();
+
+  auto root = srdf_xml_.FirstChildElement("robot");
+  auto group_el = root->FirstChildElement("group");
+  ASSERT_NE(group_el, nullptr);
+  EXPECT_EQ(std::string(group_el->Attribute("name")), group_name);
+  EXPECT_EQ(countElements(*group_el, "joint"), 2u);
+
+  joints.push_back("joint_3");
+  joints.push_back("joint_4");
+  pg.setJoints(group_name, joints);
+
+  generateXML();
+
+  root = srdf_xml_.FirstChildElement("robot");
+  group_el = root->FirstChildElement("group");
+  ASSERT_NE(group_el, nullptr);
+  EXPECT_EQ(countElements(*group_el, "joint"), 4u);
+}
+
+TEST_F(SRDFTest, SetLinks)
+{
+  initializeWithFanuc();
+
+  PlanningGroups pg;
+  initializeStep(pg);
+  std::string group_name = "manipulator";
+  pg.create(group_name);
+
+  std::vector<std::string> links = { "base_link", "link_1" };
+  pg.setLinks(group_name, links);
+
+  generateXML();
+
+  auto root = srdf_xml_.FirstChildElement("robot");
+  auto group_el = root->FirstChildElement("group");
+  ASSERT_NE(group_el, nullptr);
+  EXPECT_EQ(std::string(group_el->Attribute("name")), group_name);
+  EXPECT_EQ(countElements(*group_el, "link"), 2u);
+
+  links.push_back("link_2");
+  links.push_back("link_3");
+  pg.setLinks(group_name, links);
+
+  generateXML();
+
+  root = srdf_xml_.FirstChildElement("robot");
+  group_el = root->FirstChildElement("group");
+  ASSERT_NE(group_el, nullptr);
+  EXPECT_EQ(countElements(*group_el, "link"), 4u);
 }
 
 int main(int argc, char** argv)
