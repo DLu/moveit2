@@ -92,6 +92,7 @@ std::vector<std::pair<std::string, std::string>> ControlXacroConfig::getArgument
 {
   std::vector<std::pair<std::string, std::string>> arguments;
   arguments.push_back(std::make_pair("initial_positions_file", "initial_positions.yaml"));
+  arguments.push_back(std::make_pair("ros2_control_plugin", getDefaultControlPlugin()));
   return arguments;
 }
 
@@ -99,7 +100,9 @@ std::vector<std::string> ControlXacroConfig::getCommands() const
 {
   std::string command = "<xacro:";
   command += urdf_config_->getRobotName();
-  command += "_ros2_control name=\"FakeSystem\" initial_positions_file=\"$(arg initial_positions_file)\"/>";
+  command += "_ros2_control name=\"FakeSystem\" initial_positions_file=\"$(arg initial_positions_file)";
+  command += " plugin=\"${ros2_control_plugin}\"";
+  command += "\"/>";
   return { command };
 }
 
@@ -225,10 +228,29 @@ const ControlInterfaces ControlXacroConfig::getControlInterfaces(const std::vect
   return ci;
 }
 
+std::string ControlXacroConfig::getDefaultControlPlugin() const
+{
+  return "fake";
+}
+
 std::string ControlXacroConfig::getHardwareXML() const
 {
   return "       <!-- By default, set up controllers for simulation. This won't work on real hardware -->\n"
          "       <plugin>fake_components/GenericSystem</plugin>";
+
+  /* Future work:
+  <xacro:if value="${plugin == 'fake'}">
+    <plugin>fake_components/GenericSystem</plugin>
+  <xacro:if value="${plugin == 'ign'}">
+    <plugin>ign_ros2_control/IgnitionSystem</plugin>
+  </xacro:if>
+  <xacro:if value="${plugin == 'real'}">
+    <xacro:ERROR_ros2_control_for_real_robot_unimplemented/>
+  </xacro:if>
+  <xacro:unless value="${plugin == 'fake' or plugin == 'ign' or plugin == 'real'}">
+    <plugin>${plugin}</plugin>
+  </xacro:unless>
+  */
 }
 
 std::string ControlXacroConfig::getJointsXML() const
@@ -317,6 +339,7 @@ void ControlXacroConfig::collectVariables(std::vector<TemplateVariable>& variabl
 {
   variables.push_back(TemplateVariable("ROS2_CONTROL_JOINTS", getJointsXML()));
   variables.push_back(TemplateVariable("ROS2_CONTROL_HARDWARE_PLUGINS", getHardwareXML()));
+  variables.push_back(TemplateVariable("DEFAULT_CONTROL_PLUGIN", getDefaultControlPlugin()));
 }
 
 }  // namespace controllers

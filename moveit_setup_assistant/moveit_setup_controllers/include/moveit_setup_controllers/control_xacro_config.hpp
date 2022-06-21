@@ -112,6 +112,8 @@ public:
    */
   std::string getHardwareXML() const;
 
+  std::string getDefaultControlPlugin() const;
+
   /**
    * @brief Return the additional joint xml needed for ros2_control tags
    */
