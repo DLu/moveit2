@@ -72,7 +72,7 @@ bool SimXacroConfig::isConfigured() const
 
 std::string SimXacroConfig::getFilepath() const
 {
-  return urdf_config_->getRobotName() + ".simulation.xacro";
+  return urdf_config_->getRobotName() + ".sim.xacro";
 }
 
 bool SimXacroConfig::hasChanges() const
@@ -91,15 +91,17 @@ std::vector<std::string> SimXacroConfig::getCommands() const
 {
   std::string command = "<xacro:";
   command += urdf_config_->getRobotName();
-  command += "_sim />";
-  // TODO
+  command += "_sim";
+  command += " plugin=\"";
+  command += "ign";
+  command += "\"/>";
   return { command };
 }
 
 void SimXacroConfig::collectVariables(std::vector<TemplateVariable>& variables)
 {
   // TODO
-  variables.push_back(TemplateVariable("SOME_SIM_STUFF", "foobar"));
+  // variables.push_back(TemplateVariable("SOME_SIM_STUFF", "foobar"));
 }
 
 }  // namespace simulation

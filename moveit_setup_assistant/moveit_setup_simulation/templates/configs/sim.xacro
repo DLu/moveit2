@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="[ROBOT_NAME]_sim" params="plugin">
+      <gazebo reference="world" />
+      <gazebo>
+        <xacro:if value="${plugin == 'gazebo'}">
+          <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control" />
+        </xacro:if>
+        <xacro:if value="${plugin == 'ign'}">
+          <plugin filename="libign_ros2_control.so" name="ign_ros2_control::IgnitionROS2ControlPlugin" />
+        </xacro:if>
+      </gazebo>
+    </xacro:macro>
+</robot>

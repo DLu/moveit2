@@ -55,8 +55,7 @@ public:
 
   bool isReady() const override
   {
-    // TODO
-    return true;
+    return urdf_config_->isConfigured();
   }
 
   std::filesystem::path getURDFPath() const
