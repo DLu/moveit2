@@ -225,6 +225,12 @@ const ControlInterfaces ControlXacroConfig::getControlInterfaces(const std::vect
   return ci;
 }
 
+std::string ControlXacroConfig::getHardwareXML() const
+{
+  return "       <!-- By default, set up controllers for simulation. This won't work on real hardware -->\n"
+         "       <plugin>fake_components/GenericSystem</plugin>";
+}
+
 std::string ControlXacroConfig::getJointsXML() const
 {
   std::string joints = "";
@@ -310,6 +316,7 @@ bool ControlXacroConfig::GeneratedInitialPositions::writeYaml(YAML::Emitter& emi
 void ControlXacroConfig::collectVariables(std::vector<TemplateVariable>& variables)
 {
   variables.push_back(TemplateVariable("ROS2_CONTROL_JOINTS", getJointsXML()));
+  variables.push_back(TemplateVariable("ROS2_CONTROL_HARDWARE_PLUGINS", getHardwareXML()));
 }
 
 }  // namespace controllers

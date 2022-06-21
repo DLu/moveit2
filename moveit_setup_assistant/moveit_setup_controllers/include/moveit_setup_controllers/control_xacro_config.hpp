@@ -108,6 +108,11 @@ public:
   /**@}*/
 
   /**
+   * @brief Return the xml for the inside of the hardware tag
+   */
+  std::string getHardwareXML() const;
+
+  /**
    * @brief Return the additional joint xml needed for ros2_control tags
    */
   std::string getJointsXML() const;
