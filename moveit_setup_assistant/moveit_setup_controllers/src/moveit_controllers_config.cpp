@@ -46,9 +46,11 @@ void MoveItControllersConfig::loadPrevious(const std::filesystem::path& package_
   changed_ = false;
   controllers_.clear();
   trajectory_parameters_.clear();
+  action_namespaces_.clear();
+  use_by_default_parameters_.clear();
 
   // Load moveit controllers yaml file if available-----------------------------------------------
-  if (node["filename"].IsDefined())
+  if (node.IsDefined() && node["filename"].IsDefined())
   {
     setConfigurationFilename(node["filename"].as<std::string>());
   }
@@ -117,6 +119,16 @@ bool MoveItControllersConfig::parseController(const std::string& name, const YAM
     return false;
   }
 
+  if (controller_node["action_ns"].IsDefined())
+  {
+    action_namespaces_[name] = controller_node["action_ns"].as<std::string>();
+  }
+
+  if (controller_node["default"].IsDefined())
+  {
+    use_by_default_parameters_[name] = controller_node["default"].as<bool>();
+  }
+
   const YAML::Node& joints_node = controller_node["joints"];
 
   if (joints_node.IsSequence())
@@ -135,6 +147,27 @@ bool MoveItControllersConfig::parseController(const std::string& name, const YAM
   // All required fields were parsed correctly
   controllers_.push_back(control_setting);
   return true;
+}
+
+YAML::Node MoveItControllersConfig::saveToYaml() const
+{
+  YAML::Node n;
+  if (configuration_filename_ != MOVEIT_CONTROLLERS_YAML)
+  {
+    n["filename"] = configuration_filename_;
+  }
+  return n;
+}
+
+template <typename T>
+void addOptionalParameter(YAML::Emitter& emitter, const std::string& key, const std::string& label,
+                          const std::map<std::string, T>& lookup)
+{
+  const auto& it = lookup.find(key);
+  if (it != lookup.end())
+  {
+    emitter << YAML::Key << label << YAML::Value << it->second;
+  }
 }
 
 // ******************************************************************************************
@@ -182,58 +215,25 @@ bool MoveItControllersConfig::GeneratedControllersConfig::writeYaml(YAML::Emitte
         emitter << YAML::Value;
         emitter << YAML::BeginMap;
         {
+          addOptionalParameter(emitter, controller.name_, "action_ns", parent_.action_namespaces_);
+
           emitter << YAML::Key << "type" << YAML::Value << controller.type_;
+
+          addOptionalParameter(emitter, controller.name_, "default", parent_.use_by_default_parameters_);
+
           // Write joints
           emitter << YAML::Key << "joints";
           emitter << YAML::Value;
-          if (controller.joints_.size() != 1)
-          {
-            emitter << YAML::BeginSeq;
+          emitter << YAML::BeginSeq;
 
-            // Iterate through the joints
-            for (const std::string& joint : controller.joints_)
-            {
-              emitter << joint;
-            }
-            emitter << YAML::EndSeq;
-          }
-          else
+          // Iterate through the joints
+          for (const std::string& joint : controller.joints_)
           {
-            emitter << YAML::BeginMap;
-            emitter << controller.joints_[0];
-            emitter << YAML::EndMap;
+            emitter << joint;
           }
-          // Depending on the controller type, fill the required data
-          if (controller.type_ == "FollowJointTrajectory")
-          {
-            emitter << YAML::Key << "action_ns" << YAML::Value << "follow_joint_trajectory";
-            emitter << YAML::Key << "default" << YAML::Value << "true";
-          }
-          else
-          {
-            // Write gains as they are required for vel and effort controllers
-            emitter << YAML::Key << "gains";
-            emitter << YAML::Value;
-            emitter << YAML::BeginMap;
-            {
-              // Iterate through the joints
-              for (const std::string& joint : controller.joints_)
-              {
-                emitter << YAML::Key << joint << YAML::Value << YAML::BeginMap;
-                emitter << YAML::Key << "p";
-                emitter << YAML::Value << "100";
-                emitter << YAML::Key << "d";
-                emitter << YAML::Value << "1";
-                emitter << YAML::Key << "i";
-                emitter << YAML::Value << "1";
-                emitter << YAML::Key << "i_clamp";
-                emitter << YAML::Value << "1" << YAML::EndMap;
-              }
-            }
-            emitter << YAML::EndMap;
-          }
-          emitter << YAML::EndMap;
+          emitter << YAML::EndSeq;
         }
+        emitter << YAML::EndMap;
       }
     }
     emitter << YAML::EndMap;

@@ -128,7 +128,10 @@ void ControlXacroConfig::loadFromDescription()
   {
     for (const std::string& joint_name : srdf_config->getJointNames(group_name, true, false))  // exclude passive
     {
-      joint_names_.push_back(joint_name);
+      if (std::find(joint_names_.begin(), joint_names_.end(), joint_name) == joint_names_.end())
+      {
+        joint_names_.push_back(joint_name);
+      }
     }
   }
 
@@ -138,7 +141,8 @@ void ControlXacroConfig::loadFromDescription()
 
   auto urdf_config = config_data_->get<URDFConfig>("urdf");
   urdf_xml.Parse(urdf_config->getURDFContents().c_str());
-  for (XMLElement* control_el = urdf_xml.FirstChildElement("ros2_control"); control_el != nullptr;
+  XMLElement* robot_el = urdf_xml.FirstChildElement("robot");
+  for (XMLElement* control_el = robot_el->FirstChildElement("ros2_control"); control_el != nullptr;
        control_el = control_el->NextSiblingElement("ros2_control"))
   {
     for (XMLElement* joint_el = control_el->FirstChildElement("joint"); joint_el != nullptr;
@@ -153,7 +157,6 @@ void ControlXacroConfig::loadFromDescription()
       original_joint_interfaces_[joint_name] = ci;
     }
   }
-  setControlInterfaces(default_ci_);
 }
 
 bool ControlXacroConfig::hasAllControlTagsInOriginal() const

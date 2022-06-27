@@ -37,6 +37,7 @@
 #include <moveit_setup_controllers/ros2_controllers_config.hpp>
 #include <moveit_setup_controllers/moveit_controllers_config.hpp>
 #include <moveit_setup_controllers/ros2_controllers.hpp>
+#include <moveit_setup_controllers/urdf_modifications.hpp>
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("test_controllers");
 
@@ -57,6 +58,18 @@ protected:
     config_data_->registerType("modified_urdf", "moveit_setup::ModifiedUrdfConfig");
     config_data_->registerType("control_xacro", "moveit_setup::controllers::ControlXacroConfig");
   }
+
+  void loadURDFAndSRDF(const std::string& package_name, const std::string& urdf_key = "urdf",
+                       const std::string& srdf_key = "srdf")
+  {
+    auto config_dir = getSharePath(package_name);
+    settings_ = YAML::LoadFile(config_dir / ".setup_assistant")["moveit_setup_assistant_config"];
+    config_data_->get<moveit_setup::URDFConfig>("urdf")->loadPrevious(config_dir, settings_[urdf_key]);
+    auto srdf_config = config_data_->get<moveit_setup::SRDFConfig>("srdf");
+    srdf_config->loadPrevious(config_dir, settings_[srdf_key]);
+  }
+
+  YAML::Node settings_;
 };
 
 TEST_F(ControllersTest, ParseFanuc)
@@ -109,7 +122,9 @@ TEST_F(ControllersTest, ParsePanda)
 TEST_F(ControllersTest, OutputFanuc)
 {
   config_data_->preloadWithFullConfig("moveit_resources_fanuc_moveit_config");
-  config_data_->get<moveit_setup::controllers::ControlXacroConfig>("control_xacro")->loadFromDescription();
+  auto control_config = config_data_->get<moveit_setup::controllers::ControlXacroConfig>("control_xacro");
+  control_config->loadFromDescription();
+  control_config->setControlInterfaces(control_config->getDefaultControlInterfaces());
   generateFiles<ROS2ControllersConfig>("ros2_controllers");
   generateFiles<MoveItControllersConfig>("moveit_controllers");
 
@@ -120,16 +135,88 @@ TEST_F(ControllersTest, OutputFanuc)
   }
 }
 
+TEST_F(ControllersTest, OutputPanda)
+{
+  std::string package_name = "moveit_resources_panda_moveit_config";
+  std::filesystem::path original_config = getSharePath(package_name);
+
+  config_data_->get<moveit_setup::URDFConfig>("urdf")->loadFromPackage(package_name, "config/panda.urdf.xacro");
+  auto srdf_config = config_data_->get<moveit_setup::SRDFConfig>("srdf");
+  srdf_config->loadSRDFFile(original_config, "config/panda_arm_hand.srdf.xacro");
+
+  auto control_config = config_data_->get<moveit_setup::controllers::ControlXacroConfig>("control_xacro");
+  control_config->loadFromDescription();
+
+  auto ros2_config = config_data_->get<MoveItControllersConfig>("ros2_controllers");
+  ros2_config->loadPrevious(original_config, settings_["ros2_controllers"]);
+
+  auto moveit_config = config_data_->get<MoveItControllersConfig>("moveit_controllers");
+  moveit_config->setConfigurationFilename("config/gripper_moveit_controllers.yaml");
+  moveit_config->loadPrevious(original_config, settings_["moveit_controllers"]);
+
+  generateFiles<ROS2ControllersConfig>("ros2_controllers");
+  generateFiles<MoveItControllersConfig>("moveit_controllers");
+
+  for (const std::string& relative_path : { "config/gripper_moveit_controllers.yaml", "config/ros2_controllers.yaml" })
+  {
+    expectYamlEquivalence(output_dir_ / relative_path, original_config / relative_path);
+  }
+}
+
+TEST_F(ControllersTest, OutputUBR)
+{
+  loadURDFAndSRDF("ubr1_moveit");
+  std::filesystem::path original_config = getSharePath("ubr1_moveit");
+
+  auto control_config = config_data_->get<moveit_setup::controllers::ControlXacroConfig>("control_xacro");
+  control_config->loadFromDescription();
+  control_config->setControlInterfaces(control_config->getDefaultControlInterfaces());
+
+  auto ros2_config = config_data_->get<MoveItControllersConfig>("ros2_controllers");
+  ros2_config->loadPrevious(original_config, settings_["ros2_controllers"]);
+
+  auto moveit_config = config_data_->get<MoveItControllersConfig>("moveit_controllers");
+  moveit_config->loadPrevious(original_config, settings_["moveit_controllers"]);
+
+  generateFiles<ROS2ControllersConfig>("ros2_controllers");
+  generateFiles<MoveItControllersConfig>("moveit_controllers");
+
+  for (const std::string& relative_path : { "config/moveit_controllers.yaml", "config/ros2_controllers.yaml" })
+  {
+    expectYamlEquivalence(output_dir_ / relative_path, original_config / relative_path);
+  }
+}
+
 TEST_F(ControllersTest, AddDefaultControllers)
 {
-  // only preload urdf and srdf
-  auto config_dir = getSharePath("moveit_resources_panda_moveit_config");
-  YAML::Node settings = YAML::LoadFile(config_dir / ".setup_assistant")["moveit_setup_assistant_config"];
-  config_data_->get<moveit_setup::URDFConfig>("urdf")->loadPrevious(config_dir, settings["URDF"]);
-  auto srdf_config = config_data_->get<moveit_setup::SRDFConfig>("srdf");
-  srdf_config->loadPrevious(config_dir, settings["SRDF"]);
+  loadURDFAndSRDF("moveit_resources_panda_moveit_config", "URDF", "SRDF");
 
   auto ros2_controllers_config = config_data_->get<ROS2ControllersConfig>("ros2_controllers");
+
+  // Initially no controllers
+  EXPECT_EQ(ros2_controllers_config->getControllers().size(), 0u);
+
+  // Run the setup step
+  moveit_setup::controllers::ROS2Controllers setup_step;
+  initializeStep(setup_step);
+
+  // Adding default controllers, a controller for each planning group
+  setup_step.addDefaultControllers();
+
+  // Number of the planning groups defined in the model srdf
+  size_t group_count = config_data_->get<moveit_setup::SRDFConfig>("srdf")->getGroups().size();
+
+  // Test that addDefaultControllers() did accually add a controller for the new_group
+  EXPECT_EQ(ros2_controllers_config->getControllers().size(), group_count);
+}
+
+TEST_F(ControllersTest, AddDefaultControllersToUBR)
+{
+  loadURDFAndSRDF("ubr1_moveit");
+
+  auto control_config = config_data_->get<moveit_setup::controllers::ControlXacroConfig>("control_xacro");
+  control_config->loadFromDescription();
+  /*
 
   // Initially no controllers
   EXPECT_EQ(ros2_controllers_config->getControllers().size(), 0u);
@@ -145,7 +232,7 @@ TEST_F(ControllersTest, AddDefaultControllers)
   size_t group_count = srdf_config->getGroups().size();
 
   // Test that addDefaultControllers() did accually add a controller for the new_group
-  EXPECT_EQ(ros2_controllers_config->getControllers().size(), group_count);
+  EXPECT_EQ(ros2_controllers_config->getControllers().size(), group_count);*/
 }
 
 int main(int argc, char** argv)
