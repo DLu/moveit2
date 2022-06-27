@@ -170,7 +170,8 @@ void expectYamlEquivalence(const YAML::Node& generated, const YAML::Node& refere
 
 void expectYamlEquivalence(const std::filesystem::path& generated_path, const std::filesystem::path& reference_path)
 {
-  EXPECT_EQ(std::filesystem::is_regular_file(generated_path), std::filesystem::is_regular_file(reference_path));
+  EXPECT_EQ(std::filesystem::is_regular_file(generated_path), std::filesystem::is_regular_file(reference_path))
+      << generated_path << " vs. " << reference_path;
   if (!std::filesystem::is_regular_file(reference_path))
   {
     return;

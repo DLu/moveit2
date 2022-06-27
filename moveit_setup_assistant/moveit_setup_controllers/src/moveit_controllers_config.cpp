@@ -41,14 +41,18 @@ namespace moveit_setup
 {
 namespace controllers
 {
-void MoveItControllersConfig::loadPrevious(const std::filesystem::path& package_path, const YAML::Node& /*node*/)
+void MoveItControllersConfig::loadPrevious(const std::filesystem::path& package_path, const YAML::Node& node)
 {
   changed_ = false;
   controllers_.clear();
   trajectory_parameters_.clear();
 
   // Load moveit controllers yaml file if available-----------------------------------------------
-  std::filesystem::path ros_controllers_yaml_path = package_path / MOVEIT_CONTROLLERS_YAML;
+  if (node["filename"].IsDefined())
+  {
+    setConfigurationFilename(node["filename"].as<std::string>());
+  }
+  std::filesystem::path ros_controllers_yaml_path = package_path / configuration_filename_;
   std::ifstream input_stream(ros_controllers_yaml_path);
   if (!input_stream.good())
   {

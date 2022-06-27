@@ -49,6 +49,11 @@ class MoveItControllersConfig : public ControllersConfig
 public:
   void loadPrevious(const std::filesystem::path& package_path, const YAML::Node& node) override;
 
+  void setConfigurationFilename(const std::string& new_filename)
+  {
+    configuration_filename_ = new_filename;
+  }
+
   class GeneratedControllersConfig : public YamlGeneratedFile
   {
   public:
@@ -65,7 +70,7 @@ public:
 
     std::filesystem::path getRelativePath() const override
     {
-      return MOVEIT_CONTROLLERS_YAML;
+      return parent_.configuration_filename_;
     }
 
     std::string getDescription() const override
@@ -94,6 +99,8 @@ protected:
   bool parseController(const std::string& name, const YAML::Node& controller);
 
   std::map<std::string, YAML::Node> trajectory_parameters_;
+
+  std::string configuration_filename_{ MOVEIT_CONTROLLERS_YAML };
 };
 }  // namespace controllers
 }  // namespace moveit_setup
