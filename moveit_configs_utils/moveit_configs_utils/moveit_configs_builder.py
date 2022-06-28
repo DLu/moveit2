@@ -28,6 +28,7 @@ Example:
     moveit_configs.planning_pipelines
     moveit_configs.trajectory_execution
     moveit_configs.planning_scene_monitor
+    moveit_configs.sensors_3d
     moveit_configs.move_group_capabilities
     moveit_configs.joint_limits
     moveit_configs.moveit_cpp
@@ -97,6 +98,7 @@ class MoveItConfigs(object):
         "__planning_scene_monitor",
         "__move_group_capabilities",
         "__joint_limits",
+        "__sensors_3d",
         "__moveit_cpp",
         "__cartesian_limits",
     ]
@@ -124,6 +126,7 @@ class MoveItConfigs(object):
         self.moveit_cpp = {}
         # A dictionary containing the cartesian limits for the Pilz planner.
         self.cartesian_limits = {}
+        self.sensors_3d = {}
 
     @property
     def package_path(self):
@@ -198,6 +201,14 @@ class MoveItConfigs(object):
         self.__joint_limits = value
 
     @property
+    def sensors_3d(self):
+        return self.__sensors_3d
+
+    @sensors_3d.setter
+    def sensors_3d(self, value):
+        self.__sensors_3d = value
+
+    @property
     def moveit_cpp(self):
         return self.__moveit_cpp
 
@@ -221,6 +232,7 @@ class MoveItConfigs(object):
         parameters.update(self.planning_pipelines)
         parameters.update(self.trajectory_execution)
         parameters.update(self.planning_scene_monitor)
+        parameters.update(self.sensors_3d)
         parameters.update(self.joint_limits)
         parameters.update(self.moveit_cpp)
         parameters.update(self.cartesian_limits)
@@ -447,6 +459,23 @@ class MoveItConfigsBuilder(ParameterBuilder):
         }
         return self
 
+    def sensors_3d(self, file_path: Optional[str] = None):
+        """Load sensors_3d paramerss.
+
+        :param file_path: Absolute or relative path to the sensors_3d yaml file (w.r.t. robot_name_moveit_config).
+        :return: Instance of MoveItConfigsBuilder with robot_description_planning loaded.
+        """
+        sensors_path = self._package_path / (
+            file_path or self.__config_dir_path / "sensors_3d.yaml"
+        )
+        if sensors_path.exists():
+            sensors_data = load_yaml(sensors_path)
+            # TODO(mikeferguson): remove the second part of this check once
+            # https://github.com/ros-planning/moveit_resources/pull/141 has made through buildfarm
+            if len(sensors_data["sensors"]) > 0 and sensors_data["sensors"][0]:
+                self.__moveit_configs.sensors_3d = sensors_data
+        return self
+
     def planning_pipelines(
         self,
         default_planning_pipeline: str = None,
@@ -538,6 +567,8 @@ class MoveItConfigsBuilder(ParameterBuilder):
             self.trajectory_execution()
         if not self.__moveit_configs.planning_scene_monitor:
             self.planning_scene_monitor()
+        if not self.__moveit_configs.sensors_3d:
+            self.sensors_3d()
         if not self.__moveit_configs.joint_limits:
             self.joint_limits()
         # TODO(JafarAbdi): We should have a default moveit_cpp.yaml as port of a moveit config package
