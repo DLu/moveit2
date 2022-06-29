@@ -89,21 +89,19 @@ std::vector<SensorParameters> PerceptionConfig::load3DSensorsYAML(const std::fil
     if (sensors_node && sensors_node.IsSequence())
     {
       // Loop over the sensors available in the file
-      // for (const auto& sensor : sensors_node) <-- this loop sets each sensor to null for some reason
+      // for (const auto& sensor_name : sensors_node) <-- this loop sets each sensor to null for some reason
       for (std::size_t i = 0; i < sensors_node.size(); ++i)
       {
-        const auto& sensor = sensors_node[i];
-        SensorParameters sensor_map;
-        bool empty_node = true;
+        const auto& sensor_name = sensors_node[i];
+        const YAML::Node& sensor = doc[sensor_name.as<std::string>()];
 
+        SensorParameters sensor_map;
         for (YAML::const_iterator sensor_it = sensor.begin(); sensor_it != sensor.end(); ++sensor_it)
         {
-          empty_node = false;
           sensor_map[sensor_it->first.as<std::string>()] = sensor_it->second.as<std::string>();
         }
-        // Don't push empty nodes
-        if (!empty_node)
-          config.push_back(sensor_map);
+
+        config.push_back(sensor_map);
       }
     }
     return config;
@@ -142,6 +140,7 @@ void PerceptionConfig::setConfig(const SensorParameters& parameters)
     // Right now, the widget only supports editing one plugin
     sensors_plugin_config_parameter_list_[0] = parameters;
   }
+  sensors_plugin_config_parameter_list_[0]["name"] = "default_sensor";
 }
 
 // ******************************************************************************************
@@ -151,18 +150,27 @@ bool PerceptionConfig::GeneratedSensorConfig::writeYaml(YAML::Emitter& emitter)
 {
   emitter << YAML::BeginMap;
   emitter << YAML::Key << "sensors";
-  emitter << YAML::Value << YAML::BeginSeq;
+  emitter << YAML::BeginSeq;
   for (auto& sensor_config : parent_.sensors_plugin_config_parameter_list_)
   {
+    emitter << YAML::Value << sensor_config["name"];
+  }
+  emitter << YAML::EndSeq;
+  for (auto& sensor_config : parent_.sensors_plugin_config_parameter_list_)
+  {
+    emitter << YAML::Key << sensor_config["name"];
     emitter << YAML::BeginMap;
     for (auto& parameter : sensor_config)
     {
+      if (parameter.first == "name")
+      {
+        continue;
+      }
       emitter << YAML::Key << parameter.first;
       emitter << YAML::Value << parameter.second;
     }
     emitter << YAML::EndMap;
   }
-  emitter << YAML::EndSeq;
   emitter << YAML::EndMap;
   return true;
 }
