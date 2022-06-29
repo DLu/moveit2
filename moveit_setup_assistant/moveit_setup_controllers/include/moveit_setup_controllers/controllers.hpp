@@ -43,6 +43,25 @@ namespace moveit_setup
 {
 namespace controllers
 {
+class AdditionalControllerField
+{
+public:
+  AdditionalControllerField(const std::string& display_name, const std::string& parameter_name)
+    : display_name_(display_name), parameter_name_(parameter_name)
+  {
+  }
+
+  virtual std::string getDefaultValue(const std::string& /*controller_type*/) const
+  {
+    return "";
+  }
+
+  std::string display_name_;
+  std::string parameter_name_;
+};
+
+using FieldPointers = std::vector<std::shared_ptr<AdditionalControllerField>>;
+
 class Controllers : public SetupStep
 {
 public:
@@ -53,6 +72,11 @@ public:
   virtual std::vector<std::string> getAvailableTypes() const = 0;
 
   virtual std::string getDefaultType() const = 0;
+
+  virtual FieldPointers getAdditionalControllerFields() const
+  {
+    return FieldPointers();
+  }
 
   bool isReady() const override
   {

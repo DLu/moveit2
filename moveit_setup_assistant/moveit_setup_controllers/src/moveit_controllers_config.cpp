@@ -46,8 +46,6 @@ void MoveItControllersConfig::loadPrevious(const std::filesystem::path& package_
   changed_ = false;
   controllers_.clear();
   trajectory_parameters_.clear();
-  action_namespaces_.clear();
-  use_by_default_parameters_.clear();
 
   // Load moveit controllers yaml file if available-----------------------------------------------
   if (node.IsDefined() && node["filename"].IsDefined())
@@ -121,12 +119,12 @@ bool MoveItControllersConfig::parseController(const std::string& name, const YAM
 
   if (controller_node["action_ns"].IsDefined())
   {
-    action_namespaces_[name] = controller_node["action_ns"].as<std::string>();
+    control_setting.parameters_["action_ns"] = controller_node["action_ns"].as<std::string>();
   }
 
   if (controller_node["default"].IsDefined())
   {
-    use_by_default_parameters_[name] = controller_node["default"].as<bool>();
+    control_setting.parameters_["default"] = controller_node["default"].as<std::string>();
   }
 
   const YAML::Node& joints_node = controller_node["joints"];
@@ -157,17 +155,6 @@ YAML::Node MoveItControllersConfig::saveToYaml() const
     n["filename"] = configuration_filename_;
   }
   return n;
-}
-
-template <typename T>
-void addOptionalParameter(YAML::Emitter& emitter, const std::string& key, const std::string& label,
-                          const std::map<std::string, T>& lookup)
-{
-  const auto& it = lookup.find(key);
-  if (it != lookup.end())
-  {
-    emitter << YAML::Key << label << YAML::Value << it->second;
-  }
 }
 
 // ******************************************************************************************
@@ -215,11 +202,7 @@ bool MoveItControllersConfig::GeneratedControllersConfig::writeYaml(YAML::Emitte
         emitter << YAML::Value;
         emitter << YAML::BeginMap;
         {
-          addOptionalParameter(emitter, controller.name_, "action_ns", parent_.action_namespaces_);
-
           emitter << YAML::Key << "type" << YAML::Value << controller.type_;
-
-          addOptionalParameter(emitter, controller.name_, "default", parent_.use_by_default_parameters_);
 
           // Write joints
           emitter << YAML::Key << "joints";
@@ -232,6 +215,12 @@ bool MoveItControllersConfig::GeneratedControllersConfig::writeYaml(YAML::Emitte
             emitter << joint;
           }
           emitter << YAML::EndSeq;
+
+          for (const auto& pair : controller.parameters_)
+          {
+            emitter << YAML::Key << pair.first;
+            emitter << YAML::Value << pair.second;
+          }
         }
         emitter << YAML::EndMap;
       }

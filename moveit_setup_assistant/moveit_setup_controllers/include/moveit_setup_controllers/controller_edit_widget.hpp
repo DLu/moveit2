@@ -56,7 +56,7 @@ public:
   // ******************************************************************************************
 
   /// Constructor
-  ControllerEditWidget(QWidget* parent);
+  ControllerEditWidget(QWidget* parent, const FieldPointers& additional_fields);
 
   /// Set the previous data
   void setSelected(const std::string& controller_name, const ControllerInfo* info);
@@ -91,11 +91,14 @@ public:
   /// Get controller type
   std::string getControllerType();
 
+  std::map<std::string, std::string> getAdditionalParameters();
+
 private Q_SLOTS:
 
   // ******************************************************************************************
   // Slot Event Functions
   // ******************************************************************************************
+  void typeChanged(int index);
 
 Q_SIGNALS:
 
@@ -129,6 +132,9 @@ private:
   QPushButton* btn_delete_;      // this button is hidden for new controllers
   QPushButton* btn_save_;        // this button is hidden for new controllers
   QWidget* new_buttons_widget_;  // for showing/hiding the new controllers buttons
+
+  FieldPointers additional_fields_;
+  std::vector<QLineEdit*> additional_fields_inputs_;
 
   // ******************************************************************************************
   // Variables
