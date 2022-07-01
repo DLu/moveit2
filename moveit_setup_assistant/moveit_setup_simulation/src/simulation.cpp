@@ -175,7 +175,7 @@ bool Simulation::outputGazeboURDFFile(const std::filesystem::path& file_path)
   std::ofstream os(file_path, std::ios_base::trunc);
   if (!os.good())
   {
-    RCLCPP_ERROR_STREAM(*logger_, "Unable to open file for writing " << file_path);
+    RCLCPP_ERROR_STREAM((*logger_), "Unable to open file for writing " << file_path);
     return false;
   }
 

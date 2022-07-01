@@ -56,6 +56,8 @@ ament_target_dependencies(
 target_link_libraries(moveit_setup_assistant
   ${Boost_LIBRARIES}
 )
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 add_executable(${PROJECT_NAME}_updater src/collisions_updater.cpp)
 target_include_directories(${PROJECT_NAME}_updater PUBLIC
@@ -66,6 +68,8 @@ ament_target_dependencies(
   ${PROJECT_NAME}_updater
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
+set_property(TARGET ${PROJECT_NAME}_updater PROPERTY CXX_STANDARD 17)
+set_property(TARGET ${PROJECT_NAME}_updater PROPERTY CXX_STANDARD_REQUIRED ON)
 
 set_target_properties(
   ${PROJECT_NAME}_updater

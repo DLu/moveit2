@@ -54,9 +54,9 @@ void DefaultCollisions::linkPairsToSRDF()
   disabled_list.clear();
 
   // Create temp disabled collision
-  srdf::Model::CollisionPair dc;
+  srdf::Model::DisabledCollision dc;
 
-  // copy the data in this class's LinkPairMap datastructure to srdf::Model::CollisionPair format
+  // copy the data in this class's LinkPairMap datastructure to srdf::Model::DisabledCollision format
   for (LinkPairMap::const_iterator pair_it = link_pairs_.begin(); pair_it != link_pairs_.end(); ++pair_it)
   {
     // Only copy those that are actually disabled
@@ -75,9 +75,9 @@ void DefaultCollisions::linkPairsToSRDFSorted(size_t skip_mask)
 {
   auto& disabled_list = srdf_config_->getDisabledCollisions();
   // Create temp disabled collision
-  srdf::Model::CollisionPair dc;
+  srdf::Model::DisabledCollision dc;
 
-  std::set<srdf::Model::CollisionPair, CollisionPairLess> disabled_collisions;
+  std::set<srdf::Model::DisabledCollision, DisabledCollisionLess> disabled_collisions;
   for (auto& p : disabled_list)
   {
     if (p.link1_ >= p.link2_)
@@ -85,7 +85,7 @@ void DefaultCollisions::linkPairsToSRDFSorted(size_t skip_mask)
     disabled_collisions.insert(p);
   }
 
-  // copy the data in this class's LinkPairMap datastructure to srdf::Model::CollisionPair format
+  // copy the data in this class's LinkPairMap datastructure to srdf::Model::DisabledCollision format
   for (const std::pair<const std::pair<std::string, std::string>, LinkPairData>& link_pair : link_pairs_)
   {
     // Only copy those that are actually disabled

@@ -39,10 +39,10 @@
 #include <moveit_setup_srdf_plugins/compute_default_collisions.hpp>
 #include <boost/thread/thread.hpp>
 
-// less operation for two CollisionPairs
-struct CollisionPairLess
+// less operation for two DisabledCollisions
+struct DisabledCollisionLess
 {
-  bool operator()(const srdf::Model::CollisionPair& left, const srdf::Model::CollisionPair& right) const
+  bool operator()(const srdf::Model::DisabledCollision& left, const srdf::Model::DisabledCollision& right) const
   {
     // use std::pair's operator<: (left.link1_, left.link2_) < (right.link1_, right.link2_)
     return left.link1_ < right.link1_ || (!(right.link1_ < left.link1_) && left.link2_ < right.link2_);

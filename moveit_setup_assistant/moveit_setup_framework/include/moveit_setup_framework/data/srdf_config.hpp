@@ -95,14 +95,12 @@ public:
 
   void clearCollisionData()
   {
-    srdf_.no_default_collision_links_.clear();
-    srdf_.enabled_collision_pairs_.clear();
-    srdf_.disabled_collision_pairs_.clear();
+    srdf_.disabled_collisions_.clear();
   }
 
-  std::vector<srdf::Model::CollisionPair>& getDisabledCollisions()
+  std::vector<srdf::Model::DisabledCollision>& getDisabledCollisions()
   {
-    return srdf_.disabled_collision_pairs_;
+    return srdf_.disabled_collisions_;
   }
 
   std::vector<srdf::Model::EndEffector>& getEndEffectors()

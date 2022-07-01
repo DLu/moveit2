@@ -40,7 +40,7 @@ namespace moveit_setup
 {
 void SRDFConfig::onInit()
 {
-  parent_node_->declare_parameter("robot_description_semantic", rclcpp::ParameterType::PARAMETER_STRING);
+  parent_node_->declare_parameter<std::string>("robot_description_semantic", "");
   changes_ = 0L;
 }
 
@@ -104,7 +104,7 @@ void SRDFConfig::loadSRDFFile(const std::filesystem::path& srdf_file_path, const
 
   updateRobotModel();
 
-  RCLCPP_INFO_STREAM(*logger_, "Robot semantic model successfully loaded.");
+  RCLCPP_INFO_STREAM((*logger_), "Robot semantic model successfully loaded.");
 }
 
 void SRDFConfig::getRelativePath()

@@ -54,6 +54,8 @@ ament_target_dependencies(${PROJECT_NAME}
   moveit_setup_framework
   pluginlib
 )
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
