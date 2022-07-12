@@ -117,14 +117,12 @@ bool MoveItControllersConfig::parseController(const std::string& name, const YAM
     return false;
   }
 
-  if (controller_node["action_ns"].IsDefined())
+  for (const std::string parameter : { "action_ns", "default" })
   {
-    control_setting.parameters_["action_ns"] = controller_node["action_ns"].as<std::string>();
-  }
-
-  if (controller_node["default"].IsDefined())
-  {
-    control_setting.parameters_["default"] = controller_node["default"].as<std::string>();
+    if (controller_node[parameter].IsDefined())
+    {
+      control_setting.parameters_[parameter] = controller_node[parameter].as<std::string>();
+    }
   }
 
   const YAML::Node& joints_node = controller_node["joints"];
@@ -203,7 +201,6 @@ bool MoveItControllersConfig::GeneratedControllersConfig::writeYaml(YAML::Emitte
         emitter << YAML::BeginMap;
         {
           emitter << YAML::Key << "type" << YAML::Value << controller.type_;
-
           // Write joints
           emitter << YAML::Key << "joints";
           emitter << YAML::Value;

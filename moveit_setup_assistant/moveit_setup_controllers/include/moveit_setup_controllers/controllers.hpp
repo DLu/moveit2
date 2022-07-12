@@ -43,6 +43,9 @@ namespace moveit_setup
 {
 namespace controllers
 {
+/**
+ * @brief Structure for containing information about types of additional parameters
+ */
 class AdditionalControllerField
 {
 public:
@@ -51,6 +54,9 @@ public:
   {
   }
 
+  /**
+   * @brief Overridable method for changing the default value based on the controller_type
+   */
   virtual std::string getDefaultValue(const std::string& /*controller_type*/) const
   {
     return "";
@@ -60,6 +66,7 @@ public:
   std::string parameter_name_;
 };
 
+/// Convenience alias
 using FieldPointers = std::vector<std::shared_ptr<AdditionalControllerField>>;
 
 class Controllers : public SetupStep
@@ -73,6 +80,9 @@ public:
 
   virtual std::string getDefaultType() const = 0;
 
+  /**
+   * @brief Define the types of controller fields for the specific types of controllers
+   */
   virtual FieldPointers getAdditionalControllerFields() const
   {
     return FieldPointers();

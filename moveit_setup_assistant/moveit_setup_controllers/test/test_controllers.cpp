@@ -129,7 +129,7 @@ TEST_F(ControllersTest, OutputFanuc)
   generateFiles<MoveItControllersConfig>("moveit_controllers");
 
   std::filesystem::path original_config = getSharePath("moveit_resources_fanuc_moveit_config");
-  for (const std::string& relative_path : { "config/moveit_controllers.yaml", "config/ros2_controllers.yaml" })
+  for (const std::string relative_path : { "config/moveit_controllers.yaml", "config/ros2_controllers.yaml" })
   {
     expectYamlEquivalence(output_dir_ / relative_path, original_config / relative_path);
   }

@@ -130,6 +130,7 @@ void ControlXacroConfig::loadFromDescription()
     {
       if (std::find(joint_names_.begin(), joint_names_.end(), joint_name) == joint_names_.end())
       {
+        // This is a new joint, add to list of joint names
         joint_names_.push_back(joint_name);
       }
     }

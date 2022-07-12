@@ -13,9 +13,8 @@ robot_name_moveit_config/
         joint_limits.yaml -> Overriding position/velocity/acceleration limits from the URDF file
         moveit_cpp.yaml -> MoveItCpp related parameters
         *_planning.yaml -> planning pipelines parameters
-        cartesian_limits.yaml -> Pilz planner parameters
-        # TODO(JafarAbdi): Check to see if this is a good default value
-        robot_name_controllers.yaml -> trajectory execution manager's parameters
+        pilz_cartesian_limits.yaml -> Pilz planner parameters
+        moveit_controllers.yaml -> trajectory execution manager's parameters
         ...
 
 Example:
@@ -32,7 +31,7 @@ Example:
     moveit_configs.move_group_capabilities
     moveit_configs.joint_limits
     moveit_configs.moveit_cpp
-    moveit_configs.cartesian_limits
+    moveit_configs.pilz_cartesian_limits
     # Or to get all the parameters as a dictionary
     moveit_configs.to_dict()
 
@@ -100,7 +99,7 @@ class MoveItConfigs(object):
         "__joint_limits",
         "__sensors_3d",
         "__moveit_cpp",
-        "__cartesian_limits",
+        "__pilz_cartesian_limits",
     ]
 
     def __init__(self):
@@ -125,7 +124,7 @@ class MoveItConfigs(object):
         # A dictionary containing MoveItCpp related parameters.
         self.moveit_cpp = {}
         # A dictionary containing the cartesian limits for the Pilz planner.
-        self.cartesian_limits = {}
+        self.pilz_cartesian_limits = {}
         self.sensors_3d = {}
 
     @property
@@ -217,12 +216,12 @@ class MoveItConfigs(object):
         self.__moveit_cpp = value
 
     @property
-    def cartesian_limits(self):
-        return self.__cartesian_limits
+    def pilz_cartesian_limits(self):
+        return self.__pilz_cartesian_limits
 
     @cartesian_limits.setter
-    def cartesian_limits(self, value):
-        self.__cartesian_limits = value
+    def pilz_cartesian_limits(self, value):
+        self.__pilz_cartesian_limits = value
 
     def to_dict(self):
         parameters = {}
@@ -235,7 +234,7 @@ class MoveItConfigs(object):
         parameters.update(self.sensors_3d)
         parameters.update(self.joint_limits)
         parameters.update(self.moveit_cpp)
-        parameters.update(self.cartesian_limits)
+        parameters.update(self.pilz_cartesian_limits)
         return parameters
 
 
@@ -535,17 +534,25 @@ class MoveItConfigsBuilder(ParameterBuilder):
 
         return self
 
-    def cartesian_limits(self, file_path: Optional[str] = None):
+    def pilz_cartesian_limits(self, file_path: Optional[str] = None):
         """Load cartesian limits.
 
         :param file_path: Absolute or relative path to the cartesian limits file (w.r.t. robot_name_moveit_config).
-        :return: Instance of MoveItConfigsBuilder with cartesian_limits loaded.
+        :return: Instance of MoveItConfigsBuilder with pilz_cartesian_limits loaded.
         """
-        self.__moveit_configs.cartesian_limits = {
+        deprecated_path = self._package_path / (
+            file_path or self.__config_dir_path / "cartesian_limits.yaml"
+        )
+        if deprecated_path.exists():
+            logging.warning(
+                f"\x1b[33;21mcartesian_limits.yaml is deprecated, please rename to pilz_cartesian_limits.yaml\x1b[0m"
+            )
+
+        self.__moveit_configs.pilz_cartesian_limits = {
             self.__robot_description
             + "_planning": load_yaml(
                 self._package_path
-                / (file_path or self.__config_dir_path / "cartesian_limits.yaml")
+                / (file_path or self.__config_dir_path / "pilz_cartesian_limits.yaml")
             )
         }
         return self
@@ -574,8 +581,8 @@ class MoveItConfigsBuilder(ParameterBuilder):
         # TODO(JafarAbdi): We should have a default moveit_cpp.yaml as port of a moveit config package
         # if not self.__moveit_configs.moveit_cpp:
         #     self.moveit_cpp()
-        if not self.__moveit_configs.cartesian_limits:
-            self.cartesian_limits()
+        if not self.__moveit_configs.pilz_cartesian_limits:
+            self.pilz_cartesian_limits()
         return self.__moveit_configs
 
     def to_dict(self, include_moveit_configs: bool = True):

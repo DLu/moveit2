@@ -92,10 +92,12 @@ std::vector<SensorParameters> PerceptionConfig::load3DSensorsYAML(const std::fil
       // for (const auto& sensor_name : sensors_node) <-- this loop sets each sensor to null for some reason
       for (std::size_t i = 0; i < sensors_node.size(); ++i)
       {
-        const auto& sensor_name = sensors_node[i];
-        const YAML::Node& sensor = doc[sensor_name.as<std::string>()];
+        const auto& sensor_name_node = sensors_node[i];
+        std::string sensor_name = sensor_name_node.as<std::string>();
+        const YAML::Node& sensor = doc[sensor_name];
 
         SensorParameters sensor_map;
+        sensor_map["name"] = sensor_name;
         for (YAML::const_iterator sensor_it = sensor.begin(); sensor_it != sensor.end(); ++sensor_it)
         {
           sensor_map[sensor_it->first.as<std::string>()] = sensor_it->second.as<std::string>();

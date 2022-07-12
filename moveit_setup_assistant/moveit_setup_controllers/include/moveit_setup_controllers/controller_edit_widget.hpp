@@ -91,6 +91,7 @@ public:
   /// Get controller type
   std::string getControllerType();
 
+  /// Get the names and values for any additional parameters
   std::map<std::string, std::string> getAdditionalParameters();
 
 private Q_SLOTS:
@@ -98,6 +99,7 @@ private Q_SLOTS:
   // ******************************************************************************************
   // Slot Event Functions
   // ******************************************************************************************
+  /// Called when the selected item in the controller_type_field_ combobox is changed
   void typeChanged(int index);
 
 Q_SIGNALS:
@@ -134,7 +136,7 @@ private:
   QWidget* new_buttons_widget_;  // for showing/hiding the new controllers buttons
 
   FieldPointers additional_fields_;
-  std::vector<QLineEdit*> additional_fields_inputs_;
+  std::vector<QLineEdit*> additional_fields_inputs_;  // one QLineEdit for each additional field
 
   // ******************************************************************************************
   // Variables
